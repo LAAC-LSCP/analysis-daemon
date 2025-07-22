@@ -32,3 +32,22 @@ poetry build
 ```
 
 And the source and binary distributions will appear in the `dist/` folder.
+
+## Running the Daemon
+Create a virtual environment somewhere, or use your Conda environment, and just install the project
+
+```bash
+pip install git@github.com:LAAC-LSCP/analysis-daemon.git
+run-daemon
+```
+
+Note you need to have an ssh key associated with LAAC.
+
+## Working with the Daemon and source maps
+Within your environment, Conda or otherwise, use the `--editable` option to install the Daemon with the source maps
+
+```bash
+pip install -e [path]
+```
+
+Then your dependency updates with the changes made locally, and even debugging and IntelliSense will work.
