@@ -1,0 +1,8 @@
+# --- Bitcode --- #
+__pycache__/
+
+# --- MacOS Junk --- #
+.DS_Store
+
+# --- Build --- #
+dist/
