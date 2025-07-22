@@ -28,3 +28,6 @@ include = ["CONFIG"]
 
 [tool.poetry.scripts]
 run-daemon = "src.cli.run_daemon:run_daemon"
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+
