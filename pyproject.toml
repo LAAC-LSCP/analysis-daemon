@@ -1,0 +1,17 @@
+[project]
+name = "analysis-daemon"
+version = "0.1.0"
+description = "A Python-based daemon that periodically checks and schedules tasks from Echolalia"
+authors = [
+    {name = "Lawrence Borst",email = "laurens.s.borst@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
