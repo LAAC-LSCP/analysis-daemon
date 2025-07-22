@@ -24,3 +24,7 @@ packages = [
     {include = "src"}
 ]
 include = ["CONFIG"]
+
+
+[tool.poetry.scripts]
+run-daemon = "src.cli.run_daemon:run_daemon"
