@@ -51,9 +51,12 @@ pytest
 
 To run the tests in various fresh virtual environments you can use tox. You can install tox via pipx `pipx install tox`.
 
-And tox can be run with
-`tox -- --randomly-seed=1234`
+And tox tests in python 3.13 can be run with, say
+```bash
+tox -e py313 -- --randomly-seed=1234
+```
 The seed is optional, and will shuffle the order of the tests and is good practice.
+To run the full suite with linting, formatting and type-checking, you will need to install black, isort, autoflake, flake8 and mypy with pipx, and run `tox`.
 
 ## Working with the Daemon and source maps
 Within your environment, Conda or otherwise, use the `--editable` option to install the Daemon with the source maps
