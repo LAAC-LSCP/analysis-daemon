@@ -1,8 +1,9 @@
-from typing import Awaitable, overload
-from src.types.task import TaskArgs, TaskType, LogTaskName
-from src.types.tasks.log import LogArgs
+from typing import overload
+
 from src.task import Task
 from src.types.ids import UserId
+from src.types.task import LogTaskName, TaskArgs, TaskType
+from src.types.tasks.log import LogArgs
 
 
 class TaskFactory:
@@ -13,13 +14,20 @@ class TaskFactory:
 
     Example:
         factory = TaskFactory()
-        task = factory.create(task_type="log", owner="12345", args=LogArgs(text=["Hello", "World"]))
+        task = factory.create(
+            task_type="log",
+            owner="12345",
+            args=LogArgs(
+                text=["Hello", "World"],
+            ),
+        )
     """
 
     def __init__(self) -> None:
         return
 
-    @overload
+    # Uncomment type comment when more overloads are added
+    @overload  # type: ignore[misc]
     def create(
         self, task_type: LogTaskName, owner: UserId, args: LogArgs
     ) -> Task[LogArgs]: ...
@@ -31,10 +39,10 @@ class TaskFactory:
         raise ValueError(f"Unknown task type: {task_type}")
 
     def _create_logging_task(self, owner: UserId, args: LogArgs) -> Task[LogArgs]:
-        async def runner(args: LogArgs) -> Awaitable[None]:
+        async def runner(args: LogArgs) -> None:
             for line in args.text:
                 print(line)
 
-            return
+            return None
 
         return Task(owner, runner, args)
