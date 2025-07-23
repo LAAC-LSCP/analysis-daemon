@@ -31,3 +31,7 @@ run-daemon = "src.cli.run_daemon:run_daemon"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
 
+
+[tool.black]
+line-length = 88
+target-version = ["py313"]
