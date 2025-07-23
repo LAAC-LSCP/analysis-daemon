@@ -1,9 +1,9 @@
 from typing import Union, overload
 
-from src.types.task import LogArgs, LogTaskName, TaskArgs, TaskType
 from src.task import Task
-from src.types.ids import TaskId, UserId
 from src.task.task_factory import TaskFactory
+from src.types.ids import TaskId, UserId
+from src.types.task import LogArgs, LogTaskName, TaskArgs, TaskType
 
 
 class TaskManager:
@@ -16,7 +16,13 @@ class TaskManager:
 
     Example:
         manager = TaskManager()
-        task_id = manager.add_task(task_type="log", user="12345", args=LogArgs(text="Hello World!"))
+        task_id = manager.add_task(
+            task_type="log",
+            user="12345",
+            args=LogArgs(
+                text=["Hello World!"]
+            ),
+        )
         if task_id in manager.get_task_ids():
             print("Task registered.")
     """
@@ -28,7 +34,8 @@ class TaskManager:
         self._tasks = set()
         self._task_factory = TaskFactory()
 
-    @overload
+    # Uncomment type comment when more overloads are added
+    @overload   # type: ignore[misc]
     def add_task(
         self, task_type: LogTaskName, owner: UserId, args: LogArgs
     ) -> TaskId: ...
@@ -42,10 +49,10 @@ class TaskManager:
         return task.id
 
     def stop_task(self, task_id: TaskId) -> None:
-        return NotImplementedError
+        raise NotImplementedError
 
     def kill_task(self, task_id: TaskId) -> None:
-        return NotImplementedError
+        raise NotImplementedError
 
     def get_task_ids(self) -> list[TaskId]:
         return [task.id for task in self._tasks]

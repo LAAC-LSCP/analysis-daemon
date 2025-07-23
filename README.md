@@ -43,6 +43,18 @@ run-daemon
 
 Note you need to have an ssh key associated with LAAC.
 
+## Testing
+Run pytest as usual. In the root of the project run
+```bash
+pytest
+```
+
+To run the tests in various fresh virtual environments you can use tox. You can install tox via pipx `pipx install tox`.
+
+And tox can be run with
+`tox -- --randomly-seed=1234`
+The seed is optional, and will shuffle the order of the tests and is good practice.
+
 ## Working with the Daemon and source maps
 Within your environment, Conda or otherwise, use the `--editable` option to install the Daemon with the source maps
 

@@ -1,5 +1,6 @@
-from typing import Literal, Union
+from typing import Union
+
 from .tasks import LogArgs, LogTaskName
 
-TaskType = Literal[LogTaskName]
+TaskType = Union[LogTaskName]
 TaskArgs = Union[LogArgs]
