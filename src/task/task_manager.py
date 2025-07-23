@@ -35,7 +35,7 @@ class TaskManager:
         self._task_factory = TaskFactory()
 
     # Uncomment type comment when more overloads are added
-    @overload   # type: ignore[misc]
+    @overload  # type: ignore[misc]
     def add_task(
         self, task_type: LogTaskName, owner: UserId, args: LogArgs
     ) -> TaskId: ...

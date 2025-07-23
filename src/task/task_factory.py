@@ -1,4 +1,4 @@
-from typing import Awaitable, overload
+from typing import overload
 
 from src.task import Task
 from src.types.ids import UserId
@@ -27,7 +27,7 @@ class TaskFactory:
         return
 
     # Uncomment type comment when more overloads are added
-    @overload   # type: ignore[misc]
+    @overload  # type: ignore[misc]
     def create(
         self, task_type: LogTaskName, owner: UserId, args: LogArgs
     ) -> Task[LogArgs]: ...

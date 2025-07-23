@@ -53,7 +53,7 @@ class Task(Generic[A]):
         self._id = self._generate_task_id()
         self._owner = owner
         self._runner = runner
-        self._args = args   # type: ignore[assignment]
+        self._args = args  # type: ignore[assignment]
 
     def _generate_task_id(self) -> TaskId:
         return TaskId(str(uuid4()))
