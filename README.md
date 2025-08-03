@@ -71,3 +71,10 @@ Then your dependency updates with the changes made locally, and even debugging a
 We bump our releases and update our changelog automatically, but this requires commits to follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) scheme. We use a combination of [release-please](https://github.com/googleapis/release-please) and [commitlint](https://commitlint.js.org/).
 
 We recommend using squash-merge for pull requests for many reasons. Rebase-merge works too, but if you're doing something like red/green development, or did not validate all your individual commits against the actions, the main branch may not be clean after a rebase-merge (in the sense that every snapshot be clean).
+
+## Migrations
+The database may change over time, whether for reasons of data or schema. Either way, we depend on alembic to handle migrations. We initialise the database through a migration. We have wrapped our alembic logic in a command
+
+```bash
+run-migrations
+```
