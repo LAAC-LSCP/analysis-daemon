@@ -17,7 +17,7 @@ metadata = MetaData()
 
 class PathType(TypeDecorator):
     """
-    Lets us bind Paths to strings and vice versa during forward/backward mapping
+    Binds paths to strings during forward/backwards object relational mapping
     """
 
     impl = StringType(length=256)
@@ -36,6 +36,7 @@ tasks = Table(
     Column("owner_id", Integer, nullable=False),
     Column("task_status", String, nullable=False),
     Column("created_at", DateTime, nullable=False, default=func.now()),
+    Column("filesystem_path", PathType, nullable=False),
     Column("script_rel_path", PathType),
     Column("model", String),
 )
