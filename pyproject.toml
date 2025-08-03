@@ -10,7 +10,8 @@ license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "click (>=8.2.1,<9.0.0)"
+    "click (>=8.2.1,<9.0.0)",
+    "alembic (>=1.16.4,<2.0.0)"
 ]
 
 
@@ -23,11 +24,16 @@ build-backend = "poetry.core.masonry.api"
 packages = [
     {include = "src"}
 ]
-include = ["CONFIG"]
+include = [
+    "CONFIG",
+    "src/alembic/**",
+    "src/alembic.ini"
+]
 
 
 [tool.poetry.scripts]
 run-daemon = "src.cli.run_daemon:run_daemon"
+run-migrations = "src.cli.run_migrations:run_migrations"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
 
