@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-from src.domain.model import Task
+from src.domain.model import FileSystem, Task
 
 
 class AbstractRepository(ABC):
@@ -18,13 +18,9 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_all(self) -> List[Task]:
+    def get_by_filesystem(self, filesystem: FileSystem) -> List[Task]:
         raise NotImplementedError
 
     @abstractmethod
     def save(self, task: Task) -> Task:
-        raise NotImplementedError
-
-    @abstractmethod
-    def delete(self, task_id: int) -> None:
         raise NotImplementedError

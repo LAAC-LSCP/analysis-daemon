@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 
 class ModelName(StrEnum):
@@ -38,8 +38,8 @@ class Task:
     completed: bool
     filesystem: "FileSystem"
     details: Optional[TaskDetails]
-    inputs: list["TaskInput"]
-    outputs: list["TaskOutput"]
+    inputs: List["TaskInput"]
+    outputs: List["TaskOutput"]
 
     _id: Optional[int]
 
@@ -47,8 +47,8 @@ class Task:
         self,
         owner_id: int,
         filesystem: "FileSystem",
-        inputs: Optional[list["TaskInput"]] = None,
-        outputs: Optional[list["TaskOutput"]] = None,
+        inputs: Optional[List["TaskInput"]] = None,
+        outputs: Optional[List["TaskOutput"]] = None,
         created_at: Optional[datetime] = None,
         details: Optional[TaskDetails] = None,
         completed: bool = False,
@@ -73,6 +73,9 @@ class Task:
             return TaskType.MODEL
         return TaskType.UNKNOWN
 
+    def mark_completed(self) -> None:
+        self.completed = True
+
     def __eq__(self, other):
         if not isinstance(other, Task):
             return False
@@ -81,9 +84,6 @@ class Task:
 
     def __hash__(self):
         return hash(self._id)
-
-    def mark_completed(self) -> None:
-        self.completed = True
 
 
 @dataclass
@@ -100,12 +100,42 @@ class ModelTaskDetails(TaskDetails):
 class FileSystem(TaskProperty):
     root_abs_path: Path
 
+    def __eq__(self, other):
+        if not isinstance(other, FileSystem):
+            return False
+
+        return self.root_abs_path == other.root_abs_path
+
+    def __hash__(self):
+        return hash(self.root_abs_path)
+
 
 @dataclass
 class TaskInput(TaskProperty):
     rel_path: Path
 
+    def __eq__(self, other):
+        if not isinstance(other, TaskInput):
+            return False
+
+        return self.rel_path == other.rel_path
+
+    def __hash__(self):
+        return hash(self.rel_path)
+
 
 @dataclass
 class TaskOutput(TaskProperty):
     rel_path: Path
+
+    def __eq__(self, other):
+        if not isinstance(other, TaskOutput):
+            return False
+
+        return self.rel_path == other.rel_path
+
+    def __hash__(self):
+        return hash(self.rel_path)
+
+    def __str__(self):
+        return str(self.rel_path)

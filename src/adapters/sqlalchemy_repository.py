@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from src.adapters.repository import AbstractRepository
 from src.domain.model import (
+    FileSystem,
     ModelTaskDetails,
     ScriptTaskDetails,
     Task,
@@ -50,8 +51,16 @@ class SQLAlchemyRepository(AbstractRepository):
     def get_by_owner(self, owner_id: int) -> List[Task]:
         return self._session.query(Task).filter_by(Task.owner_id == owner_id)
 
-    def get_all(self) -> List[Task]:
-        raise NotImplementedError
+    def get_by_filesystem(self, filesystem: FileSystem) -> List[Task]:
+        if not filesystem._task_id:
+            return []
+
+        return (
+            self._session.query(Task)
+            .join(FileSystem)
+            .filter(FileSystem._task_id == filesystem._task_id)
+            .all()
+        )
 
     def save(self, task: Task) -> Task:
         """
@@ -64,9 +73,6 @@ class SQLAlchemyRepository(AbstractRepository):
         self._add_dependent_fields(task)
 
         return task
-
-    def delete(self, task_id: int) -> None:
-        raise NotImplementedError
 
     def _add_dependent_fields(self, task: Task) -> None:
         assert task._id is not None, "Task ID should be set"
