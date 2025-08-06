@@ -27,6 +27,31 @@ def test_repository_saves_task(session):
     assert list(rows) == [(1, 5, str(dt), 0)]
 
 
+def test_repository_overwrite_task(session):
+    dt = datetime.now()
+    repo = SQLAlchemyRepository(session)
+    task = model.Task(
+        owner_id=1,
+        details=model.ScriptTaskDetails(Path(".")),
+        filesystem=model.FileSystem(Path(".")),
+        created_at=dt,
+        completed=False,
+    )
+
+    repo.save(task)
+    session.commit()
+
+    assert task._id == 1
+
+    task.completed = True
+
+    repo.save(task)
+    session.commit()
+
+    rows = session.execute(text("SELECT id, completed FROM tasks"))
+    assert list(rows) == [(1, 1)]
+
+
 def test_repository_saves_multiple_tasks(session):
     """
     This test also tests that the `flush` call in the repo doesn't cancel the whole
