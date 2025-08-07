@@ -1,7 +1,22 @@
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
 
 from src.adapters.repository import AbstractRepository
-from src.domain.model import FileSystem, Task
+from src.domain.model import FileSystem, Task, TaskDetails, TaskInput, TaskOutput
+
+
+@dataclass
+class TaskArgs:
+    owner_id: int
+    filesystem: Path
+    inputs: List[Path] = field(default_factory=list)
+    outputs: List[Path] = field(default_factory=list)
+    created_at: datetime = field(default_factory=datetime.now)
+    details: Optional[TaskDetails] = None
+    completed: bool = False
+    _id: Optional[int] = None
 
 
 class FakeRepository(AbstractRepository):
@@ -10,6 +25,28 @@ class FakeRepository(AbstractRepository):
     """
 
     _tasks: List[Task]
+
+    """
+    A factory method that decouples us from using domain objects directly
+    """
+
+    @staticmethod
+    def for_tasks(tasks: List[TaskArgs]):
+        return FakeRepository(
+            [
+                Task(
+                    owner_id=t.owner_id,
+                    filesystem=FileSystem(t.filesystem),
+                    inputs=[TaskInput(i) for i in t.inputs],
+                    outputs=[TaskOutput(o) for o in t.outputs],
+                    created_at=t.created_at,
+                    details=t.details,
+                    completed=t.completed,
+                    _id=t._id,
+                )
+                for t in tasks
+            ]
+        )
 
     def __init__(self, tasks: Optional[List[Task]] = None):
         self._tasks = []
@@ -27,7 +64,8 @@ class FakeRepository(AbstractRepository):
         return [t for t in self._tasks if t.filesystem == filesystem]
 
     def save(self, task: Task) -> Task:
-        task = self._add_id(task)
+        if task._id is None:
+            task = self._add_id(task)
 
         self._tasks.append(task)
 

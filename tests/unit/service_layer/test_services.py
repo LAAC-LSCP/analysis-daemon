@@ -2,39 +2,35 @@ from pathlib import Path
 
 import pytest
 
-from src.domain.model import FileSystem, Task, TaskOutput
 from src.service_layer.services import TaskCollisionError, add_task
-from tests.unit.service_layer.fakes import FakeRepository, FakeSession
+from tests.unit.service_layer.fakes import FakeRepository, FakeSession, TaskArgs
 
 
 def test_adding_returns_task_id():
-    task_1 = Task(owner_id=1, filesystem=Path("/path1"))
-
     repo = FakeRepository()
 
-    result = add_task(task_1, repo, FakeSession())
+    result = add_task(
+        owner_id=1, filesystem=Path("/path1"), repo=repo, session=FakeSession()
+    )
 
     assert result == 1
 
 
 def test_collisions_on_same_file_system():
-    task_1 = Task(
-        owner_id=1,
-        filesystem=FileSystem("/filesystem_path"),
-        outputs=[TaskOutput("/output_1")],
+    repo = FakeRepository.for_tasks(
+        [
+            TaskArgs(
+                1,
+                Path("/filesystem_path"),
+                outputs=[Path("/output_1")],
+            ),
+            TaskArgs(
+                2,
+                Path("/filesystem_path"),
+                outputs=[Path("/output_2")],
+            ),
+        ]
     )
-    task_2 = Task(
-        owner_id=2,
-        filesystem=FileSystem("/filesystem_path"),
-        outputs=[TaskOutput("/output_2")],
-    )
-    task_3 = Task(
-        owner_id=3,
-        filesystem=FileSystem("/filesystem_path"),
-        outputs=[TaskOutput("/output_1")],
-    )
-
-    repo = FakeRepository([task_1, task_2])
 
     with pytest.raises(
         TaskCollisionError,
@@ -43,14 +39,19 @@ def test_collisions_on_same_file_system():
             "'/output_1'"
         ),
     ):
-        add_task(task_3, repo, FakeSession())
+        add_task(
+            owner_id=3,
+            filesystem=Path("/filesystem_path"),
+            outputs=[Path("/output_1")],
+            repo=repo,
+            session=FakeSession(),
+        )
 
 
 def test_commit():
-    task = Task(owner_id=1, filesystem=FileSystem("."))
-    repo = FakeRepository([task])
+    repo = FakeRepository([])
     session = FakeSession()
 
-    add_task(task, repo, session)
+    add_task(owner_id=1, filesystem=Path("."), repo=repo, session=session)
 
     assert session.committed

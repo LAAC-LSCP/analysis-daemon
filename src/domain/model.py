@@ -87,6 +87,11 @@ class Task:
 
 
 @dataclass
+class EmptyTaskDetails(TaskDetails):
+    pass
+
+
+@dataclass
 class ScriptTaskDetails(TaskDetails):
     script_path: Path
 

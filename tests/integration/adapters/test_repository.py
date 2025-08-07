@@ -2,12 +2,13 @@ from datetime import datetime
 from pathlib import Path
 
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 import src.domain.model as model
 from src.adapters.sqlalchemy_repository import SQLAlchemyRepository
 
 
-def test_repository_saves_task(session):
+def test_repository_saves_task(session: Session):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
@@ -27,7 +28,7 @@ def test_repository_saves_task(session):
     assert list(rows) == [(1, 5, str(dt), 0)]
 
 
-def test_repository_overwrite_task(session):
+def test_repository_overwrite_task(session: Session):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
@@ -52,7 +53,7 @@ def test_repository_overwrite_task(session):
     assert list(rows) == [(1, 1)]
 
 
-def test_repository_saves_multiple_tasks(session):
+def test_repository_saves_multiple_tasks(session: Session):
     """
     This test also tests that the `flush` call in the repo doesn't cancel the whole
     transaction
@@ -82,7 +83,7 @@ def test_repository_saves_multiple_tasks(session):
     assert list(rows) == [(1, "path1"), (2, "path2")]
 
 
-def test_repository_saves_task_details(session):
+def test_repository_saves_task_details(session: Session):
     repo = SQLAlchemyRepository(session)
     task = model.Task(
         owner_id=1,
@@ -100,7 +101,7 @@ def test_repository_saves_task_details(session):
     assert list(rows) == [(5, ".")]
 
 
-def test_repository_saves_filesystem(session):
+def test_repository_saves_filesystem(session: Session):
     repo = SQLAlchemyRepository(session)
     task = model.Task(
         owner_id=1,
@@ -115,7 +116,7 @@ def test_repository_saves_filesystem(session):
     assert list(rows) == [(1, "/my/path")]
 
 
-def test_repository_saves_inputs(session):
+def test_repository_saves_inputs(session: Session):
     repo = SQLAlchemyRepository(session)
     task = model.Task(
         owner_id=1,
@@ -131,7 +132,7 @@ def test_repository_saves_inputs(session):
     assert list(rows) == [(1, 1, "/input_1"), (2, 1, "/input_2")]
 
 
-def test_repository_saves_outputs(session):
+def test_repository_saves_outputs(session: Session):
     repo = SQLAlchemyRepository(session)
     task = model.Task(
         owner_id=1,
@@ -148,3 +149,18 @@ def test_repository_saves_outputs(session):
 
     rows = session.execute(text("SELECT id, task_id, rel_path FROM outputs"))
     assert list(rows) == [(1, 1, "/output_1"), (2, 1, "/output_2")]
+
+
+def test_repository_get_task(session: Session):
+    repo = SQLAlchemyRepository(session)
+    task = model.Task(
+        owner_id=1,
+        details=model.ScriptTaskDetails(Path(".")),
+        filesystem=model.FileSystem(Path("/my/path")),
+    )
+
+    repo.save(task)
+
+    saved_task = repo.get(task_id=1)
+    assert saved_task is not None
+    assert saved_task.details == model.ScriptTaskDetails(Path("."))

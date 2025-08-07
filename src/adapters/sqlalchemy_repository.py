@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from src.adapters.repository import AbstractRepository
 from src.domain.model import (
+    EmptyTaskDetails,
     FileSystem,
     ModelTaskDetails,
     ScriptTaskDetails,
@@ -23,20 +24,16 @@ class SQLAlchemyRepository(AbstractRepository):
         self._session = session
 
     def get(self, task_id: int) -> Optional[Task]:
-        task: Task = self._session.query(Task).filter_by(id=task_id).one()
+        task: Task = self._session.query(Task).filter_by(_id=task_id).one()
 
         if not task:
             return None
 
         model_details: ModelTaskDetails = (
-            self._session.query(ModelTaskDetails)
-            .filter_by(ModelTaskDetails._task_id == task_id)
-            .first()
+            self._session.query(ModelTaskDetails).filter_by(_task_id=task_id).first()
         )
         script_details: ScriptTaskDetails = (
-            self._session.query(ScriptTaskDetails)
-            .filter_by(ScriptTaskDetails._task_id == task_id)
-            .first()
+            self._session.query(ScriptTaskDetails).filter_by(_task_id=task_id).first()
         )
 
         if script_details is not None:
@@ -44,12 +41,12 @@ class SQLAlchemyRepository(AbstractRepository):
         elif model_details is not None:
             task.details = model_details
         else:
-            raise ValueError("No details found for this task")
+            task.details = EmptyTaskDetails()
 
         return task
 
     def get_by_owner(self, owner_id: int) -> List[Task]:
-        return self._session.query(Task).filter_by(Task.owner_id == owner_id)
+        return self._session.query(Task).filter_by(owner_id=owner_id)
 
     def get_by_filesystem(self, filesystem: FileSystem) -> List[Task]:
         if not filesystem._task_id:
@@ -58,7 +55,7 @@ class SQLAlchemyRepository(AbstractRepository):
         return (
             self._session.query(Task)
             .join(FileSystem)
-            .filter(FileSystem._task_id == filesystem._task_id)
+            .filter(_task_id=filesystem._task_id)
             .all()
         )
 

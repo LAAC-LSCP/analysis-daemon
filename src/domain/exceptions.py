@@ -1,12 +1,11 @@
+from pathlib import Path
 from typing import Set
-
-from src.domain.model import FileSystem, TaskOutput
 
 
 class TaskCollisionError(Exception):
     """Raised when a task would (potentially) conflict with a running task"""
 
-    def __init__(self, filesystem: FileSystem, conflicting_outputs: Set[TaskOutput]):
+    def __init__(self, filesystem: Path, conflicting_outputs: Set[Path]):
         self.filesystem = filesystem
         self.conflicting_outputs = conflicting_outputs
 
@@ -14,7 +13,7 @@ class TaskCollisionError(Exception):
 
         super().__init__(
             (
-                f"Task collision in filesystem '{filesystem.root_abs_path}' detected "
+                f"Task collision in filesystem '{str(filesystem)}' detected "
                 f"on outputs: {output_paths}"
             )
         )
