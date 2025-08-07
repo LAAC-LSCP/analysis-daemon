@@ -3,21 +3,25 @@ from pathlib import Path
 import pytest
 
 from src.service_layer.services import TaskCollisionError, add_task
-from tests.unit.service_layer.fakes import FakeRepository, FakeSession, TaskArgs
+from tests.integration.service_layer.fakes import FakeUoW
+from tests.unit.service_layer.fakes import FakeRepository, TaskArgs
 
 
 def test_adding_returns_task_id():
-    repo = FakeRepository()
+    uow = FakeUoW()
 
     result = add_task(
-        owner_id=1, filesystem=Path("/path1"), repo=repo, session=FakeSession()
+        owner_id=1,
+        filesystem=Path("/path1"),
+        uow=uow,
     )
 
     assert result == 1
 
 
 def test_collisions_on_same_file_system():
-    repo = FakeRepository.for_tasks(
+    uow = FakeUoW()
+    uow.tasks = FakeRepository.for_tasks(
         [
             TaskArgs(
                 1,
@@ -43,15 +47,13 @@ def test_collisions_on_same_file_system():
             owner_id=3,
             filesystem=Path("/filesystem_path"),
             outputs=[Path("/output_1")],
-            repo=repo,
-            session=FakeSession(),
+            uow=uow,
         )
 
 
 def test_commit():
-    repo = FakeRepository([])
-    session = FakeSession()
+    uow = FakeUoW()
 
-    add_task(owner_id=1, filesystem=Path("."), repo=repo, session=session)
+    add_task(owner_id=1, filesystem=Path("."), uow=uow)
 
-    assert session.committed
+    assert uow.committed

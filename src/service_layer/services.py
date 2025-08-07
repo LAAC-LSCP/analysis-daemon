@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from src.adapters.sqlalchemy_repository import SQLAlchemyRepository
 from src.domain.exceptions import TaskCollisionError
 from src.domain.model import FileSystem, Task, TaskInput, TaskOutput
+from src.service_layer.uow import AbstractUoW
 
 _active_tasks: Set[Task] = set()
 
@@ -13,8 +14,7 @@ _active_tasks: Set[Task] = set()
 def add_task(
     owner_id: int,
     filesystem: Path,
-    repo: SQLAlchemyRepository,
-    session: Session,
+    uow: AbstractUoW,
     inputs: Optional[List[Path]] = None,
     outputs: Optional[List[Path]] = None,
 ) -> int:
@@ -28,12 +28,17 @@ def add_task(
         outputs=[TaskOutput(o) for o in outputs],
     )
 
-    if conflicts := collisions(outputs, filesystem, repo):
-        raise TaskCollisionError(filesystem, conflicts)
+    with uow:
+        uow.tasks.save(task)
 
-    task = repo.save(task)
-    _active_tasks.add(task)
-    session.commit()
+        _active_tasks.add(
+            task
+        )  # TODO: we haven't properly coupled active tasks to the uow yet
+
+        uow.commit()
+
+    if conflicts := collisions(outputs, filesystem, uow):
+        raise TaskCollisionError(filesystem, conflicts)
 
     return cast(int, task._id)
 
@@ -61,7 +66,7 @@ def get_active_tasks() -> Set[int]:
 
 
 def collisions(
-    task_outputs: List[Path], filesystem_root: Path, repo: SQLAlchemyRepository
+    task_outputs: List[Path], filesystem_root: Path, uow: AbstractUoW
 ) -> Set[Path]:
     """
     Check for collisions
@@ -71,7 +76,7 @@ def collisions(
     - not yet completed
     - sharing some output with the output of the task at hand
     """
-    tasks: List[Task] = repo.get_by_filesystem(FileSystem(filesystem_root))
+    tasks: List[Task] = uow.tasks.get_by_filesystem(FileSystem(filesystem_root))
 
     if not tasks:
         return set()
