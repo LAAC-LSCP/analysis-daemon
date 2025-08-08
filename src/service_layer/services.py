@@ -44,7 +44,7 @@ def add_task(
 
 
 def mark_task_complete(
-    task_id: int, repo: SQLAlchemyRepository, session: Session
+    task_id: int, uow: AbstractUoW,
 ) -> None:
     task = next((t for t in _active_tasks if t._id == task_id), None)
 
@@ -54,11 +54,14 @@ def mark_task_complete(
     if task.completed:
         return
 
-    task.completed = True
+    with uow:
+        task.completed = True
 
-    repo.save(task)
-    _active_tasks.discard(task)
-    session.commit()
+        uow.tasks.save(task)
+
+        _active_tasks.discard(task) # TODO: need to couple uow with active tasks
+        
+        uow.commit()
 
 
 def get_active_tasks() -> Set[int]:
