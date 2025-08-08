@@ -1,6 +1,7 @@
 from pathlib import Path
-from typing import List, Optional, Set, cast
+from typing import List, Set
 
+from src.domain.events import MarkTaskAsCompleted, TaskCreated
 from src.domain.exceptions import TaskCollisionError
 from src.domain.model import FileSystem, Task, TaskInput, TaskOutput
 from src.service_layer.uow import AbstractUoW
@@ -9,20 +10,14 @@ _active_tasks: Set[Task] = set()
 
 
 def add_task(
-    owner_id: int,
-    filesystem: Path,
+    event: TaskCreated,
     uow: AbstractUoW,
-    inputs: Optional[List[Path]] = None,
-    outputs: Optional[List[Path]] = None,
-) -> int:
-    inputs = inputs or []
-    outputs = outputs or []
-
+) -> None:
     task: Task = Task(
-        owner_id=owner_id,
-        filesystem=FileSystem(filesystem),
-        inputs=[TaskInput(i) for i in inputs],
-        outputs=[TaskOutput(o) for o in outputs],
+        owner_id=event.owner_id,
+        filesystem=FileSystem(event.filesystem),
+        inputs=[TaskInput(i) for i in event.inputs],
+        outputs=[TaskOutput(o) for o in event.outputs],
     )
 
     with uow:
@@ -34,17 +29,15 @@ def add_task(
 
         uow.commit()
 
-    if conflicts := collisions(outputs, filesystem, uow):
-        raise TaskCollisionError(filesystem, conflicts)
-
-    return cast(int, task._id)
+    if collisions := _collisions(event.outputs, event.filesystem, uow):
+        raise TaskCollisionError(event.filesystem, collisions)
 
 
 def mark_task_complete(
-    task_id: int,
+    event: MarkTaskAsCompleted,
     uow: AbstractUoW,
 ) -> None:
-    task = next((t for t in _active_tasks if t._id == task_id), None)
+    task = next((t for t in _active_tasks if t._id == event.task_id), None)
 
     if not task:
         return
@@ -66,7 +59,7 @@ def get_active_tasks() -> Set[int]:
     return set(t._id for t in _active_tasks if t._id is not None)
 
 
-def collisions(
+def _collisions(
     task_outputs: List[Path], filesystem_root: Path, uow: AbstractUoW
 ) -> Set[Path]:
     """

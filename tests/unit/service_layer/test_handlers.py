@@ -2,21 +2,18 @@ from pathlib import Path
 
 import pytest
 
-from src.service_layer.handlers import TaskCollisionError, add_task
+import src.domain.events as events
+import src.service_layer.message_bus as message_bus
+from src.service_layer.handlers import TaskCollisionError
 from tests.integration.service_layer.fakes import FakeUoW
 from tests.unit.service_layer.fakes import FakeRepository, TaskArgs
 
 
 def test_adding_returns_task_id():
     uow = FakeUoW()
+    message_bus.handle(events.TaskCreated(owner_id=1, filesystem=Path("/path1")), uow)
 
-    result = add_task(
-        owner_id=1,
-        filesystem=Path("/path1"),
-        uow=uow,
-    )
-
-    assert result == 1
+    assert uow.tasks.get(task_id=1) is not None
 
 
 def test_collisions_on_same_file_system():
@@ -43,17 +40,19 @@ def test_collisions_on_same_file_system():
             "'/output_1'"
         ),
     ):
-        add_task(
-            owner_id=3,
-            filesystem=Path("/filesystem_path"),
-            outputs=[Path("/output_1")],
-            uow=uow,
+        message_bus.handle(
+            events.TaskCreated(
+                owner_id=3,
+                filesystem=Path("/filesystem_path"),
+                outputs=[Path("/output_1")],
+            ),
+            uow,
         )
 
 
 def test_commit():
     uow = FakeUoW()
 
-    add_task(owner_id=1, filesystem=Path("."), uow=uow)
+    message_bus.handle(events.TaskCreated(owner_id=1, filesystem=Path(".")), uow)
 
     assert uow.committed

@@ -1,7 +1,8 @@
 from abc import abstractmethod
+from typing import Generator
 
-import src.service_layer.message_bus as message_bus
 from src.adapters.repository import AbstractRepository
+from src.domain.events import Event
 
 
 class AbstractUoW:
@@ -9,13 +10,11 @@ class AbstractUoW:
 
     def commit(self) -> None:
         self._commit()
-        self.publish_events()
 
-    def publish_events(self) -> None:
+    def collect_new_events(self) -> Generator[Event]:
         for task in self.tasks.seen:
             while task.events:
-                event = task.events.pop(0)
-                message_bus.handle(event)
+                yield task.events.pop(0)
 
     def __enter__(self) -> "AbstractUoW":
         return self
