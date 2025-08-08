@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from src.service_layer.services import TaskCollisionError, add_task
+from src.service_layer.handlers import TaskCollisionError, add_task
 from tests.integration.service_layer.fakes import FakeUoW
 from tests.unit.service_layer.fakes import FakeRepository, TaskArgs
 
