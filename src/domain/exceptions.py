@@ -17,3 +17,10 @@ class TaskCollisionError(Exception):
                 f"on outputs: {output_paths}"
             )
         )
+
+
+class TaskHasNoIDError(Exception):
+    """Raised when a task operation requires an ID but the task has no ID assigned"""
+
+    def __init__(self, message: str = "Task has no ID assigned"):
+        super().__init__(message)

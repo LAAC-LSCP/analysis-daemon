@@ -31,7 +31,7 @@ class SQLAlchemyUoW(AbstractUoW):
         super().__exit__(*args)
         self.session.close()
 
-    def commit(self):
+    def _commit(self):
         self.session.commit()
 
     def rollback(self):

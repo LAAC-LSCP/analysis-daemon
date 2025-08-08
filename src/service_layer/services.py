@@ -1,9 +1,6 @@
 from pathlib import Path
 from typing import List, Optional, Set, cast
 
-from sqlalchemy.orm import Session
-
-from src.adapters.sqlalchemy_repository import SQLAlchemyRepository
 from src.domain.exceptions import TaskCollisionError
 from src.domain.model import FileSystem, Task, TaskInput, TaskOutput
 from src.service_layer.uow import AbstractUoW
@@ -44,7 +41,8 @@ def add_task(
 
 
 def mark_task_complete(
-    task_id: int, uow: AbstractUoW,
+    task_id: int,
+    uow: AbstractUoW,
 ) -> None:
     task = next((t for t in _active_tasks if t._id == task_id), None)
 
@@ -55,12 +53,12 @@ def mark_task_complete(
         return
 
     with uow:
-        task.completed = True
+        task.mark_completed()
 
         uow.tasks.save(task)
 
-        _active_tasks.discard(task) # TODO: need to couple uow with active tasks
-        
+        _active_tasks.discard(task)  # TODO: need to couple uow with active tasks
+
         uow.commit()
 
 

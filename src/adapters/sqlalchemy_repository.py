@@ -21,9 +21,10 @@ class SQLAlchemyRepository(AbstractRepository):
     _session: Session
 
     def __init__(self, session: Session):
+        super().__init__()
         self._session = session
 
-    def get(self, task_id: int) -> Optional[Task]:
+    def _get(self, task_id: int) -> Optional[Task]:
         task: Task = self._session.query(Task).filter_by(_id=task_id).one()
 
         if not task:
@@ -43,12 +44,14 @@ class SQLAlchemyRepository(AbstractRepository):
         else:
             task.details = EmptyTaskDetails()
 
+        task.events = []
+
         return task
 
-    def get_by_owner(self, owner_id: int) -> List[Task]:
+    def _get_by_owner(self, owner_id: int) -> List[Task]:
         return self._session.query(Task).filter_by(owner_id=owner_id)
 
-    def get_by_filesystem(self, filesystem: FileSystem) -> List[Task]:
+    def _get_by_filesystem(self, filesystem: FileSystem) -> List[Task]:
         if not filesystem._task_id:
             return []
 
@@ -59,7 +62,7 @@ class SQLAlchemyRepository(AbstractRepository):
             .all()
         )
 
-    def save(self, task: Task) -> Task:
+    def _save(self, task: Task) -> Task:
         """
         Saves a task and automatically binds the `_id` parameter
         """

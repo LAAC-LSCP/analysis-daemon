@@ -5,6 +5,9 @@ from enum import StrEnum
 from pathlib import Path
 from typing import List, Optional
 
+from src.domain.events import Event, TaskCompleted, TaskFailed, TaskStarted
+from src.domain.exceptions import TaskHasNoIDError
+
 
 class ModelName(StrEnum):
     VTC = "vtc"
@@ -32,14 +35,22 @@ class TaskDetails(ABC):
 TaskProperty = TaskDetails
 
 
+class TaskStatus(StrEnum):
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
 class Task:
     owner_id: int
     created_at: datetime
-    completed: bool
     filesystem: "FileSystem"
     details: Optional[TaskDetails]
     inputs: List["TaskInput"]
     outputs: List["TaskOutput"]
+    status: TaskStatus
+    events: List[Event]
 
     _id: Optional[int]
 
@@ -51,7 +62,7 @@ class Task:
         outputs: Optional[List["TaskOutput"]] = None,
         created_at: Optional[datetime] = None,
         details: Optional[TaskDetails] = None,
-        completed: bool = False,
+        status: TaskStatus = TaskStatus.PENDING,
         _id: Optional[int] = None,
     ):
         self.inputs = inputs or []
@@ -61,9 +72,11 @@ class Task:
         self.owner_id = owner_id
         self.filesystem = filesystem
         self.details = details
-        self.completed = completed
+        self.status = status
 
         self._id = _id
+
+        self.events = []
 
     @property
     def task_type(self) -> str:
@@ -73,8 +86,60 @@ class Task:
             return TaskType.MODEL
         return TaskType.UNKNOWN
 
+    @property
+    def completed(self) -> bool:
+        return self.status == TaskStatus.COMPLETED
+
+    def start(self) -> None:
+        if self._id is None:
+            raise TaskHasNoIDError()
+
+        if self.status != TaskStatus.PENDING:
+            raise ValueError(
+                f"Cannot start task in {self.status} state"
+            )  # TODO: bit strong to raise an exception. Could raise event
+
+        self.status = TaskStatus.RUNNING
+        self.events.append(
+            TaskStarted(
+                task_id=self._id,
+                owner_id=self.owner_id,
+                filesystem=self.filesystem.root_abs_path,
+                started_at=datetime.now(),
+            )
+        )
+
     def mark_completed(self) -> None:
-        self.completed = True
+        # TODO: It's clear to me we have awkward temporal coupling coming from ids
+        # We should switch to UUID as is standard practice,
+        # and let the constructor generate ids for us if necessary. Besides,
+        # we have tricky issues with concurrency and id collisions to think about
+        # otherwise
+        if self._id is None:
+            raise TaskHasNoIDError()
+
+        self.status = TaskStatus.COMPLETED
+        self.events.append(
+            TaskCompleted(
+                task_id=self._id,
+                owner_id=self.owner_id,
+                completed_at=datetime.now(),
+                outputs=[o.rel_path for o in self.outputs],
+            )
+        )
+
+    def mark_failed(self, e: Exception) -> None:
+        if self._id is None:
+            raise TaskHasNoIDError()
+
+        self.status = TaskStatus.FAILED
+        self.events.append(
+            TaskFailed(
+                task_id=self._id,
+                error_message=f"Task with id {self._id} failed: {repr(e)}",
+                failed_at=datetime.now(),
+            )
+        )
 
     def __eq__(self, other):
         if not isinstance(other, Task):

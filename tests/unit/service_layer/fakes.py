@@ -41,7 +41,6 @@ class FakeRepository(AbstractRepository):
                     outputs=[TaskOutput(o) for o in t.outputs],
                     created_at=t.created_at,
                     details=t.details,
-                    completed=t.completed,
                     _id=t._id,
                 )
                 for t in tasks
@@ -49,21 +48,22 @@ class FakeRepository(AbstractRepository):
         )
 
     def __init__(self, tasks: Optional[List[Task]] = None):
+        super().__init__()
         self._tasks = []
 
         for task in tasks or []:
             self.save(task)
 
-    def get(self, task_id: int) -> Optional[Task]:
+    def _get(self, task_id: int) -> Optional[Task]:
         return next((t for t in self._tasks if t._id == task_id), None)
 
-    def get_by_owner(self, owner_id: int) -> List[Task]:
+    def _get_by_owner(self, owner_id: int) -> List[Task]:
         return [t for t in self._tasks if t.owner_id == owner_id]
 
-    def get_by_filesystem(self, filesystem: FileSystem) -> List[Task]:
+    def _get_by_filesystem(self, filesystem: FileSystem) -> List[Task]:
         return [t for t in self._tasks if t.filesystem == filesystem]
 
-    def save(self, task: Task) -> Task:
+    def _save(self, task: Task) -> Task:
         if task._id is None:
             task = self._add_id(task)
 
