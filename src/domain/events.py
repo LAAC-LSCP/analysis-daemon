@@ -9,18 +9,12 @@ class Event:
 
 
 @dataclass
-class TaskCreated(Event):
+class TaskQueued(Event):
     owner_id: int
     filesystem: Path
-    started_at: datetime = field(default_factory=datetime.now)
     inputs: List[Path] = field(default_factory=list)
     outputs: List[Path] = field(default_factory=list)
     task_id: Optional[int] = None
-
-
-@dataclass
-class MarkTaskAsCompleted(Event):
-    task_id: int
 
 
 @dataclass

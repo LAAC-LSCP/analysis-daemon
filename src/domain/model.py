@@ -5,7 +5,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import List, Optional
 
-from src.domain.events import Event, TaskCompleted, TaskFailed, TaskStarted
+from src.domain.events import Event, TaskCompleted, TaskFailed, TaskQueued, TaskStarted
 from src.domain.exceptions import TaskHasNoIDError
 
 
@@ -138,6 +138,18 @@ class Task:
                 task_id=self._id,
                 error_message=f"Task with id {self._id} failed: {repr(e)}",
                 failed_at=datetime.now(),
+            )
+        )
+
+    def mark_pending(self) -> None:
+        self.status = TaskStatus.PENDING
+        self.events.append(
+            TaskQueued(
+                owner_id=self.owner_id,
+                filesystem=self.filesystem.root_abs_path,
+                inputs=[i.rel_path for i in self.inputs],
+                outputs=[o.rel_path for o in self.outputs],
+                task_id=self._id,
             )
         )
 
