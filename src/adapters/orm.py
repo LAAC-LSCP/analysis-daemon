@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from sqlalchemy import (
-    Boolean,
     Column,
     DateTime,
     ForeignKey,
@@ -34,12 +33,27 @@ class PathType(TypeDecorator):
         return Path(value)
 
 
+class TaskStatusType(TypeDecorator):
+    impl = StringType(length=256)
+
+    def process_bind_param(self, value: model.TaskStatus, _):
+        return value.value
+
+    def process_result_value(self, value: str, _):
+        if value is None:
+            return None
+        try:
+            return model.TaskStatus(value)
+        except ValueError as e:
+            raise ValueError(f"Cannot parse '{value}' as TaskStatus") from e
+
+
 tasks = Table(
     "tasks",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("owner_id", Integer, nullable=False),
-    Column("completed", Boolean, nullable=False, default=False),
+    Column("task_status", TaskStatusType, nullable=False, default=False),
     Column("created_at", DateTime, nullable=False, default=func.now()),
 )
 
@@ -100,6 +114,7 @@ def start_mappers():
                 primaryjoin=(tasks.c.id == outputs.c.task_id),
                 uselist=True,
             ),
+            "status": tasks.c.task_status,
         },
     )
     mapper_registry.map_imperatively(
