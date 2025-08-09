@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from src.domain.model import FileSystem, Task
+from src.domain.model import FileSystem, Task, TaskStatus
 from src.service_layer.sqlalchemy_uow import SessionFactory, SQLAlchemyUoW
 
 
@@ -17,23 +17,23 @@ class CustomException(Exception):
 def _add_task(
     session: Session,
     owner_id: Optional[int] = None,
-    completed: Optional[bool] = None,
+    task_status: Optional[TaskStatus] = None,
     created_at: Optional[datetime] = None,
 ):
     owner_id = owner_id or 1
-    completed = completed or True
+    task_status = task_status or TaskStatus.PENDING
     created_at = created_at or datetime.now()
 
     session.execute(
         text(
             (
-                "INSERT INTO tasks (owner_id, completed, created_at)"
-                " VALUES (:owner_id, :completed, :created_at)"
+                "INSERT INTO tasks (owner_id, task_status, created_at)"
+                " VALUES (:owner_id, :task_status, :created_at)"
             )
         ),
         dict(
             owner_id=owner_id,
-            completed=completed,
+            task_status=task_status,
             created_at=created_at,
         ),
     )
@@ -72,7 +72,7 @@ def test_rolls_back_uncommitted_work_by_default(session_factory: SessionFactory)
 
     new_session = session_factory()
     rows = list(new_session.execute(text("SELECT * FROM tasks")))
-    assert rows == [(1, 1, 0, str(created_at))]
+    assert rows == [(1, 1, TaskStatus.PENDING, str(created_at))]
 
 
 def test_rolls_back_on_error(session_factory: SessionFactory):
