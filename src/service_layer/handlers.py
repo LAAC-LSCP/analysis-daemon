@@ -1,8 +1,7 @@
 from pathlib import Path
 from typing import List, Set
 
-from src.domain.commands import MarkTaskAsComplete
-from src.domain.events import TaskQueued
+from src.domain.commands import CreateTask, MarkTaskAsComplete
 from src.domain.exceptions import TaskCollisionError
 from src.domain.model import FileSystem, Task, TaskInput, TaskOutput
 from src.service_layer.uow import AbstractUoW
@@ -10,19 +9,19 @@ from src.service_layer.uow import AbstractUoW
 _active_tasks: Set[Task] = set()
 
 
-def add_task(
-    event: TaskQueued,
+async def add_task(
+    command: CreateTask,
     uow: AbstractUoW,
-) -> Task:
+) -> None:
     task: Task = Task(
-        owner_id=event.owner_id,
-        filesystem=FileSystem(event.filesystem),
-        inputs=[TaskInput(i) for i in event.inputs],
-        outputs=[TaskOutput(o) for o in event.outputs],
+        owner_id=command.owner_id,
+        filesystem=FileSystem(command.filesystem),
+        inputs=[TaskInput(i) for i in command.inputs],
+        outputs=[TaskOutput(o) for o in command.outputs],
     )
 
-    if collisions := _collisions(event.outputs, event.filesystem, uow):
-        raise TaskCollisionError(event.filesystem, collisions)
+    if collisions := _collisions(command.outputs, command.filesystem, uow):
+        raise TaskCollisionError(command.filesystem, collisions)
 
     with uow:
         task = uow.tasks.save(task)
@@ -34,10 +33,8 @@ def add_task(
 
         uow.commit()
 
-    return task
 
-
-def mark_task_complete(
+async def mark_task_complete(
     command: MarkTaskAsComplete,
     uow: AbstractUoW,
 ) -> None:

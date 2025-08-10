@@ -3,20 +3,24 @@ from pathlib import Path
 import pytest
 
 import src.domain.commands as commands
-import src.service_layer.message_bus as message_bus
+import src.service_layer.handlers as handlers
 from src.service_layer.handlers import TaskCollisionError
 from tests.integration.service_layer.fakes import FakeUoW
 from tests.unit.service_layer.fakes import FakeRepository, TaskArgs
 
 
-def test_adding_returns_task_id():
+@pytest.mark.asyncio
+async def test_adding_returns_task_id():
     uow = FakeUoW()
-    message_bus.handle(commands.CreateTask(owner_id=1, filesystem=Path("/path1")), uow)
+    await handlers.add_task(
+        commands.CreateTask(owner_id=1, filesystem=Path("/path1")), uow
+    )
 
     assert uow.tasks.get(task_id=1) is not None
 
 
-def test_collisions_on_same_file_system():
+@pytest.mark.asyncio
+async def test_collisions_on_same_file_system():
     uow = FakeUoW()
     uow.tasks = FakeRepository.for_tasks(
         [
@@ -40,7 +44,7 @@ def test_collisions_on_same_file_system():
             "'/output_1'"
         ),
     ):
-        message_bus.handle(
+        await handlers.add_task(
             commands.CreateTask(
                 owner_id=3,
                 filesystem=Path("/filesystem_path"),
@@ -50,9 +54,10 @@ def test_collisions_on_same_file_system():
         )
 
 
-def test_commit():
+@pytest.mark.asyncio
+async def test_commit():
     uow = FakeUoW()
 
-    message_bus.handle(commands.CreateTask(owner_id=1, filesystem=Path(".")), uow)
+    await handlers.add_task(commands.CreateTask(owner_id=1, filesystem=Path(".")), uow)
 
     assert uow.committed
