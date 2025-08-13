@@ -1,22 +1,26 @@
 import tomllib  # Python 3.11+
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
-from dataclasses import dataclass
 
-from pydantic import BaseModel, HttpUrl, Field, ValidationError
+from pydantic import BaseModel, Field, HttpUrl, ValidationError
+
 
 @dataclass
 class DatabaseConfig(BaseModel):
     url: str = Field(min_length=1)
+
 
 @dataclass
 class JobsConfig(BaseModel):
     handler: str = Field(min_length=1)
     partition: Optional[str] = None
 
+
 @dataclass
 class HTTPConfig(BaseModel):
     base_url: HttpUrl
+
 
 @dataclass
 class ConfigModel(BaseModel):

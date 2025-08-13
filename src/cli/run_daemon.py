@@ -1,15 +1,17 @@
-from src.bootstrap.bootstrap import bootstrap
-
 from pathlib import Path
+
 import click
+
+from src.bootstrap.bootstrap import bootstrap
 
 
 @click.command()
 @click.option(
-    "--config", "-c",
+    "--config",
+    "-c",
     type=click.Path(exists=True, dir_okay=False, path_type=str),
-    default='configuration.toml',
-    help="Path to a TOML config file (overrides default)."
+    default="configuration.toml",
+    help="Path to a TOML config file (overrides default).",
 )
 def run_daemon(config) -> None:
     service = bootstrap(Path(config))

@@ -1,6 +1,7 @@
 class Service:
     """
-    Main service object, runs the main loop of the program, stores configuration and interaction objects
+    Main service object, runs the main loop of the program, stores configuration
+    and interaction objects
     """
 
     def __init__(self, db_uow, http_client, config):
