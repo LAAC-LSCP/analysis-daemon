@@ -8,12 +8,12 @@ from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
 @dataclass
 class DatabaseConfig(BaseModel):
-    url: str = Field(min_length=1)
+    url = Field(min_length=1)
 
 
 @dataclass
 class JobsConfig(BaseModel):
-    handler: str = Field(min_length=1)
+    handler = Field(min_length=1)
     partition: Optional[str] = None
 
 
