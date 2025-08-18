@@ -67,6 +67,9 @@ pip install -e [path]
 
 Then your dependency updates with the changes made locally, and even debugging and IntelliSense will work.
 
+## Lint and Typecheck Locally
+Install `black`, `isort`, `autoflake`, `flake8`, `mypy`, system-wide with `pipx` or in your environment with `pip`. Go to the repository root and run `black .`, `isort .`, `autoflake .`, `flake8 .` and `mypy .` to lint/format/type-check.
+
 ## Commits and Semantic Versioning
 We bump our releases and update our changelog automatically, but this requires commits to follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) scheme. We use a combination of [release-please](https://github.com/googleapis/release-please) and [commitlint](https://commitlint.js.org/).
 
