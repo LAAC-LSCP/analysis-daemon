@@ -1,30 +1,9 @@
 import uuid
 from datetime import datetime
-from enum import StrEnum
 from pathlib import Path
-from typing import NewType, Optional
+from typing import Optional
 
-
-class TaskType(StrEnum):
-    SCRIPT = "script"
-    MODEL = "model"
-    UNKNOWN = "unknown"
-
-
-UUID = NewType("UUID", str)
-
-
-class TaskStatus(StrEnum):
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    UNKNOWN = "unknown"
-
-
-class Model(StrEnum):
-    VTC = "vtc"
-    UNKNOWN = "unknown"
+from src.shared.types import UUID, Model, TaskStatus
 
 
 class Task:

@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Optional
 
-from src.domain.model import UUID, Task
+from src.domain.model import Task
+from src.shared.types import UUID
 
 
 class AbstractRepository(ABC):
