@@ -42,6 +42,31 @@ def test_repository_saves_task(session: Session):
     ]
 
 
+def test_repository_overwrite_task(session: Session):
+    dt = datetime.now()
+    repo = SQLAlchemyRepository(session)
+    task = model.Task(
+        owner_id=1,
+        filesystem=Path("."),
+        created_at=dt,
+        status=model.TaskStatus.RUNNING,
+        _id=model.UUID("abc"),
+    )
+
+    repo.save(task)
+    session.commit()
+
+    assert task._id == "abc"
+
+    task.mark_completed()
+
+    repo.save(task)
+    session.commit()
+
+    rows = session.execute(text("SELECT id, task_status FROM tasks"))
+    assert list(rows) == [("abc", "completed")]
+
+
 def test_repository_mark_task_completed(session: Session):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
