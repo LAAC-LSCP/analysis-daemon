@@ -35,6 +35,22 @@ class Task:
         self.owner_id = owner_id
         self.filesystem = filesystem
 
+    @property
+    def completed(self) -> bool:
+        return self.status == TaskStatus.COMPLETED
+
+    @property
+    def running(self) -> bool:
+        return self.status == TaskStatus.RUNNING
+
+    @property
+    def failed(self) -> bool:
+        return self.status == TaskStatus.FAILED
+
+    @property
+    def pending(self) -> bool:
+        return self.status == TaskStatus.PENDING
+
     def mark_completed(self) -> None:
         self.status = TaskStatus.COMPLETED
 
