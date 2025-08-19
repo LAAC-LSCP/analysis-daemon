@@ -1,18 +1,15 @@
 from pathlib import Path
 from typing import Optional
 
-from sqlalchemy.orm import Session
-
-from src.adapters.repository import AbstractRepository
 from src.domain.model import Task
+from src.service_layer.uow import AbstractUoW
 from src.shared.types import UUID, Model
 
 
 def add_task(
     owner_id: int,
     filesystem: Path,
-    repo: AbstractRepository,
-    session: Session,
+    uow: AbstractUoW,
     script_path: Optional[Path] = None,
     model: Optional[Model] = None,
 ) -> UUID:
@@ -20,31 +17,37 @@ def add_task(
         owner_id=owner_id, filesystem=filesystem, model=model, script_path=script_path
     )
 
-    task = repo.save(task)
-    session.commit()
+    with uow:
+        uow.tasks.save(task)
+
+        uow.commit()
 
     return task._id
 
 
 def mark_task_complete(
-    task_id: UUID, repo: AbstractRepository, session: Session
+    task_id: UUID,
+    uow: AbstractUoW,
 ) -> None:
-    task = repo.get(task_id)
+    with uow:
+        task = uow.tasks.get(task_id)
 
-    if not task:
-        return
+        if not task:
+            return
 
-    if task.completed:
-        return
+        if task.completed:
+            return
 
-    repo.save(task)
-    session.commit()
+        uow.tasks.save(task)
+
+        uow.commit()
 
 
 def mark_task_running(
-    task_id: UUID, repo: AbstractRepository, session: Session
+    task_id: UUID,
+    uow: AbstractUoW,
 ) -> None:
-    task = repo.get(task_id)
+    task = uow.tasks.get(task_id)
 
     if not task:
         return
@@ -52,5 +55,6 @@ def mark_task_running(
     if task.running:
         return
 
-    repo.save(task)
-    session.commit()
+    uow.tasks.save(task)
+
+    uow.commit()
