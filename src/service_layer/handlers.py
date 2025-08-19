@@ -1,6 +1,14 @@
-from src.domain.events import TaskCompleted, TaskCreated, TaskStarted
+from src.domain.events import TaskCompleted, TaskCreated, TaskFailed, TaskStarted
 from src.domain.model import Task
 from src.service_layer.publishing_uow import PublishingUoW
+
+
+def handle_start_task(_: TaskStarted, __: PublishingUoW) -> None:
+    raise NotImplementedError
+
+
+def handle_failed_task(_: TaskFailed, __: PublishingUoW) -> None:
+    raise NotImplementedError
 
 
 def add_task(
