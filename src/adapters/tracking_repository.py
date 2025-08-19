@@ -1,0 +1,51 @@
+from pathlib import Path
+from typing import Generic, List, Optional, Set
+
+from src.adapters.repository import AbstractRepository
+from src.domain.model import Task
+from src.service_layer import RepoType
+from src.shared.types import UUID
+
+
+class TrackingRepository(AbstractRepository, Generic[RepoType]):
+    """
+    Decorator that adds tracking to a repository
+    """
+
+    seen: Set[Task]
+    _repository: RepoType
+
+    def __init__(self, repository: RepoType):
+        self.seen = set()
+        self._repository = repository
+
+    def get(self, task_id: UUID) -> Optional[Task]:
+        task = self._repository.get(task_id)
+
+        if task:
+            self.seen.add(task)
+
+        return task
+
+    def get_by_owner(self, owner_id: UUID) -> List[Task]:
+        tasks = self._repository.get_by_owner(owner_id)
+
+        if tasks:
+            self.seen.update(tasks)
+
+        return tasks
+
+    def get_by_filesystem(self, filesystem_path: Path) -> List[Task]:
+        tasks = self._repository.get_by_filesystem(filesystem_path)
+
+        if tasks:
+            self.seen.update(tasks)
+
+        return tasks
+
+    def save(self, task: Task) -> Task:
+        task = self._repository.save(task)
+
+        self.seen.add(task)
+
+        return task

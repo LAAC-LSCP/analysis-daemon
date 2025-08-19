@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
+from src.domain.events import Event, TaskCompleted, TaskFailed, TaskStarted
 from src.shared.types import UUID, Model, TaskStatus
 
 
@@ -13,6 +14,7 @@ class Task:
     status: TaskStatus
     script_path: Optional[Path]
     model: Optional[Model]
+    events: List[Event]
 
     _id: UUID
 
@@ -35,6 +37,8 @@ class Task:
         self.owner_id = owner_id
         self.filesystem = filesystem
 
+        self.events = []
+
     @property
     def completed(self) -> bool:
         return self.status == TaskStatus.COMPLETED
@@ -51,20 +55,51 @@ class Task:
     def pending(self) -> bool:
         return self.status == TaskStatus.PENDING
 
-    def mark_completed(self) -> None:
-        self.status = TaskStatus.COMPLETED
-
-    def mark_running(self) -> None:
-        self.status = TaskStatus.RUNNING
-
-    def mark_failed(self, e: Exception) -> None:
-        self.status = TaskStatus.FAILED
-
-    def get_full_script_path(self) -> Path | None:
+    @property
+    def full_script_path(self) -> Path | None:
         if self.script_path is None:
             return None
 
         return self.filesystem / self.script_path
+
+    def mark_completed(self) -> None:
+        self.status = TaskStatus.COMPLETED
+
+        self.events.append(
+            TaskCompleted(
+                task_id=self._id,
+                owner_id=self.owner_id,
+                completed_at=datetime.now(),
+            )
+        )
+
+    def mark_failed(self, e: Exception) -> None:
+        self.status = TaskStatus.FAILED
+
+        self.events.append(
+            TaskFailed(
+                task_id=self._id,
+                error_message=f"Task with id {self._id} failed: {repr(e)}",
+                failed_at=datetime.now(),
+            )
+        )
+
+    def run(self) -> None:
+        if self.status != TaskStatus.PENDING:
+            raise ValueError(
+                f"Cannot start task in {self.status} state"
+            )  # TODO: bit strong to raise an exception. Could raise event later
+
+        self.status = TaskStatus.RUNNING
+
+        self.events.append(
+            TaskStarted(
+                task_id=self._id,
+                owner_id=self.owner_id,
+                filesystem=self.filesystem,
+                started_at=datetime.now(),
+            )
+        )
 
     def __eq__(self, other):
         if not isinstance(other, Task):
