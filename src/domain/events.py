@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 
-from src.shared.types import UUID
+from src.shared.types import UUID, Model
 
 
 class Event:
@@ -10,22 +9,25 @@ class Event:
 
 
 @dataclass
-class TaskStarted(Event):
+class TaskCreated(Event):
     task_id: UUID
     owner_id: int
     filesystem: Path
-    started_at: datetime
+    script_path: Path
+    model: Model
+
+
+@dataclass
+class TaskStarted(Event):
+    task_id: UUID
 
 
 @dataclass
 class TaskCompleted(Event):
     task_id: UUID
-    owner_id: int
-    completed_at: datetime
 
 
 @dataclass
 class TaskFailed(Event):
     task_id: UUID
     error_message: str
-    failed_at: datetime

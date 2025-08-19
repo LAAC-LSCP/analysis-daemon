@@ -1,12 +1,21 @@
+from typing import Optional
+
+from src.adapters.tracking_repository import TrackingRepository
 from src.service_layer.uow import AbstractUoW
 from tests.unit.service_layer.fakes import FakeRepository
 
 
 class FakeUoW(AbstractUoW):
     committed: bool
+    _tracking: bool
 
-    def __init__(self):
+    def __init__(self, tracking: Optional[bool] = None):
+        self._tracking = tracking or True
         self.tasks = FakeRepository()
+
+        if self._tracking:
+            self.tasks = TrackingRepository(self.tasks)
+
         self.committed = False
 
     def commit(self):

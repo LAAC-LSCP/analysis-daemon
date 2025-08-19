@@ -1,5 +1,7 @@
+from typing import Generator
+
 from src.adapters.tracking_repository import TrackingRepository
-from src.service_layer import message_bus
+from src.domain.events import Event
 from src.service_layer.uow import AbstractUoW
 
 
@@ -18,7 +20,7 @@ class PublishingUoW(AbstractUoW[TrackingRepository]):
     def tasks(self, value: TrackingRepository) -> None:
         self._uow.tasks = value
 
-    def __init__(self, uow: AbstractUoW):
+    def __init__(self, uow: AbstractUoW[TrackingRepository]):
         self._uow = uow
 
     def __enter__(self):
@@ -32,10 +34,8 @@ class PublishingUoW(AbstractUoW[TrackingRepository]):
 
     def commit(self) -> None:
         self._uow.commit()
-        self.publish_events()
 
-    def publish_events(self) -> None:
+    def collect_new_events(self) -> Generator[Event]:
         for task in self._uow.tasks.seen:
             while task.events:
-                event = task.events.pop(0)
-                message_bus.handle(event)
+                yield task.events.pop(0)

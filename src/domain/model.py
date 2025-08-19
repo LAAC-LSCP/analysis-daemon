@@ -68,8 +68,6 @@ class Task:
         self.events.append(
             TaskCompleted(
                 task_id=self._id,
-                owner_id=self.owner_id,
-                completed_at=datetime.now(),
             )
         )
 
@@ -80,7 +78,6 @@ class Task:
             TaskFailed(
                 task_id=self._id,
                 error_message=f"Task with id {self._id} failed: {repr(e)}",
-                failed_at=datetime.now(),
             )
         )
 
@@ -95,9 +92,6 @@ class Task:
         self.events.append(
             TaskStarted(
                 task_id=self._id,
-                owner_id=self.owner_id,
-                filesystem=self.filesystem,
-                started_at=datetime.now(),
             )
         )
 

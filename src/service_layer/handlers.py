@@ -1,20 +1,18 @@
-from pathlib import Path
-from typing import Optional
-
+from src.domain.events import TaskCompleted, TaskCreated, TaskStarted
 from src.domain.model import Task
-from src.service_layer.uow import AbstractUoW
-from src.shared.types import UUID, Model
+from src.service_layer.publishing_uow import PublishingUoW
 
 
 def add_task(
-    owner_id: int,
-    filesystem: Path,
-    uow: AbstractUoW,
-    script_path: Optional[Path] = None,
-    model: Optional[Model] = None,
-) -> UUID:
+    event: TaskCreated,
+    uow: PublishingUoW,
+) -> None:
     task = Task(
-        owner_id=owner_id, filesystem=filesystem, model=model, script_path=script_path
+        _id=event.task_id,
+        owner_id=event.owner_id,
+        filesystem=event.filesystem,
+        model=event.model,
+        script_path=event.script_path,
     )
 
     with uow:
@@ -22,15 +20,13 @@ def add_task(
 
         uow.commit()
 
-    return task._id
-
 
 def mark_task_complete(
-    task_id: UUID,
-    uow: AbstractUoW,
+    event: TaskCompleted,
+    uow: PublishingUoW,
 ) -> None:
     with uow:
-        task = uow.tasks.get(task_id)
+        task = uow.tasks.get(event.task_id)
 
         if not task:
             return
@@ -44,10 +40,10 @@ def mark_task_complete(
 
 
 def mark_task_running(
-    task_id: UUID,
-    uow: AbstractUoW,
+    event: TaskStarted,
+    uow: PublishingUoW,
 ) -> None:
-    task = uow.tasks.get(task_id)
+    task = uow.tasks.get(event.task_id)
 
     if not task:
         return

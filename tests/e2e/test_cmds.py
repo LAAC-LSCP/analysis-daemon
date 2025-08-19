@@ -8,7 +8,9 @@ import pytest
 
 def test_package_installation():
     result = subprocess.run(
-        ["pip", "show", "analysis-daemon"], capture_output=True, text=True
+        ["pip", "show", "analysis-daemon", "--no-cache-dir"],
+        capture_output=True,
+        text=True,
     )
 
     assert result.returncode == 0
