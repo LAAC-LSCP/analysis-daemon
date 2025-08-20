@@ -6,3 +6,6 @@ __pycache__/
 
 # --- Build --- #
 dist/
+
+# -- Database ##
+.db
