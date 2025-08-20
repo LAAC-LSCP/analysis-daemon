@@ -1,30 +1,9 @@
 import uuid
 from datetime import datetime
-from enum import StrEnum
 from pathlib import Path
-from typing import NewType, Optional
+from typing import Optional
 
-
-class TaskType(StrEnum):
-    SCRIPT = "script"
-    MODEL = "model"
-    UNKNOWN = "unknown"
-
-
-UUID = NewType("UUID", str)
-
-
-class TaskStatus(StrEnum):
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    UNKNOWN = "unknown"
-
-
-class Model(StrEnum):
-    VTC = "vtc"
-    UNKNOWN = "unknown"
+from src.shared.types import UUID, Model, TaskStatus
 
 
 class Task:
@@ -55,6 +34,22 @@ class Task:
 
         self.owner_id = owner_id
         self.filesystem = filesystem
+
+    @property
+    def completed(self) -> bool:
+        return self.status == TaskStatus.COMPLETED
+
+    @property
+    def running(self) -> bool:
+        return self.status == TaskStatus.RUNNING
+
+    @property
+    def failed(self) -> bool:
+        return self.status == TaskStatus.FAILED
+
+    @property
+    def pending(self) -> bool:
+        return self.status == TaskStatus.PENDING
 
     def mark_completed(self) -> None:
         self.status = TaskStatus.COMPLETED
