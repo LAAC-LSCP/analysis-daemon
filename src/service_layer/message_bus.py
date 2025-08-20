@@ -1,11 +1,8 @@
 from typing import Any, Callable, List, Type
 
 from src.domain import commands, events
-from src.domain.commands import Command
-from src.service_layer import handlers
+from src.service_layer import Message, handlers
 from src.service_layer.publishing_uow import PublishingUoW
-
-type Message = events.Event | Command
 
 
 def handle(message: Message, uow: PublishingUoW):

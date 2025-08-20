@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
+from src.domain.commands import Command
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
 from src.shared.types import UUID, Model, TaskStatus
 
@@ -15,6 +16,7 @@ class Task:
     script_path: Optional[Path]
     model: Optional[Model]
     events: List[Event]
+    commands: List[Command]
 
     _id: UUID
 
@@ -38,6 +40,7 @@ class Task:
         self.filesystem = filesystem
 
         self.events = []
+        self.commands = []
 
     @property
     def completed(self) -> bool:

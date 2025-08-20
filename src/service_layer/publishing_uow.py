@@ -1,6 +1,7 @@
 from typing import Generator
 
 from src.adapters.tracking_repository import TrackingRepository
+from src.domain.commands import Command
 from src.domain.events import Event
 from src.service_layer.uow import AbstractUoW
 
@@ -39,3 +40,8 @@ class PublishingUoW(AbstractUoW[TrackingRepository]):
         for task in self._uow.tasks.seen:
             while task.events:
                 yield task.events.pop(0)
+
+    def collect_new_commands(self) -> Generator[Command]:
+        for task in self._uow.tasks.seen:
+            while task.commands:
+                yield task.commands.pop(0)
