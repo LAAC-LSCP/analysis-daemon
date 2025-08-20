@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
-from src.domain.events import Event, TaskCompleted, TaskFailed, TaskStarted
+from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
 from src.shared.types import UUID, Model, TaskStatus
 
 
@@ -67,6 +67,14 @@ class Task:
 
         self.events.append(
             TaskCompleted(
+                task_id=self._id,
+            )
+        )
+
+    def queue_task(self) -> None:
+        self.status = TaskStatus.PENDING
+        self.events.append(
+            TaskCreated(
                 task_id=self._id,
             )
         )
