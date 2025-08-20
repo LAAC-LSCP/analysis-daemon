@@ -11,7 +11,7 @@ def handle_failed_task(_: TaskFailed, __: PublishingUoW) -> None:
     raise NotImplementedError
 
 
-def add_task(
+def handle_create_task(
     event: TaskCreated,
     uow: PublishingUoW,
 ) -> None:
@@ -29,7 +29,7 @@ def add_task(
         uow.commit()
 
 
-def mark_task_complete(
+def handle_complete_task(
     event: TaskCompleted,
     uow: PublishingUoW,
 ) -> None:
@@ -47,7 +47,7 @@ def mark_task_complete(
         uow.commit()
 
 
-def mark_task_running(
+def handle_run_task(
     event: TaskStarted,
     uow: PublishingUoW,
 ) -> None:
