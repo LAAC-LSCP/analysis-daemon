@@ -10,9 +10,7 @@ from src.service_layer.uow import AbstractUoW
 type SessionFactory = Callable[[], Session]
 
 
-DEFAULT_SESSION_FACTORY: SessionFactory = sessionmaker(
-    bind=create_engine("sqlite:///database.db")
-)
+DEFAULT_DATABASE_URL: str = "sqlite:///database.db"
 
 
 class SQLAlchemyUoW(
@@ -22,12 +20,18 @@ class SQLAlchemyUoW(
     session: Session
     _tracking: bool
 
+    @staticmethod
+    def get_session_factory(db_url: str) -> SessionFactory:
+        return sessionmaker(bind=create_engine(db_url))
+
     def __init__(
         self,
-        session_factory: SessionFactory = DEFAULT_SESSION_FACTORY,
+        session_factory: Optional[SessionFactory] = None,
         tracking: Optional[bool] = None,
     ):
-        self.session_factory = session_factory
+        self.session_factory = session_factory or self.get_session_factory(
+            DEFAULT_DATABASE_URL
+        )
         self._tracking = tracking or True
 
     def __enter__(self) -> "SQLAlchemyUoW":
