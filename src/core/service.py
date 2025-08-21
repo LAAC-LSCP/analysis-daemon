@@ -1,5 +1,6 @@
 import time
 
+
 class Service:
     """
     Main service object, runs the main loop of the program, stores configuration
@@ -17,5 +18,4 @@ class Service:
     def main_loop(self):
         while True:
             self._one_loop()
-            time.sleep(2) # time.sleep(self.config.wait_time)
-
+            time.sleep(2)  # time.sleep(self.config.wait_time)
