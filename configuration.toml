@@ -1,0 +1,9 @@
+[database]
+url = "sqlite:///database.db"
+
+[http]
+base_url = "https://localhost"
+
+[jobs]
+handler = "slurm"
+partition = "echolalia"

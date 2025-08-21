@@ -9,3 +9,6 @@ dist/
 
 # -- Database ##
 .db
+
+# -- configuration files for specific servers -- #
+prod.toml
