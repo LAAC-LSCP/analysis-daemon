@@ -1,6 +1,6 @@
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Any, Generic, List, Optional, TypeVar
+from typing import Any, Generic, List, Optional, Set, TypeVar
 
 from src.service_layer import Message
 from src.service_layer.publishing_uow import PublishingUoW
@@ -9,6 +9,7 @@ MessageType = TypeVar("MessageType", bound=Message)
 
 
 class TaskQueue(ABC, Generic[MessageType]):
+    queued_messages: Set[MessageType]  # Let us track inside the queue without pop
     _queue: asyncio.Queue[MessageType]
     _uow: PublishingUoW
     _results: List[Any]
@@ -19,6 +20,7 @@ class TaskQueue(ABC, Generic[MessageType]):
         uow: PublishingUoW,
     ):
         self._queue = asyncio.Queue()
+        self.queued_messages = set()
 
         self._uow = uow
         self._results = []
@@ -29,17 +31,15 @@ class TaskQueue(ABC, Generic[MessageType]):
 
     async def put(self, message: MessageType) -> None:
         await self._queue.put(message)
-
-    async def process_messages(self) -> None:
-        while not self._shutdown:
-            await self._process_message()
+        self.queued_messages.add(message)
 
     async def process_messages_until_empty(self) -> None:
         while not self._queue.empty():
-            await self._process_message()
+            message = await self._process_message()
+            self.queued_messages.remove(message)
 
     @abstractmethod
-    async def _process_message(self) -> None:
+    async def _process_message(self) -> MessageType:
         raise NotImplementedError
 
     @abstractmethod

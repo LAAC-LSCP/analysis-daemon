@@ -16,6 +16,24 @@ class CreateTask(Command):
     script_path: Path
     model: Model
 
+    def __eq__(self, other):
+        if not isinstance(other, CreateTask):
+            return NotImplemented
+        return (
+            self.owner_id,
+            self.filesystem,
+            self.script_path,
+            self.model,
+        ) == (
+            other.owner_id,
+            other.filesystem,
+            other.script_path,
+            other.model,
+        )
+
+    def __hash__(self):
+        return hash((self.owner_id, self.filesystem, self.script_path, self.model))
+
 
 @dataclass
 class RunTask(Command):
