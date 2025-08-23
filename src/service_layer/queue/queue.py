@@ -2,7 +2,7 @@ import asyncio
 from abc import ABC, abstractmethod
 from typing import Any, Generic, List, Optional, TypeVar
 
-from src.service_layer.message_bus import Message
+from src.service_layer import Message
 from src.service_layer.publishing_uow import PublishingUoW
 
 MessageType = TypeVar("MessageType", bound=Message)
