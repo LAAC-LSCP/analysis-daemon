@@ -11,7 +11,7 @@ class Command:
 @dataclass
 class CreateTask(Command):
     task_id: UUID
-    owner_id: int
+    owner_id: UUID
     filesystem: Path
     script_path: Path
     model: Model

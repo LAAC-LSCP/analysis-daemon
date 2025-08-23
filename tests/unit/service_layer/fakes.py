@@ -13,7 +13,7 @@ from src.shared.types import UUID, Model, TaskStatus
 
 @dataclass
 class TaskArgs:
-    owner_id: int
+    owner_id: UUID
     filesystem: Path
     created_at: datetime = field(default_factory=datetime.now)
     status: str = TaskStatus.PENDING

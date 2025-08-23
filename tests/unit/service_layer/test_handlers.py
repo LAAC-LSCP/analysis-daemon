@@ -12,7 +12,7 @@ def test_adding_returns_task_id():
     message_bus.handle(
         commands.CreateTask(
             task_id=UUID("abc"),
-            owner_id=1,
+            owner_id=UUID("owner"),
             filesystem=Path("/path1"),
             script_path=Path("/script.sh"),
             model=Model.VTC,
@@ -29,7 +29,7 @@ def test_commit():
     message_bus.handle(
         commands.CreateTask(
             task_id=UUID("abc"),
-            owner_id=1,
+            owner_id=UUID("owner"),
             filesystem=Path("/path1"),
             script_path=Path("/script.sh"),
             model=Model.VTC,

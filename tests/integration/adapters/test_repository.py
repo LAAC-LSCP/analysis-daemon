@@ -6,19 +6,20 @@ from sqlalchemy.orm import Session
 
 import src.domain.model as model
 from src.adapters.sqlalchemy_repository import SQLAlchemyRepository
+from src.shared.types import UUID
 
 
 def test_repository_saves_task(session: Session):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
-        owner_id=5,
+        owner_id=UUID("owner"),
         filesystem=Path("."),
         created_at=dt,
         status=model.TaskStatus.PENDING,
         model=model.Model.VTC,
         script_path=Path("/test.sh"),
-        _id=model.UUID("abc"),
+        _id=UUID("abc"),
     )
 
     repo.save(task)
@@ -33,7 +34,7 @@ def test_repository_saves_task(session: Session):
     assert list(rows) == [
         (
             "abc",
-            5,
+            "owner",
             model.TaskStatus.PENDING.value,
             str(dt),
             "/test.sh",
@@ -46,11 +47,11 @@ def test_repository_overwrite_task(session: Session):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
-        owner_id=1,
+        owner_id=UUID("owner"),
         filesystem=Path("."),
         created_at=dt,
         status=model.TaskStatus.RUNNING,
-        _id=model.UUID("abc"),
+        _id=UUID("abc"),
     )
 
     repo.save(task)
@@ -71,10 +72,10 @@ def test_repository_mark_task_completed(session: Session):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
-        owner_id=1,
+        owner_id=UUID("owner"),
         created_at=dt,
         filesystem=Path("."),
-        _id=model.UUID("abc"),
+        _id=UUID("abc"),
     )
 
     repo.save(task)
@@ -95,14 +96,14 @@ def test_repository_saves_multiple_tasks(session: Session):
     repo = SQLAlchemyRepository(session)
 
     task_1 = model.Task(
-        owner_id=1,
+        owner_id=UUID("owner"),
         filesystem=Path("."),
-        _id=model.UUID("abc"),
+        _id=UUID("abc"),
     )
     task_2 = model.Task(
-        owner_id=1,
+        owner_id=UUID("owner"),
         filesystem=Path("."),
-        _id=model.UUID("def"),
+        _id=UUID("def"),
     )
 
     repo.save(task_1)
@@ -117,18 +118,18 @@ def test_repository_get_task(session: Session):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
-        owner_id=5,
+        owner_id=UUID("owner"),
         filesystem=Path("."),
         created_at=dt,
         status=model.TaskStatus.PENDING,
         model=model.Model.VTC,
         script_path=Path("/test.sh"),
-        _id=model.UUID("abc"),
+        _id=UUID("abc"),
     )
 
     repo.save(task)
     session.commit()
 
-    saved_task = repo.get(task_id=model.UUID("abc"))
+    saved_task = repo.get(task_id=UUID("abc"))
     assert saved_task is not None
     assert saved_task == task
