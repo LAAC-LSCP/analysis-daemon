@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from random import Random
-from typing import List, Optional
+from typing import List, Optional, Set
 
 from src.adapters.repository import AbstractRepository
 from src.domain.model import Task
@@ -67,6 +67,9 @@ class FakeRepository(AbstractRepository):
 
     def get_by_owner(self, owner_id: UUID) -> List[Task]:
         return [t for t in self._tasks if t.owner_id == owner_id]
+
+    def get_by_owners(self, owner_ids: Set[UUID]) -> List[Task]:
+        return [t for t in self._tasks if t.owner_id in owner_ids]
 
     def get_by_filesystem(self, filesystem: Path) -> List[Task]:
         return [t for t in self._tasks if t.filesystem == filesystem]

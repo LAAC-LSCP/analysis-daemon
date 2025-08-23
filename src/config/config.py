@@ -1,12 +1,40 @@
 import tomllib
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
-from pydantic import BaseModel, Field, HttpUrl, ValidationError
+from pydantic import (
+    BaseModel,
+    DirectoryPath,
+    Field,
+    HttpUrl,
+    ValidationError,
+    model_validator,
+)
 
 
 class DatabaseConfig(BaseModel):
     url: str = Field(min_length=1)
+
+
+class ScriptConfig(BaseModel):
+    script_name: str = Field(min_length=1)
+    script_path: Path
+
+
+class FileSystemConfig(BaseModel):
+    dataset_name: str = Field(min_length=1)
+    path: DirectoryPath
+    scripts: List[ScriptConfig]
+
+    @model_validator(mode="after")
+    def check_scripts_exist(self) -> "FileSystemConfig":
+        for script in self.scripts:
+            script_abs_path = self.path / script.script_path
+
+            if not script_abs_path.is_file():
+                raise ValidationError(f"File at {str(script_abs_path)} does not exist")
+
+        return self
 
 
 class JobsConfig(BaseModel):
@@ -22,6 +50,7 @@ class ConfigModel(BaseModel):
     database: DatabaseConfig
     jobs: JobsConfig
     http: HTTPConfig
+    filesystems: List[FileSystemConfig]
 
 
 def load_config(file_path: Path) -> ConfigModel:

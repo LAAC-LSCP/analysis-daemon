@@ -1,6 +1,8 @@
 from datetime import datetime
 from pathlib import Path
+from typing import Callable
 
+import pytest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -133,3 +135,57 @@ def test_repository_get_task(session: Session):
     saved_task = repo.get(task_id=UUID("abc"))
     assert saved_task is not None
     assert saved_task == task
+
+
+def test_repository_get_by_owner(
+    session: Session, simple_task_factory: Callable[[UUID, UUID], model.Task]
+):
+    repo = SQLAlchemyRepository(session)
+
+    task_1 = simple_task_factory(UUID("owner_1"), UUID("1"))
+    task_2 = simple_task_factory(UUID("owner_1"), UUID("2"))
+
+    repo.save(task_1)
+    repo.save(task_2)
+    session.commit()
+
+    saved_tasks = repo.get_by_owner(owner_id=UUID("owner_1"))
+    assert saved_tasks is not None
+    assert saved_tasks == [task_1, task_2]
+
+
+def test_repository_get_by_owners(
+    session: Session, simple_task_factory: Callable[[UUID, UUID], model.Task]
+):
+    repo = SQLAlchemyRepository(session)
+
+    task_1 = simple_task_factory(UUID("owner_1"), UUID("1"))
+    task_2 = simple_task_factory(UUID("owner_1"), UUID("2"))
+    task_3 = simple_task_factory(UUID("owner_2"), UUID("3"))
+    task_4 = simple_task_factory(UUID("owner_2"), UUID("4"))
+
+    repo.save(task_1)
+    repo.save(task_2)
+    repo.save(task_3)
+    repo.save(task_4)
+    session.commit()
+
+    saved_tasks = repo.get_by_owners(owner_ids={UUID("owner_1"), UUID("owner_2")})
+    assert saved_tasks is not None
+    assert saved_tasks == [task_1, task_2, task_3, task_4]
+
+
+@pytest.fixture
+def simple_task_factory() -> Callable[[UUID, UUID], model.Task]:
+    def factory(owner_id: UUID, _id: UUID) -> model.Task:
+        return model.Task(
+            owner_id=owner_id,
+            filesystem=Path("."),
+            created_at=datetime.now(),
+            status=model.TaskStatus.PENDING,
+            model=model.Model.VTC,
+            script_path=Path("/test.sh"),
+            _id=_id,
+        )
+
+    return factory
