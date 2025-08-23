@@ -6,4 +6,4 @@ from src.domain.events import Event
 
 type Message = Event | Command
 RepoType = TypeVar("RepoType", bound=AbstractRepository, default=AbstractRepository)
-CallbackType = TypeVar("CallbackType", bound=Message)
+CallbackType = TypeVar("CallbackType", bound=Message, covariant=True)
