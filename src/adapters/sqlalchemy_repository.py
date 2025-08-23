@@ -19,7 +19,9 @@ class SQLAlchemyRepository(AbstractRepository):
         self._session = session
 
     def get(self, task_id: UUID) -> Optional[Task]:
-        task: Task = self._session.query(Task).filter_by(_id=task_id).one()
+        task: Optional[Task] = (
+            self._session.query(Task).filter_by(_id=task_id).one_or_none()
+        )
 
         return task
 
