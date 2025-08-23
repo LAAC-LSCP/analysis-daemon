@@ -1,5 +1,9 @@
 import time
 
+from src.config.config import ConfigModel
+from src.core.http_client import HTTPClient
+from src.service_layer.publishing_uow import PublishingUoW
+
 
 class Service:
     """
@@ -7,8 +11,10 @@ class Service:
     stores configuration and interaction objects
     """
 
-    def __init__(self, db_uow, http_client, config):
-        self.db_uow = db_uow
+    def __init__(
+        self, uow: PublishingUoW, http_client: HTTPClient, config: ConfigModel
+    ):
+        self.uow = uow
         self.http_client = http_client
         self.config = config
 

@@ -2,7 +2,9 @@ import logging
 from pathlib import Path
 
 from src.config.config import load_config
+from src.core.http_client import HTTPClient
 from src.core.service import Service
+from src.service_layer.publishing_uow import PublishingUoW
 from src.service_layer.sqlalchemy_uow import SQLAlchemyUoW
 
 
@@ -13,17 +15,18 @@ def setup_logging():
 def bootstrap(config_file: Path):
     config = load_config(config_file)
 
-    sql_uow = SQLAlchemyUoW(SQLAlchemyUoW.get_session_factory(config.database.url))
+    sql_uow = PublishingUoW(
+        SQLAlchemyUoW(
+            session_factory=SQLAlchemyUoW.get_session_factory(config.database.url),
+        )
+    )
 
-    # TODO define a class for http server, instanciated at start up using config, then
-    # the object is used to make requests
-    # http_client = init_http_client(config.http.base_url)
-    http_client = None
+    http_client = HTTPClient(config.http.base_url)
 
     setup_logging()
 
     service = Service(
-        db_uow=sql_uow,
+        uow=sql_uow,
         http_client=http_client,
         config=config,
     )
