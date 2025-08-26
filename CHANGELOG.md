@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.3.0...v1.4.0) (2025-08-26)
+
+
+### Features
+
+* commands and events ([99d6eee](https://github.com/LAAC-LSCP/analysis-daemon/commit/99d6eeeaef99ea79fbedd0d05d6eb4b5cf99a44b))
+
 ## [1.3.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.2.0...v1.3.0) (2025-08-26)
 
 
