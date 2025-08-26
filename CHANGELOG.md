@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.4.0...v1.5.0) (2025-08-26)
+
+
+### Features
+
+* queue ([2549b79](https://github.com/LAAC-LSCP/analysis-daemon/commit/2549b79fc983b5fa13e7eec5fec10654ebf23d01))
+
 ## [1.4.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.3.0...v1.4.0) (2025-08-26)
 
 
