@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.2.0...v1.3.0) (2025-08-26)
+
+
+### Features
+
+* unit of work ([f4e244c](https://github.com/LAAC-LSCP/analysis-daemon/commit/f4e244ccd9c28fae793fc00dde01dab246cdc703))
+
 ## [1.2.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.1.0...v1.2.0) (2025-08-20)
 
 
