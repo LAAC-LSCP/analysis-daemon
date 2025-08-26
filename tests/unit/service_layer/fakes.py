@@ -82,10 +82,3 @@ class FakeRepository(AbstractRepository):
         task._id = UUID(str(uuid.UUID(int=self._rnd.getrandbits(128), version=4)))
 
         return task
-
-
-class FakeSession:
-    committed = False
-
-    def commit(self):
-        self.committed = True
