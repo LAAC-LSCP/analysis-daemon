@@ -1,12 +1,13 @@
 from abc import abstractmethod
+from typing import Generic
 
-from src.adapters.repository import AbstractRepository
+from src.service_layer import RepoType
 
 
-class AbstractUoW:
-    tasks: AbstractRepository
+class AbstractUoW(Generic[RepoType]):
+    tasks: RepoType
 
-    def __enter__(self) -> "AbstractUoW":
+    def __enter__(self) -> "AbstractUoW[RepoType]":
         return self
 
     def __exit__(self, *_):

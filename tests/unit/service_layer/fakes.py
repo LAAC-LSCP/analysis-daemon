@@ -72,7 +72,8 @@ class FakeRepository(AbstractRepository):
         return [t for t in self._tasks if t.filesystem == filesystem]
 
     def save(self, task: Task) -> Task:
-        task = self._add_id(task)
+        if not task._id:
+            task = self._add_id(task)
 
         self._tasks.append(task)
 
