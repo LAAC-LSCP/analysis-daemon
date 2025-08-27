@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.5.0...v1.6.0) (2025-08-27)
+
+
+### Features
+
+* full service mvp ([b29e6e1](https://github.com/LAAC-LSCP/analysis-daemon/commit/b29e6e172bec11e3530b80f43903c5aa6fced970))
+
 ## [1.5.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.4.0...v1.5.0) (2025-08-26)
 
 
