@@ -1,18 +1,21 @@
 from pathlib import Path
 
-import src.service_layer.message_bus as message_bus
+import pytest
+
 from src.domain import commands
+from src.service_layer.handlers import handle_create_task
 from src.service_layer.publishing_uow import PublishingUoW
 from src.shared.types import UUID, Model
 from tests.integration.service_layer.fakes import FakeUoW
 
 
-def test_adding_returns_task_id():
+@pytest.mark.asyncio
+async def test_adding_returns_task_id():
     uow = PublishingUoW(FakeUoW())
-    message_bus.handle(
+    await handle_create_task(
         commands.CreateTask(
             task_id=UUID("abc"),
-            owner_id=1,
+            owner_id=UUID("owner"),
             filesystem=Path("/path1"),
             script_path=Path("/script.sh"),
             model=Model.VTC,
@@ -23,13 +26,14 @@ def test_adding_returns_task_id():
     assert uow.tasks.get(task_id="abc") is not None
 
 
-def test_commit():
+@pytest.mark.asyncio
+async def test_commit():
     uow = PublishingUoW(FakeUoW())
 
-    message_bus.handle(
+    await handle_create_task(
         commands.CreateTask(
             task_id=UUID("abc"),
-            owner_id=1,
+            owner_id=UUID("owner"),
             filesystem=Path("/path1"),
             script_path=Path("/script.sh"),
             model=Model.VTC,

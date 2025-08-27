@@ -16,12 +16,13 @@ class EventQueue(TaskQueue[Event]):
         super().__init__(uow)
         self._handlers = handlers
 
-    async def _process_message(self) -> None:
-        message = await self._queue.get()
+    async def _process_message(self) -> Event:
+        event = await self._queue.get()
         try:
-            await self._handle(message)
+            await self._handle(event)
         finally:
             self._queue.task_done()
+            return event
 
     async def _handle(self, event: Event) -> None:
         for handler in self._handlers[type(event)]:

@@ -35,6 +35,14 @@ class TrackingRepository(AbstractRepository, Generic[RepoType]):
 
         return tasks
 
+    def get_by_owners(self, owner_ids: Set[UUID]) -> List[Task]:
+        tasks = self._repository.get_by_owners(owner_ids)
+
+        if tasks:
+            self.seen.update(tasks)
+
+        return tasks
+
     def get_by_filesystem(self, filesystem_path: Path) -> List[Task]:
         tasks = self._repository.get_by_filesystem(filesystem_path)
 

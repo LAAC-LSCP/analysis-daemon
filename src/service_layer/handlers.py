@@ -4,11 +4,11 @@ from src.domain.model import Task
 from src.service_layer.publishing_uow import PublishingUoW
 
 
-def handle_not_implemented(_: Event, __: PublishingUoW) -> None:
+async def handle_not_implemented(_: Event, __: PublishingUoW) -> None:
     raise NotImplementedError
 
 
-def handle_create_task(
+async def handle_create_task(
     command: CreateTask,
     uow: PublishingUoW,
 ) -> None:
@@ -26,7 +26,7 @@ def handle_create_task(
         uow.commit()
 
 
-def handle_complete_task(
+async def handle_complete_task(
     command: CompleteTask,
     uow: PublishingUoW,
 ) -> None:
@@ -44,7 +44,7 @@ def handle_complete_task(
         uow.commit()
 
 
-def handle_run_task(
+async def handle_run_task(
     command: RunTask,
     uow: PublishingUoW,
 ) -> None:

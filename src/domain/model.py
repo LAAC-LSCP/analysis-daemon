@@ -9,7 +9,7 @@ from src.shared.types import UUID, Model, TaskStatus
 
 
 class Task:
-    owner_id: int
+    owner_id: UUID
     created_at: datetime
     filesystem: Path
     status: TaskStatus
@@ -22,7 +22,7 @@ class Task:
 
     def __init__(
         self,
-        owner_id: int,
+        owner_id: UUID,
         filesystem: Path,
         created_at: Optional[datetime] = None,
         status: Optional[TaskStatus] = None,

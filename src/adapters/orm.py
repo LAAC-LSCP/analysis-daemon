@@ -4,7 +4,6 @@ from typing import Optional
 from sqlalchemy import (
     Column,
     DateTime,
-    Integer,
     MetaData,
     String,
     Table,
@@ -78,7 +77,7 @@ tasks = Table(
     "tasks",
     metadata,
     Column("id", String, primary_key=True),
-    Column("owner_id", Integer, nullable=False),
+    Column("owner_id", String, nullable=False),
     Column("task_status", String, nullable=False),
     Column("created_at", DateTime, nullable=False, default=func.now()),
     Column("filesystem_path", PathType, nullable=False),

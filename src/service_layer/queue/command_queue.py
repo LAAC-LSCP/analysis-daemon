@@ -16,13 +16,14 @@ class CommandQueue(TaskQueue[Command]):
         super().__init__(uow)
         self._handlers = handlers
 
-    async def _process_message(self) -> None:
-        message = await self._queue.get()
+    async def _process_message(self) -> Command:
+        command = await self._queue.get()
         try:
-            result = await self._handle(message)
+            result = await self._handle(command)
             self._results.append(result)
         finally:
             self._queue.task_done()
+            return command
 
     async def _handle(self, command: Command) -> Any:
         for handler in self._handlers[type(command)]:

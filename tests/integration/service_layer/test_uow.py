@@ -18,13 +18,13 @@ class CustomException(Exception):
 def _add_task(
     session: Session,
     task_id: Optional[UUID] = None,
-    owner_id: Optional[int] = None,
+    owner_id: Optional[UUID] = None,
     filesystem: Optional[Path] = None,
     task_status: Optional[TaskStatus] = None,
     created_at: Optional[datetime] = None,
 ):
     task_id = task_id or UUID("task-id")
-    owner_id = owner_id or 1
+    owner_id = owner_id or UUID("owner")
     filesystem = filesystem or Path(".")
     task_status = task_status or TaskStatus.PENDING
     created_at = created_at or datetime.now()
@@ -76,7 +76,7 @@ def test_uow_can_save(session_factory: SessionFactory):
     created_at = datetime.now()
     with uow:
         task = Task(
-            owner_id=1,
+            owner_id=UUID("owner"),
             filesystem=Path("/filesystem"),
             created_at=created_at,
             script_path=Path("script.sh"),
@@ -92,7 +92,7 @@ def test_uow_can_save(session_factory: SessionFactory):
     assert rows == [
         (
             "abc",
-            1,
+            "owner",
             TaskStatus.RUNNING.value,
             str(created_at),
             "/filesystem",
@@ -107,7 +107,7 @@ def test_uow_rolls_back_uncommitted_changes(session_factory: SessionFactory):
     created_at = datetime.now()
     with uow:
         task = Task(
-            owner_id=1,
+            owner_id=UUID("owner"),
             filesystem=Path("/filesystem"),
             created_at=created_at,
         )
