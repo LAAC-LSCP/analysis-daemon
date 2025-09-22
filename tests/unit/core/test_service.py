@@ -7,7 +7,7 @@ from src.core.response_types import Task
 from src.core.service import Service
 from src.domain import commands
 from src.service_layer.publishing_uow import PublishingUoW
-from src.shared.types import UUID, Model
+from src.shared.types import UUID, Model, TaskStatus
 from tests.integration.service_layer.fakes import FakeUoW
 from tests.unit.core.fake_handlers import FakeHandlers
 from tests.unit.core.fake_http_client import FakeHTTPClient
@@ -27,6 +27,8 @@ async def test_service_create_tasks_1_tick(config_model: ConfigModel):
                     model_name=Model.VTC,
                     owner_id=UUID("123"),
                     script_name="run-model",
+                    status=TaskStatus.PENDING,
+                    id=UUID("1"),
                 ),
                 Task(
                     dataset_name="loann-2025",
@@ -34,6 +36,8 @@ async def test_service_create_tasks_1_tick(config_model: ConfigModel):
                     model_name=Model.VTC,
                     owner_id=UUID("123"),
                     script_name="calculate-aclew",
+                    status=TaskStatus.PENDING,
+                    id=UUID("2"),
                 ),
             ]
         ]
@@ -76,6 +80,8 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                     model_name=Model.VTC,
                     owner_id=UUID("123"),
                     script_name="run-model",
+                    status=TaskStatus.PENDING,
+                    id=UUID("1"),
                 )
             ],
             [
@@ -85,6 +91,8 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                     model_name=Model.VTC,
                     owner_id=UUID("123"),
                     script_name="run-model",
+                    status=TaskStatus.PENDING,
+                    id=UUID("2"),
                 ),
                 Task(
                     dataset_name="loann-2025",
@@ -92,6 +100,8 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                     model_name=Model.VTC,
                     owner_id=UUID("123"),
                     script_name="calculate-aclew",
+                    status=TaskStatus.PENDING,
+                    id=UUID("3"),
                 ),
             ],
         ]

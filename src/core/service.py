@@ -32,7 +32,19 @@ from src.shared.types import UUID
 class Service:
     """
     Main service object, runs the main loop of the program, stores configuration
-    and interaction objects
+    and interaction objects. Only one instance is meant to exist for the whole
+    application and this instance acts as a composition root
+
+    The program works by every so often querying Echolalia for new tasks
+    Then doing some post-processing on the received tasks to avoid duplication
+    And loading the tasks on the associated task queues
+
+    TODO: consider how the application "ticks", that is, for now a tick loads on the
+    queue and the queue handles all messages it has immediately and greedily
+
+    But moving forward we might want to put the queues on their own threads and run
+    them continuously, or (for testability) let queues themselves have an internal
+    clock that ticks
     """
 
     S_PER_UPDATE: int = 10
@@ -86,15 +98,15 @@ class Service:
         self._broker.shutdown()
 
     async def _tick(self) -> None:
-        response = await self._call_endpoint()
+        response = self._call_endpoint()
 
         for command in self._get_new_commands(response):
             await self._broker.put(command)
 
         await self._broker.process_messages_until_empty()
 
-    async def _call_endpoint(self) -> EcholaliaResponse:
-        return await self._http_client.call_endpoint()
+    def _call_endpoint(self) -> EcholaliaResponse:
+        return self._http_client.get_all_tasks()
 
     def _get_new_commands(self, response: EcholaliaResponse) -> Set[Command]:
         # TODO: This logic is a mess, plus we put domain knowledge all the way up in
@@ -154,6 +166,8 @@ class Service:
             model_name=task.model,
             dataset_name=fs.dataset_name,
             script_name=script.script_name,
+            status=task.status,
+            id=task._id,
         )
 
     @catch_and_log_exception()

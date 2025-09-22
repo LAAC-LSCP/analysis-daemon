@@ -44,6 +44,8 @@ class JobsConfig(BaseModel):
 
 class HTTPConfig(BaseModel):
     base_url: HttpUrl
+    client_id: str
+    client_secret: str
 
 
 class ConfigModel(BaseModel):

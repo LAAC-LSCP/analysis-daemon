@@ -31,7 +31,11 @@ def jobs_config() -> JobsConfig:
 
 @pytest.fixture
 def http_config() -> HTTPConfig:
-    return HTTPConfig(base_url=HttpUrl("https://echolalia.example.com/api"))
+    return HTTPConfig(
+        base_url=HttpUrl("https://echolalia.example.com/api"),
+        client_id="test_client",
+        client_secret="test_secret",
+    )
 
 
 @pytest.fixture

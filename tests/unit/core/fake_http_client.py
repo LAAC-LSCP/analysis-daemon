@@ -18,7 +18,7 @@ class FakeHTTPClient(HTTPClient):
         self._counter = 0
         self._results = results
 
-    async def call_endpoint(self) -> EcholaliaResponse:
+    def get_all_tasks(self) -> EcholaliaResponse:
         idx: int = self._counter % len(self._results)
 
         self._counter += 1
