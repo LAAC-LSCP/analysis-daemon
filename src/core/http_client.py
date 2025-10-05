@@ -1,4 +1,4 @@
-from typing import Mapping, Optional
+from typing import Mapping, Optional, Tuple
 
 import httpx
 import requests
@@ -38,7 +38,7 @@ class HTTPClient:
 
         self._remote_api_url = remote_api_url.rstrip("/")
 
-        self._access_token = self._get_access_token(client_id, client_secret)
+        self._access_token, _, _ = self._get_access_token(client_id, client_secret)
 
     @property
     def headers(self) -> Headers:
@@ -46,20 +46,29 @@ class HTTPClient:
             "Authorization": f"Bearer {self._access_token}",
         }
 
-    def _get_access_token(self, client_id: str, client_secret: str) -> str:
+    def _get_access_token(
+        self, client_id: str, client_secret: str
+    ) -> Tuple[str, int, str]:
         uri: str = self._remote_api_url + "/api/auth/login-service"
         payload = {
             "client_id": client_id,
             "client_secret": client_secret,
         }
 
-        response = requests.post(uri, data=payload, timeout=self._timeout_s)
+        response: requests.Response = requests.post(
+            uri, data=payload, timeout=self._timeout_s
+        )
         response.raise_for_status()
 
-        # TODO: need to double check this is the right field
-        return response.json()["access_token"]
+        response_json: response_types.AuthResponse = response.json()
 
-    def get_all_tasks(self) -> response_types.EcholaliaResponse:
+        return (
+            response_json["access_token"],
+            response_json["expires_in"],
+            response_json["token_type"],
+        )
+
+    def get_all_tasks(self) -> response_types.Tasks:
         uri: str = self._remote_api_url + "/api/analytics/tasks/"
 
         try:
@@ -73,9 +82,7 @@ class HTTPClient:
                 f"Failed to fetch tasks from {self._remote_api_url}: {exc}"
             ) from exc
 
-    def get_all_tasks_with_status(
-        self, status: TaskStatus
-    ) -> response_types.EcholaliaResponse:
+    def get_all_tasks_with_status(self, status: TaskStatus) -> response_types.Tasks:
         # TODO: Collides with the tasks_by_id endpoint, could be a problem
         # if we add new types of status
         uri: str = self._remote_api_url + f"/api/analytics/tasks/{status}"
@@ -137,7 +144,6 @@ class HTTPClient:
             owner_id=task.owner_id,
             model_name=task.model or Model.UNKNOWN,
             dataset_name=str(task.filesystem),
-            script_name=str(task.script_path),
             status=task.status,
             id=task._id,
         )

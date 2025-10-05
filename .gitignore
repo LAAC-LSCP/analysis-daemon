@@ -7,8 +7,14 @@ __pycache__/
 # --- Build --- #
 dist/
 
-# -- Database ##
+# --- Database --- ##
 .db
 
-# -- configuration files for specific servers -- #
+# --- Created by tox --- #
+.tox
+
+# --- Created by VSCode --- #
+settings.json
+
+# --- configuration files for specific servers --- #
 prod.toml

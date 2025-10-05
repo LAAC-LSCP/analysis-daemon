@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Any, Set
+from typing import Any, Callable, Set
 
 import src.core.response_types as response_types
 from src.shared.types import UUID, Model, TaskStatus
@@ -23,7 +23,6 @@ class FakeServerHandler(BaseHTTPRequestHandler):
             owner_id=UUID("1001"),
             model_name=Model.VTC,
             dataset_name="loann_2025",
-            script_name="run_model.sh",
             status=TaskStatus.PENDING,
             id=UUID("1"),
         ),
@@ -32,7 +31,6 @@ class FakeServerHandler(BaseHTTPRequestHandler):
             owner_id=UUID("1002"),
             model_name=Model.VTC,
             dataset_name="loann_2025",
-            script_name="run_model.sh",
             status=TaskStatus.RUNNING,
             id=UUID("2"),
         ),
@@ -73,7 +71,15 @@ class FakeServerHandler(BaseHTTPRequestHandler):
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
-        self.wfile.write(json.dumps({"access_token": "fake-token"}).encode())
+        self.wfile.write(
+            json.dumps(
+                {
+                    "access_token": "fake-token",
+                    "expires_in": 100_000,
+                    "token_type": "Bearer",
+                }
+            ).encode()
+        )
 
     def do_PUT(self):
         if not self.path.startswith("/api/analytics/tasks/"):
@@ -151,8 +157,12 @@ class FakeServerHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-def start_server() -> None:
-    # Mimicks the Echolalia server, but runs in its own process
+def start_server_factory(host: str) -> Callable[[], None]:
+    def start_server() -> None:
+        """
+        Creates a fake server. Mimicks Echolalia's server
+        """
+        server = HTTPServer((host, 8001), FakeServerHandler)
+        server.serve_forever()
 
-    server = HTTPServer(("127.0.0.1", 8001), FakeServerHandler)
-    server.serve_forever()
+    return start_server

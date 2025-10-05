@@ -1,3 +1,4 @@
+import platform
 from datetime import datetime
 from pathlib import Path
 
@@ -19,7 +20,6 @@ def test_http_client_get_all_tasks(http_client: HTTPClient):
             owner_id=UUID("1001"),
             model_name=Model.VTC,
             dataset_name="loann_2025",
-            script_name="run_model.sh",
             status=TaskStatus.PENDING,
             id=UUID("1"),
         ),
@@ -28,7 +28,6 @@ def test_http_client_get_all_tasks(http_client: HTTPClient):
             owner_id=UUID("1002"),
             model_name=Model.VTC,
             dataset_name="loann_2025",
-            script_name="run_model.sh",
             status=TaskStatus.RUNNING,
             id=UUID("2"),
         ),
@@ -43,7 +42,6 @@ def test_http_client_get_by_id(http_client: HTTPClient):
         owner_id=UUID("1001"),
         model_name=Model.VTC,
         dataset_name="loann_2025",
-        script_name="run_model.sh",
         status=TaskStatus.PENDING,
         id=UUID("1"),
     )
@@ -58,7 +56,6 @@ def test_http_client_get_by_status(http_client: HTTPClient):
             owner_id=UUID("1002"),
             model_name=Model.VTC,
             dataset_name="loann_2025",
-            script_name="run_model.sh",
             status=TaskStatus.RUNNING,
             id=UUID("2"),
         ),
@@ -76,7 +73,7 @@ async def test_http_client_put_task(http_client: HTTPClient):
             filesystem=Path("/the_filesystem"),
             created_at=datetime(year=2024, month=1, day=1),
             status=TaskStatus.RUNNING,
-            script_path=Path("script.sh"),
+            script_path=None,
             model=Model.VTC,
             _id=UUID("3"),
         )
@@ -94,6 +91,11 @@ async def test_http_client_put_task(http_client: HTTPClient):
 
 @pytest.fixture(scope="module")
 def http_client() -> HTTPClient:
+    if platform.system() == "Darwin":
+        # TODO: Fix socket creation timing out
+        pytest.skip(
+            "Skipping E2E tests on MacOS runner due to networking restrictions",
+        )
     return HTTPClient(
         remote_api_url=f"http://{TEST_SERVER_DOMAIN}:{TEST_SERVER_PORT}",
         client_id="test_id",

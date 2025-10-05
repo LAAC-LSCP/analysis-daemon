@@ -4,17 +4,15 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, Set
 
-from src.config.config import ConfigModel, FileSystemConfig, ScriptConfig
+import src.core.response_types as response_types
+from src.config.config import ConfigModel, FileSystemConfig
 from src.core.exceptions import (
     NoFileSystemWithDataset,
     NoFileSystemWithPath,
-    ScriptNameNotInDataset,
-    ScriptPathDoesNotExistInDataset,
 )
 from src.core.http_client import HTTPClient
-from src.core.response_types import EcholaliaResponse, Task
 from src.domain.commands import Command, CreateTask
-from src.domain.model import Task as DomainTask
+from src.domain.model import Task
 from src.service_layer.default_handlers import (
     COMMAND_HANDLERS,
     EVENT_HANDLERS,
@@ -105,10 +103,10 @@ class Service:
 
         await self._broker.process_messages_until_empty()
 
-    def _call_endpoint(self) -> EcholaliaResponse:
+    def _call_endpoint(self) -> response_types.Tasks:
         return self._http_client.get_all_tasks()
 
-    def _get_new_commands(self, response: EcholaliaResponse) -> Set[Command]:
+    def _get_new_commands(self, response: response_types.Tasks) -> Set[Command]:
         # TODO: This logic is a mess, plus we put domain knowledge all the way up in
         # the service (importing Task). The question is, what do we do when a task is
         # off the queue? Do we cache it somewhere, so we know it is finished? Do we
@@ -133,45 +131,34 @@ class Service:
 
         return tasks_in_response - old_tasks
 
-    def _convert_domain_task(self, task: DomainTask) -> Task:
+    def _convert_domain_task(self, task: Task) -> response_types.Task:
+        """
+        Converts a task in the domain definition to one in the
+        form of the network-defined task
+        """
         fs: Optional[FileSystemConfig] = next(
             (fs for fs in self._config.filesystems if fs.path == task.filesystem), None
         )
         if fs is None:
             raise NoFileSystemWithPath(path=task.filesystem)
 
-        if task.script_path is None:
-            # TODO: Might be wrong. We have configured
-            # task to have optional script paths but that we might want to reconsider?
-            raise ValueError(f"Task {task} has no script path")
-
         if task.model is None:
             # TODO: Ditto. But model has a default "UNKNOWN" which is better
             # than script_path, which has no such default
             raise ValueError(f"Task {task} has no model")
 
-        script: Optional[ScriptConfig] = next(
-            (script for script in fs.scripts if script.script_path == task.script_path),
-            None,
-        )
-        if script is None:
-            raise ScriptPathDoesNotExistInDataset(
-                script_path=task.script_path, dataset_name=fs.dataset_name
-            )
-
         # TODO: code smell
-        return Task(
+        return response_types.Task(
             datetime=task.created_at,
             owner_id=task.owner_id,
             model_name=task.model,
             dataset_name=fs.dataset_name,
-            script_name=script.script_name,
             status=task.status,
             id=task._id,
         )
 
     @catch_and_log_exception()
-    def _get_cmd(self, task: Task) -> CreateTask:
+    def _get_cmd(self, task: response_types.Task) -> CreateTask:
         fs: Optional[FileSystemConfig] = next(
             (
                 fs
@@ -183,25 +170,10 @@ class Service:
         if fs is None:
             raise NoFileSystemWithDataset(dataset_name=task.dataset_name)
 
-        script_path: Optional[Path] = next(
-            (
-                script.script_path
-                for script in fs.scripts
-                if script.script_name == task.script_name
-            ),
-            None,
-        )
-
-        if script_path is None:
-            raise ScriptNameNotInDataset(
-                script_name=task.script_name,
-                dataset_name=fs.dataset_name,
-            )
-
         return CreateTask(
             task_id=UUID(str(uuid.uuid4())),
             owner_id=task.owner_id,
             filesystem=fs.path,
-            script_path=script_path,
+            script_path=Path("fake-path"),  # TODO: get the script path from the config
             model=task.model_name,
         )

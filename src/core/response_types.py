@@ -1,10 +1,30 @@
+"""
+This file contains the different response formats/types expected
+from the Echolalia-owned endpoints
+"""
+
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, TypedDict
 
 from src.shared.types import UUID, Model, TaskStatus
 
-type EcholaliaResponse = List["Task"]
+type Tasks = List["Task"]
+type Statuses = List["Status"]
+
+
+class AuthResponse(TypedDict):
+    access_token: str
+    expires_in: int
+    token_type: str
+
+
+class Status(TypedDict):
+    pk_nc_analysis_status_type: int
+    label: str
+    uid_label: TaskStatus
+    modified: datetime
+    created: datetime
 
 
 @dataclass
@@ -13,7 +33,6 @@ class Task:
     owner_id: UUID
     model_name: Model
     dataset_name: str
-    script_name: str
     status: TaskStatus
     id: UUID
 
@@ -24,21 +43,17 @@ class Task:
         if not isinstance(other, Task):
             return NotImplemented
         return (
-            self.datetime == other.datetime
-            and self.owner_id == other.owner_id
+            self.owner_id == other.owner_id
             and self.model_name == other.model_name
             and self.dataset_name == other.dataset_name
-            and self.script_name == other.script_name
         )
 
     def __hash__(self):
         return hash(
             (
-                self.datetime,
                 self.owner_id,
                 self.model_name,
                 self.dataset_name,
-                self.script_name,
             )
         )
 
@@ -52,7 +67,6 @@ class Task:
                 else str(self.model_name)
             ),
             "dataset_name": self.dataset_name,
-            "script_name": self.script_name,
             "status": (
                 self.status.value if hasattr(self.status, "value") else str(self.status)
             ),
@@ -66,7 +80,6 @@ class Task:
             owner_id=UUID(data["owner_id"]),
             model_name=Model(data["model_name"]),
             dataset_name=data["dataset_name"],
-            script_name=data["script_name"],
             status=TaskStatus(data["status"]),
             id=UUID(data["id"]),
         )
