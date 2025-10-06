@@ -2,9 +2,9 @@ from pathlib import Path
 from typing import Generic, List, Optional, Set
 
 from src.adapters.repository import AbstractRepository
+from src.core.types import UUID
 from src.domain.model import Task
 from src.service_layer import RepoType
-from src.shared.types import UUID
 
 
 class TrackingRepository(AbstractRepository, Generic[RepoType]):

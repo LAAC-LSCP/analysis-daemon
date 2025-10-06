@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Optional, Set
 
+from src.core.types import UUID
 from src.domain.model import Task
-from src.shared.types import UUID
 
 
 class AbstractRepository(ABC):

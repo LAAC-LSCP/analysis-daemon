@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.shared.types import UUID
+from src.core.types import UUID
 
 
 class Event:

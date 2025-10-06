@@ -2,10 +2,10 @@ from pathlib import Path
 
 import pytest
 
+from src.core.types import UUID, Model
 from src.domain import commands
 from src.service_layer.handlers import handle_create_task
 from src.service_layer.publishing_uow import PublishingUoW
-from src.shared.types import UUID, Model
 from tests.integration.service_layer.fakes import FakeUoW
 
 

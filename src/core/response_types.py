@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, TypedDict
 
-from src.shared.types import UUID, Model, TaskStatus
+from src.core.types import UUID, Model, TaskStatus
 
 type Tasks = List["Task"]
 type Statuses = List["Status"]

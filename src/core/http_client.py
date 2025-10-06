@@ -5,8 +5,8 @@ import requests
 from tenacity import retry, wait_fixed
 
 import src.core.response_types as response_types
+from src.core.types import UUID, Model, TaskStatus
 from src.domain.model import Task as DomainTask
-from src.shared.types import UUID, Model, TaskStatus
 
 Headers = Mapping[str, str]
 

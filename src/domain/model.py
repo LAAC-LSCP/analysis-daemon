@@ -3,9 +3,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
+from src.core.types import UUID, Model, TaskStatus
 from src.domain.commands import Command
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
-from src.shared.types import UUID, Model, TaskStatus
 
 
 class Task:
