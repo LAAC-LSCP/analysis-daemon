@@ -21,10 +21,10 @@ from src.service_layer.default_handlers import (
     EventHandlers,
 )
 from src.service_layer.http_client import HTTPClient
-from src.service_layer.publishing_uow import PublishingUoW
 from src.service_layer.queue.broker import MessageBroker
 from src.service_layer.queue.command_queue import CommandQueue
 from src.service_layer.queue.event_queue import EventQueue
+from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 
 class Service:

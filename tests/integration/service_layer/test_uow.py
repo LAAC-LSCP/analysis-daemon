@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from src.core.types import UUID, Model, TaskStatus
 from src.domain.model import Task
-from src.service_layer.sqlalchemy_uow import SessionFactory, SQLAlchemyUoW
+from src.service_layer.unit_of_work.sqlalchemy_uow import SessionFactory, SQLAlchemyUoW
 
 
 class CustomException(Exception):

@@ -1,8 +1,8 @@
 import pytest
 
-from src.service_layer.publishing_uow import PublishingUoW
 from src.service_layer.queue.command_queue import CommandQueue
 from src.service_layer.queue.event_queue import EventQueue
+from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 from tests.integration.service_layer.fakes import (
     Command1,
     Command2,

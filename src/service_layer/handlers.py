@@ -1,7 +1,7 @@
 from src.domain.commands import CompleteTask, CreateTask, RunTask
 from src.domain.events import Event
 from src.domain.model import Task
-from src.service_layer.publishing_uow import PublishingUoW
+from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 
 async def handle_not_implemented(_: Event, __: PublishingUoW) -> None:

@@ -3,7 +3,7 @@ from typing import Generator
 from src.adapters.tracking_repository import TrackingRepository
 from src.domain.commands import Command
 from src.domain.events import Event
-from src.service_layer.uow import AbstractUoW
+from src.service_layer.unit_of_work.uow import AbstractUoW
 
 
 class PublishingUoW(AbstractUoW[TrackingRepository]):

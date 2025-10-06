@@ -6,8 +6,8 @@ from src.config.config import ConfigModel
 from src.core.response_types import Task
 from src.core.types import UUID, Model, TaskStatus
 from src.domain import commands
-from src.service_layer.publishing_uow import PublishingUoW
 from src.service_layer.service import Service
+from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 from tests.integration.service_layer.fakes import FakeUoW
 from tests.unit.core.fake_handlers import FakeHandlers
 from tests.unit.core.fake_http_client import FakeHTTPClient

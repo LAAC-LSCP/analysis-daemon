@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from src.adapters.sqlalchemy_repository import SQLAlchemyRepository
 from src.adapters.tracking_repository import TrackingRepository
-from src.service_layer.uow import AbstractUoW
+from src.service_layer.unit_of_work.uow import AbstractUoW
 
 type SessionFactory = Callable[[], Session]
 
