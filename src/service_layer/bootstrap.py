@@ -2,9 +2,9 @@ import logging
 from pathlib import Path
 
 from src.config.config import load_config
-from src.core.service import Service
 from src.service_layer.http_client import HTTPClient
 from src.service_layer.publishing_uow import PublishingUoW
+from src.service_layer.service import Service
 from src.service_layer.sqlalchemy_uow import SQLAlchemyUoW
 
 
