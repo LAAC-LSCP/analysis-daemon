@@ -9,8 +9,7 @@ from src.service_layer.queue.event_queue import EventQueue
 
 class MessageBroker:
     """
-    A broker that routes messages to its
-    event and command queue respectively
+    A broker that routes messages to its event and command queue respectively
     """
 
     _event_queue: EventQueue

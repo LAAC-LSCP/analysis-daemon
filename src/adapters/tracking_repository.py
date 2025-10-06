@@ -10,6 +10,10 @@ from src.shared.types import UUID
 class TrackingRepository(AbstractRepository, Generic[RepoType]):
     """
     Decorator that adds tracking to a repository
+
+    Tracking is powerful when we need to remember what tasks have already been
+    "handled", for instance when we repeatedly collect new events or commands added to
+    the associated unit of work
     """
 
     seen: Set[Task]

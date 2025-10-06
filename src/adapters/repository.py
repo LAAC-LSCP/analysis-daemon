@@ -1,3 +1,8 @@
+"""
+The repository mapping relies on the SQLAlchemy-ORM's internal mapping mechanism
+and creates an even simpler interface within our domain (e.g., tasks)
+"""
+
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Optional, Set

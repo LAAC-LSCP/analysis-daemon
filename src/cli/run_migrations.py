@@ -8,6 +8,10 @@ from alembic.config import Config
 
 @click.command()
 def run_migrations():
+    """
+    Run alembic migrations on the database file, or create it if it does not already
+    exist
+    """
     try:
         click.echo("Running database migrations with alembic...")
 
