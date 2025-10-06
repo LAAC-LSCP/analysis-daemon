@@ -6,7 +6,7 @@ from pathlib import Path
 
 import click
 
-from src.bootstrap.bootstrap import bootstrap
+from src.service_layer.bootstrap import bootstrap
 
 
 @click.command()
