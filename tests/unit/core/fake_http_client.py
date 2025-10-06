@@ -1,7 +1,7 @@
 from typing import List
 
-from src.core.http_client import HTTPClient
 from src.core.response_types import Tasks
+from src.service_layer.http_client import HTTPClient
 
 
 class FakeHTTPClient(HTTPClient):

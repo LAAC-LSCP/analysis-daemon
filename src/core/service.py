@@ -11,7 +11,6 @@ from src.core.exceptions import (
     NoFileSystemWithDataset,
     NoFileSystemWithPath,
 )
-from src.core.http_client import HTTPClient
 from src.core.types import UUID
 from src.domain.commands import Command, CreateTask
 from src.domain.model import Task
@@ -21,6 +20,7 @@ from src.service_layer.default_handlers import (
     CommandHandlers,
     EventHandlers,
 )
+from src.service_layer.http_client import HTTPClient
 from src.service_layer.publishing_uow import PublishingUoW
 from src.service_layer.queue.broker import MessageBroker
 from src.service_layer.queue.command_queue import CommandQueue
