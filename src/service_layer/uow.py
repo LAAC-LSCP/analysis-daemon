@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Generic
 
-from src.service_layer import RepoType
+from src.service_layer.types import RepoType
 
 
 class AbstractUoW(Generic[RepoType]):
