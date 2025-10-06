@@ -13,9 +13,9 @@ from src.bootstrap.bootstrap import bootstrap
     default="configuration.toml",
     help="Path to a TOML config file (overrides default).",
 )
-def run_daemon(config) -> None:
+async def run_daemon(config) -> None:
     service = bootstrap(Path(config))
-    service.main_loop()
+    await service.main_loop()
 
 
 # For the purpose of debugging

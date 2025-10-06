@@ -12,7 +12,18 @@ def setup_logging():
     logging.basicConfig(level=logging.INFO)
 
 
-def bootstrap(config_file: Path):
+def bootstrap(config_file: Path) -> Service:
+    """
+    Bootstraps the application, setting up:
+    - Runtime configuration (from config file)
+    - DB connections and the unit of work
+    - The HTTP client for remote querying
+    - Logging
+    - And the service object
+
+    The returned service objects acts as a composition root
+    for the entire application
+    """
     config = load_config(config_file)
 
     sql_uow = PublishingUoW(
@@ -21,7 +32,11 @@ def bootstrap(config_file: Path):
         )
     )
 
-    http_client = HTTPClient(config.http.base_url)
+    http_client = HTTPClient(
+        remote_api_url=str(config.http.base_url),
+        client_id=config.http.client_id,
+        client_secret=config.http.client_secret,
+    )
 
     setup_logging()
 

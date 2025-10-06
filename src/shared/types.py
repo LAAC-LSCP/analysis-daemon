@@ -20,4 +20,6 @@ class TaskStatus(StrEnum):
 
 class Model(StrEnum):
     VTC = "vtc"
+    ALICE = "alice"
+    VCM = "vcm"
     UNKNOWN = "unknown"
