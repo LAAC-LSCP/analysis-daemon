@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.6.0...v1.7.0) (2025-10-06)
+
+
+### Features
+
+* Integrate endpoint ([#30](https://github.com/LAAC-LSCP/analysis-daemon/issues/30)) ([c0cdb2e](https://github.com/LAAC-LSCP/analysis-daemon/commit/c0cdb2e7312f2e44143f36907511924149e67391))
+
 ## [1.6.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.5.0...v1.6.0) (2025-08-27)
 
 
