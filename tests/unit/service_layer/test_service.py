@@ -9,8 +9,8 @@ from src.domain import commands
 from src.service_layer.service import Service
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 from tests.integration.service_layer.fakes import FakeUoW
-from tests.unit.core.fake_handlers import FakeHandlers
-from tests.unit.core.fake_http_client import FakeHTTPClient
+from tests.unit.service_layer.fake_handlers import FakeHandlers
+from tests.unit.service_layer.fake_http_client import FakeHTTPClient
 
 
 @pytest.mark.asyncio
