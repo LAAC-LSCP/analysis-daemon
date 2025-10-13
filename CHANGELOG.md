@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.7.0...v1.8.0) (2025-10-13)
+
+
+### Features
+
+* make repo more accessible ([#38](https://github.com/LAAC-LSCP/analysis-daemon/issues/38)) ([d08193a](https://github.com/LAAC-LSCP/analysis-daemon/commit/d08193a45f78e2779e1e8983efa77a14c9a89753))
+
 ## [1.7.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.6.0...v1.7.0) (2025-10-06)
 
 
