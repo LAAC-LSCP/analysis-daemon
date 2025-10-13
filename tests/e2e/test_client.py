@@ -5,9 +5,9 @@ from pathlib import Path
 import pytest
 
 from src.core import response_types
-from src.core.http_client import HTTPClient
+from src.core.types import UUID, Model, TaskStatus
 from src.domain.model import Task
-from src.shared.types import UUID, Model, TaskStatus
+from src.service_layer.http_client import HTTPClient
 from tests.e2e.conftest import TEST_SERVER_DOMAIN, TEST_SERVER_PORT
 
 

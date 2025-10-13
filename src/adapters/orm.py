@@ -1,3 +1,9 @@
+"""
+This file contains all mapping information from the database to the ORM. We actually
+use the repository pattern in our codebase, meaning that this mapping gets mapped
+twice. This is important to keep in mind.
+"""
+
 from pathlib import Path
 from typing import Optional
 

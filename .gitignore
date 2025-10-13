@@ -12,9 +12,12 @@ dist/
 
 # --- Created by tox --- #
 .tox
+.mypy_cache
+.pytest_cache
 
 # --- Created by VSCode --- #
 settings.json
+.vscode
 
 # --- configuration files for specific servers --- #
 prod.toml

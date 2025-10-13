@@ -6,11 +6,12 @@ from typing import Optional, Set
 
 import src.core.response_types as response_types
 from src.config.config import ConfigModel, FileSystemConfig
+from src.core.decorators import catch_and_log_exception
 from src.core.exceptions import (
     NoFileSystemWithDataset,
     NoFileSystemWithPath,
 )
-from src.core.http_client import HTTPClient
+from src.core.types import UUID
 from src.domain.commands import Command, CreateTask
 from src.domain.model import Task
 from src.service_layer.default_handlers import (
@@ -19,12 +20,11 @@ from src.service_layer.default_handlers import (
     CommandHandlers,
     EventHandlers,
 )
-from src.service_layer.publishing_uow import PublishingUoW
+from src.service_layer.http_client import HTTPClient
 from src.service_layer.queue.broker import MessageBroker
 from src.service_layer.queue.command_queue import CommandQueue
 from src.service_layer.queue.event_queue import EventQueue
-from src.shared.decorators import catch_and_log_exception
-from src.shared.types import UUID
+from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 
 class Service:

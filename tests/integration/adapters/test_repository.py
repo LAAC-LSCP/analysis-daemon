@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 import src.domain.model as model
 from src.adapters.sqlalchemy_repository import SQLAlchemyRepository
-from src.shared.types import UUID
+from src.core.types import UUID
 
 
 def test_repository_saves_task(session: Session):

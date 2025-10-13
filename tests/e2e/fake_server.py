@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any, Callable, Set
 
 import src.core.response_types as response_types
-from src.shared.types import UUID, Model, TaskStatus
+from src.core.types import UUID, Model, TaskStatus
 
 
 class FakeServerHandler(BaseHTTPRequestHandler):

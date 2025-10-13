@@ -2,15 +2,14 @@ from typing import Set
 
 from src.domain.commands import Command
 from src.domain.events import Event
-from src.service_layer import Message
 from src.service_layer.queue.command_queue import CommandQueue
 from src.service_layer.queue.event_queue import EventQueue
+from src.service_layer.types import Message
 
 
 class MessageBroker:
     """
-    A broker that routes messages to its
-    event and command queue respectively
+    A broker that routes messages to its event and command queue respectively
     """
 
     _event_queue: EventQueue

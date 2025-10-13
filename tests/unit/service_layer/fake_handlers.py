@@ -2,13 +2,13 @@ from typing import Any, Awaitable, Callable, List, Optional, Tuple, Type
 
 import src.domain.commands as commands
 import src.domain.events as events
-from src.service_layer import Message
 from src.service_layer.default_handlers import (
     COMMAND_HANDLERS,
     CommandHandlers,
     EventHandlers,
 )
-from src.service_layer.publishing_uow import PublishingUoW
+from src.service_layer.types import Message
+from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 Calls = List[Tuple[Type[Message], Optional[Any]]]
 

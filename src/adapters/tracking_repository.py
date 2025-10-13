@@ -2,14 +2,18 @@ from pathlib import Path
 from typing import Generic, List, Optional, Set
 
 from src.adapters.repository import AbstractRepository
+from src.core.types import UUID
 from src.domain.model import Task
-from src.service_layer import RepoType
-from src.shared.types import UUID
+from src.service_layer.types import RepoType
 
 
 class TrackingRepository(AbstractRepository, Generic[RepoType]):
     """
     Decorator that adds tracking to a repository
+
+    Tracking is powerful when we need to remember what tasks have already been
+    "handled", for instance when we repeatedly collect new events or commands added to
+    the associated unit of work
     """
 
     seen: Set[Task]

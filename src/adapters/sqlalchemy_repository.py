@@ -4,8 +4,8 @@ from typing import List, Optional, Set
 from sqlalchemy.orm import Session
 
 from src.adapters.repository import AbstractRepository
+from src.core.types import UUID
 from src.domain.model import Task
-from src.shared.types import UUID
 
 
 class SQLAlchemyRepository(AbstractRepository):

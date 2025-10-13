@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.shared.types import UUID, Model
+from src.core.types import UUID, Model
 
 
 class Command:

@@ -1,8 +1,12 @@
+"""
+The run-daemon command is the entry-point for our daemon in a production environment
+"""
+
 from pathlib import Path
 
 import click
 
-from src.bootstrap.bootstrap import bootstrap
+from src.service_layer.bootstrap import bootstrap
 
 
 @click.command()
@@ -13,7 +17,7 @@ from src.bootstrap.bootstrap import bootstrap
     default="configuration.toml",
     help="Path to a TOML config file (overrides default).",
 )
-async def run_daemon(config) -> None:
+async def run_daemon(config: str) -> None:
     service = bootstrap(Path(config))
     await service.main_loop()
 

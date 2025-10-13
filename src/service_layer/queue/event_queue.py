@@ -1,8 +1,8 @@
 from typing import Any, Awaitable, Callable, List, Type
 
 from src.domain.events import Event
-from src.service_layer.publishing_uow import PublishingUoW
 from src.service_layer.queue.queue import TaskQueue
+from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 EventCallback = Callable[[Any, PublishingUoW], Awaitable[None]]
 
