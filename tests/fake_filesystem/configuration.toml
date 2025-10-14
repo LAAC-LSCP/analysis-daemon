@@ -1,0 +1,20 @@
+[database]
+url = "sqlite:///database.db"
+
+[http]
+base_url = "https://localhost"
+client_id = "analytics-service"
+client_secret = "MY_SECRET"
+
+[jobs]
+handler = "slurm"
+partition = "echolalia"
+
+[[filesystems]]
+dataset_name = "loann_2025"
+path = "./datasets/loann_2025"
+
+  [[filesystems.scripts]]
+  script_name = "run_vtc"
+  script_path = "run_model.sh"
+  model_name = "vtc"

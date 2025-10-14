@@ -41,6 +41,7 @@ run-migrations = "src.cli.run_migrations:run_migrations"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
 pytest-asyncio = "^1.1.0"
+tomli-w = "^1.2.0"
 
 
 [tool.black]
