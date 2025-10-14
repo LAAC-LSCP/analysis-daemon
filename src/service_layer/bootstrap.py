@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 
+from src.adapters.orm import start_mappers
 from src.config.config import load_config
 from src.service_layer.http_client import HTTPClient
 from src.service_layer.service import Service
@@ -31,6 +32,7 @@ def bootstrap(config_file: Path) -> Service:
             session_factory=SQLAlchemyUoW.get_session_factory(config.database.url),
         )
     )
+    start_mappers()
 
     http_client = HTTPClient(
         remote_api_url=str(config.http.base_url),
