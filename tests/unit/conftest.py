@@ -12,6 +12,7 @@ from src.config.config import (
     JobsConfig,
     ScriptConfig,
 )
+from src.core.types import Model
 
 # TODO: Potentially replace some of these with factories later so we
 # get a bit more flexibility in what we're testing
@@ -45,10 +46,15 @@ def filesystems_config(test_system_dir: Path) -> List[FileSystemConfig]:
             dataset_name="loann-2025",
             path=test_system_dir / Path("datasets/loann_2025"),
             scripts=[
-                ScriptConfig(script_name="run-model", script_path=Path("run_model.sh")),
+                ScriptConfig(
+                    script_name="run-model",
+                    script_path=Path("run_model.sh"),
+                    model_name=Model.VTC,
+                ),
                 ScriptConfig(
                     script_name="calculate-aclew",
                     script_path=Path("calculate_aclew_metrics.sh"),
+                    model_name=Model.UNKNOWN,
                 ),
             ],
         )
