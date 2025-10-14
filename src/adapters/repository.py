@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Optional, Set
 
-from src.core.types import UUID
+from src.core.types import UUID, TaskStatus
 from src.domain.model import Task
 
 
@@ -26,6 +26,10 @@ class AbstractRepository(ABC):
 
     @abstractmethod
     def get_by_owners(self, owner_ids: Set[UUID]) -> List[Task]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_by_status(self, status: TaskStatus) -> List[Task]:
         raise NotImplementedError
 
     @abstractmethod

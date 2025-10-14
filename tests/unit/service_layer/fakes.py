@@ -71,6 +71,9 @@ class FakeRepository(AbstractRepository):
     def get_by_owners(self, owner_ids: Set[UUID]) -> List[Task]:
         return [t for t in self._tasks if t.owner_id in owner_ids]
 
+    def get_by_status(self, status: TaskStatus) -> List[Task]:
+        return [t for t in self._tasks if t.status == status]
+
     def get_by_filesystem(self, filesystem: Path) -> List[Task]:
         return [t for t in self._tasks if t.filesystem == filesystem]
 

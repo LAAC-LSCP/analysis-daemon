@@ -4,7 +4,7 @@ from typing import List, Optional, Set
 from sqlalchemy.orm import Session
 
 from src.adapters.repository import AbstractRepository
-from src.core.types import UUID
+from src.core.types import UUID, TaskStatus
 from src.domain.model import Task
 
 
@@ -37,6 +37,9 @@ class SQLAlchemyRepository(AbstractRepository):
 
     def get_by_filesystem(self, filesystem_path: Path) -> List[Task]:
         return self._session.query(Task).filter_by(filesystem=filesystem_path).all()
+
+    def get_by_status(self, task_status: TaskStatus) -> List[Task]:
+        return self._session.query(Task).filter_by(status=task_status).all()
 
     def save(self, task: Task) -> Task:
         """

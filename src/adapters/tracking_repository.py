@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Generic, List, Optional, Set
 
 from src.adapters.repository import AbstractRepository
-from src.core.types import UUID
+from src.core.types import UUID, TaskStatus
 from src.domain.model import Task
 from src.service_layer.types import RepoType
 
@@ -49,6 +49,14 @@ class TrackingRepository(AbstractRepository, Generic[RepoType]):
 
     def get_by_filesystem(self, filesystem_path: Path) -> List[Task]:
         tasks = self._repository.get_by_filesystem(filesystem_path)
+
+        if tasks:
+            self.seen.update(tasks)
+
+        return tasks
+
+    def get_by_status(self, status: TaskStatus) -> List[Task]:
+        tasks = self._repository.get_by_status(status)
 
         if tasks:
             self.seen.update(tasks)
