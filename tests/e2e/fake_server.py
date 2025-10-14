@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Any, Callable, Set
+from typing import Any, Set
 
 import src.core.response_types as response_types
 from src.core.types import UUID, Model, TaskStatus
@@ -37,28 +37,24 @@ class FakeServerHandler(BaseHTTPRequestHandler):
     }
 
     def do_GET(self):
-        if self.path == "/api/analytics/tasks/":
+        if self.path == "/api/analytics/tasks":
             self._do_get_all_tasks()
-
             return
 
-        if not self.path.startswith("/api/analytics/tasks/"):
+        if not self.path.startswith("/api/analytics/tasks"):
             self._do_error()
-
             return
 
-        path_end: str = self.path[len("/api/analytics/tasks/") :]
+        path_end: str = self.path[len("/api/analytics/tasks") :]
 
-        if path_end in [status.value for status in TaskStatus]:
-            self._do_get_tasks_by_status(path_end)
-
-            return
-        elif path_end.isdigit():
-            self._do_get_task_by_id(path_end)
+        if path_end.startswith("?") and (status := path_end.split("=")[1]) in [
+            status.value for status in TaskStatus
+        ]:
+            self._do_get_tasks_by_status(status)
+        elif (id := path_end[1:]).isdigit():
+            self._do_get_task_by_id(id)
         else:
             self._do_error()
-
-            return
 
     def do_POST(self):
         if not self.path == "/api/auth/login-service":
@@ -124,7 +120,8 @@ class FakeServerHandler(BaseHTTPRequestHandler):
             self.send_response(HTTPStatus.NO_CONTENT)
             self.end_headers()
         else:
-            self._do_error()
+            self.send_response(HTTPStatus.NOT_FOUND)
+            self.end_headers()
 
     def _do_get_all_tasks(self):
         self._do_get(
@@ -157,12 +154,9 @@ class FakeServerHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-def start_server_factory(host: str) -> Callable[[], None]:
-    def start_server() -> None:
-        """
-        Creates a fake server. Mimicks Echolalia's server
-        """
-        server = HTTPServer((host, 8001), FakeServerHandler)
-        server.serve_forever()
-
-    return start_server
+def start_server(host: str, port: int) -> None:
+    """
+    Creates a fake server. Mimicks Echolalia's server
+    """
+    server = HTTPServer((host, port), FakeServerHandler)
+    server.serve_forever()

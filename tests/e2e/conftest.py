@@ -10,10 +10,10 @@ from pathlib import Path
 import pytest
 import tomli_w
 
-from tests.e2e.fake_server import start_server_factory
+from tests.e2e.fake_server import start_server
 
 TEST_SERVER_DOMAIN: str = "localhost"
-TEST_SERVER_PORT: int = 8001
+TEST_SERVER_PORT: int = 8520
 
 
 def wait_for_server(host, port, timeout=5.0):
@@ -78,12 +78,13 @@ def start_fake_server():
     if platform.system() == "Darwin":
         # TODO: fix this. Dockerise tests?
         yield
-    else:
-        proc = Process(target=start_server_factory(TEST_SERVER_DOMAIN), args=())
-        proc.start()
-        wait_for_server(TEST_SERVER_DOMAIN, TEST_SERVER_PORT)
 
-        yield
+        return
+    proc = Process(target=start_server, args=(TEST_SERVER_DOMAIN, TEST_SERVER_PORT))
+    proc.start()
+    wait_for_server(TEST_SERVER_DOMAIN, TEST_SERVER_PORT)
 
-        proc.terminate()
-        proc.join()
+    yield
+
+    proc.terminate()
+    proc.join()

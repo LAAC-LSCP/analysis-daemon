@@ -97,7 +97,7 @@ class HTTPClient:
                 uri,
                 headers=self.headers,
                 timeout=self._timeout_s,
-                params={status: TaskStatus.PENDING},
+                params={status: status},
             )
             response.raise_for_status()
             data = response.json()
@@ -168,4 +168,4 @@ class HTTPClient:
             )
             response.raise_for_status()
 
-            return
+        return

@@ -1,18 +1,12 @@
 import asyncio
-import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, Set
 
 import src.core.response_types as response_types
-from src.config.config import ConfigModel, FileSystemConfig
-from src.core.decorators import catch_and_log_exception
-from src.core.exceptions import (
-    NoFileSystemWithDataset,
-    NoFileSystemWithPath,
-)
-from src.core.types import UUID
-from src.domain.commands import Command, CreateTask
+from src.config.config import ConfigModel
+from src.core.types import TaskStatus
+from src.domain.commands import CreateTask
 from src.domain.model import Task
 from src.service_layer.default_handlers import (
     COMMAND_HANDLERS,
@@ -64,14 +58,13 @@ class Service:
     ):
         self._http_client = http_client
         self._config = config
+        self._uow = uow
 
         event_handlers = event_handlers or EVENT_HANDLERS
         command_handlers = command_handlers or COMMAND_HANDLERS
 
         event_queue = EventQueue(handlers=event_handlers, uow=uow)
         command_queue = CommandQueue(handlers=command_handlers, uow=uow)
-
-        self._uow = uow
 
         self._broker = MessageBroker(
             event_queue=event_queue, command_queue=command_queue
@@ -96,84 +89,33 @@ class Service:
         self._broker.shutdown()
 
     async def _tick(self) -> None:
-        response = self._call_endpoint()
+        with self._uow:
+            new_tasks: Set[Task] = self._get_new_tasks()
 
-        for command in self._get_new_commands(response):
-            await self._broker.put(command)
+            for task in new_tasks:
+                await self._broker.put(self._get_create_task_command(task))
+                self._uow.tasks.save(task)
 
-        await self._broker.process_messages_until_empty()
+            self._uow.commit()
 
-    def _call_endpoint(self) -> response_types.Tasks:
-        return self._http_client.get_all_tasks()
-
-    def _get_new_commands(self, response: response_types.Tasks) -> Set[Command]:
-        # TODO: This logic is a mess, plus we put domain knowledge all the way up in
-        # the service (importing Task). The question is, what do we do when a task is
-        # off the queue? Do we cache it somewhere, so we know it is finished? Do we
-        # have to access the db to see it is done? (most robust). Do we send a reply
-        # to echolalia saying we have finished running the task, and now echolalia is
-        # responsible for (very fragile and coupling!)? I went with the db solution,
-        # although we get a dependency on Task which I have been trying to avoid
-        # (jumping the component hierarchy that is)
-        #
-        # TODO: the best idea, I think, is to generate task IDs all the way up here
-        # Use this to do equality checks
-        owner_ids = {UUID(task.owner_id) for task in response}
-
-        old_tasks = {
-            self._get_cmd(self._convert_domain_task(task))
-            for task in set(self._uow.tasks.get_by_owners(owner_ids=owner_ids))
-        }
-
-        old_tasks = old_tasks.union(self._broker._command_queue.queued_messages)
-
-        tasks_in_response = {self._get_cmd(task) for task in set(response)}
-
-        return tasks_in_response - old_tasks
-
-    def _convert_domain_task(self, task: Task) -> response_types.Task:
-        """
-        Converts a task in the domain definition to one in the
-        form of the network-defined task
-        """
-        fs: Optional[FileSystemConfig] = next(
-            (fs for fs in self._config.filesystems if fs.path == task.filesystem), None
-        )
-        if fs is None:
-            raise NoFileSystemWithPath(path=task.filesystem)
-
-        if task.model is None:
-            # TODO: Ditto. But model has a default "UNKNOWN" which is better
-            # than script_path, which has no such default
-            raise ValueError(f"Task {task} has no model")
-
-        # TODO: code smell
-        return response_types.Task(
-            datetime=task.created_at,
-            owner_id=task.owner_id,
-            model_name=task.model,
-            dataset_name=fs.dataset_name,
-            status=task.status,
-            id=task._id,
+    def _get_new_tasks(self) -> Set[Task]:
+        remote_tasks: response_types.Tasks = (
+            self._http_client.get_all_tasks_with_status(TaskStatus.PENDING)
         )
 
-    @catch_and_log_exception()
-    def _get_cmd(self, task: response_types.Task) -> CreateTask:
-        fs: Optional[FileSystemConfig] = next(
-            (
-                fs
-                for fs in self._config.filesystems
-                if fs.dataset_name == task.dataset_name
-            ),
-            None,
-        )
-        if fs is None:
-            raise NoFileSystemWithDataset(dataset_name=task.dataset_name)
+        existing_tasks = self._uow.tasks.get_by_status(TaskStatus.PENDING)
 
+        return set(
+            task.to_model_type_task(config=self._config) for task in remote_tasks
+        ) - set(existing_tasks)
+
+    def _get_create_task_command(self, task: Task) -> CreateTask:
+        # TODO: Probably don't need script_paths.
+        # It's all clear from the config and model
         return CreateTask(
-            task_id=UUID(str(uuid.uuid4())),
+            task_id=task._id,
             owner_id=task.owner_id,
-            filesystem=fs.path,
-            script_path=Path("fake-path"),  # TODO: get the script path from the config
-            model=task.model_name,
+            filesystem=task.filesystem,
+            script_path=task.script_path or Path(""),
+            model=task.model,
         )

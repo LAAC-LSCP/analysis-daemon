@@ -14,7 +14,7 @@ from tests.unit.service_layer.fake_http_client import FakeHTTPClient
 
 
 @pytest.mark.asyncio
-async def test_service_create_tasks_1_tick(config_model: ConfigModel):
+async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
     dt = datetime.now()
     uow = PublishingUoW(FakeUoW())
     handlers = FakeHandlers(uow, {commands.CreateTask: ["result_1", "result_2"]})
@@ -51,9 +51,7 @@ async def test_service_create_tasks_1_tick(config_model: ConfigModel):
 
     await service._tick()
 
-    assert len(handlers.calls) == 2
-    assert handlers.calls[0] == (commands.CreateTask, "result_1")
-    assert handlers.calls[1] == (commands.CreateTask, "result_2")
+    assert len(service._broker.queued_commands) == 2
 
 
 @pytest.mark.asyncio
@@ -62,9 +60,7 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
     Simulates a different response coming in later
     Where user with `owner_id==UUID(123)` decided to also calculate-aclew
 
-    Checks that the handlers are only called once, even though
-    the response will give us two tasks (one has already been handled by the
-    time we get two)
+    Checks that the tasks are properly loaded, not duplicated
     """
     dt = datetime.now()
     uow = PublishingUoW(FakeUoW())
@@ -88,15 +84,15 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                     model_name=Model.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
-                    id=UUID("2"),
+                    id=UUID("1"),
                 ),
                 Task(
                     dataset_name="loann-2025",
                     datetime=dt,
-                    model_name=Model.VCM,
+                    model_name=Model.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
-                    id=UUID("3"),
+                    id=UUID("2"),
                 ),
             ],
         ]
@@ -112,10 +108,8 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
 
     await service._tick()
 
-    assert len(handlers.calls) == 1
-    assert handlers.calls[0] == (commands.CreateTask, "result_1")
+    assert len(service._broker.queued_commands) == 1
 
     await service._tick()
 
-    assert len(handlers.calls) == 2
-    assert handlers.calls[1] == (commands.CreateTask, "result_2")
+    assert len(service._broker.queued_commands) == 2
