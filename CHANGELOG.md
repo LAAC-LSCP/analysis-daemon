@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.8.0...v1.9.0) (2025-10-15)
+
+
+### Features
+
+* Improve Task Loading Logic ([#40](https://github.com/LAAC-LSCP/analysis-daemon/issues/40)) ([31c5929](https://github.com/LAAC-LSCP/analysis-daemon/commit/31c592974be97c09cdc813bda826f13e56cb2ca1))
+
 ## [1.8.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.7.0...v1.8.0) (2025-10-13)
 
 
