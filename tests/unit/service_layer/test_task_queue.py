@@ -19,6 +19,7 @@ async def test_command_queue_handling():
     def get_mock_handler(num):
         async def mock_handler(*_):
             call_order.append(f"handler_{num}")
+
             return f"result_{num}"
 
         return mock_handler
@@ -32,13 +33,12 @@ async def test_command_queue_handling():
         uow=uow,
     )
 
-    await queue.put(Command1())
-    await queue.put(Command2())
+    queue.put(Command1())
+    queue.put(Command2())
 
-    await queue.process_messages_until_empty()
+    await queue._tick()
 
     assert call_order == ["handler_1", "handler_2"]
-    assert queue._results == ["result_1", "result_2"]
 
 
 @pytest.mark.asyncio
@@ -48,6 +48,7 @@ async def test_event_queue_handling():
     def get_mock_handler(num):
         async def mock_handler(*_):
             call_order.append(f"handler_{num}")
+
             return f"result_{num}"
 
         return mock_handler
@@ -61,9 +62,9 @@ async def test_event_queue_handling():
         uow=uow,
     )
 
-    await queue.put(Event1())
-    await queue.put(Event2())
+    queue.put(Event1())
+    queue.put(Event2())
 
-    await queue.process_messages_until_empty()
+    await queue._tick()
 
     assert call_order == ["handler_1", "handler_2"]

@@ -76,9 +76,16 @@ class Service:
         self._shutdown = True
 
     async def main_loop(self) -> None:
+        await asyncio.gather(
+            self._main_loop(),
+            self._broker.event_queue.main_loop(),
+            self._broker.command_queue.main_loop(),
+        )
+
+    async def _main_loop(self) -> None:
         while not self._shutdown:
             current_t = datetime.now()
-            await self._tick()
+            self._tick()
 
             sleep_t: float = (
                 current_t + timedelta(seconds=self.S_PER_UPDATE) - datetime.now()
@@ -88,12 +95,12 @@ class Service:
 
         self._broker.shutdown()
 
-    async def _tick(self) -> None:
+    def _tick(self) -> None:
         with self._uow:
             new_tasks: Set[Task] = self._get_new_tasks()
 
             for task in new_tasks:
-                await self._broker.put(self._get_create_task_command(task))
+                self._broker.put(self._get_create_task_command(task))
                 self._uow.tasks.save(task)
 
             self._uow.commit()

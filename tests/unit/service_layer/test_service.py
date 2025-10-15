@@ -49,9 +49,10 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
         command_handlers=handlers.command_handlers,
     )
 
-    await service._tick()
+    service._tick()
+    # await service._broker.command_queue.test()
 
-    assert len(service._broker.queued_commands) == 2
+    assert service._broker.command_queue._queue.qsize() == 2
 
 
 @pytest.mark.asyncio
@@ -106,10 +107,10 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
         command_handlers=handlers.command_handlers,
     )
 
-    await service._tick()
+    service._tick()
 
-    assert len(service._broker.queued_commands) == 1
+    assert service._broker.command_queue._queue.qsize() == 1
 
-    await service._tick()
+    service._tick()
 
-    assert len(service._broker.queued_commands) == 2
+    assert service._broker.command_queue._queue.qsize() == 2
