@@ -1,6 +1,6 @@
 import subprocess
 import tempfile
-from pathlib import PosixPath
+from pathlib import Path, PosixPath
 from typing import Generator
 
 import pytest
@@ -17,9 +17,9 @@ def test_package_installation():
     assert "analysis-daemon" in result.stdout
 
 
-def test_run_migrations_creates_db(temp_workspace):
+def test_run_migrations_creates_db(temp_workspace: PosixPath, config_path: Path):
     result = subprocess.run(
-        ["run-migrations"],
+        ["run-migrations", "--config", str(config_path)],
         capture_output=True,
         cwd=temp_workspace,
     )

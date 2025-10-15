@@ -44,6 +44,7 @@ class HTTPClient:
     def headers(self) -> Headers:
         return {
             "Authorization": f"Bearer {self._access_token}",
+            "accept": "application/json",
         }
 
     def _get_access_token(
@@ -54,9 +55,13 @@ class HTTPClient:
             "client_id": client_id,
             "client_secret": client_secret,
         }
+        headers: Headers = {
+            "accept": "application/json",
+            "Content-Type": "application/json",
+        }
 
         response: requests.Response = requests.post(
-            uri, data=payload, timeout=self._timeout_s
+            uri, json=payload, timeout=self._timeout_s, headers=headers
         )
         response.raise_for_status()
 
@@ -69,7 +74,7 @@ class HTTPClient:
         )
 
     def get_all_tasks(self) -> response_types.Tasks:
-        uri: str = self._remote_api_url + "/api/analytics/tasks/"
+        uri: str = self._remote_api_url + "/api/analytics/tasks"
 
         try:
             response = requests.get(uri, headers=self.headers, timeout=self._timeout_s)
@@ -85,10 +90,15 @@ class HTTPClient:
     def get_all_tasks_with_status(self, status: TaskStatus) -> response_types.Tasks:
         # TODO: Collides with the tasks_by_id endpoint, could be a problem
         # if we add new types of status
-        uri: str = self._remote_api_url + f"/api/analytics/tasks/{status}"
+        uri: str = self._remote_api_url + "/api/analytics/tasks"
 
         try:
-            response = requests.get(uri, headers=self.headers, timeout=self._timeout_s)
+            response = requests.get(
+                uri,
+                headers=self.headers,
+                timeout=self._timeout_s,
+                params={status: status},
+            )
             response.raise_for_status()
             data = response.json()
 
@@ -158,4 +168,4 @@ class HTTPClient:
             )
             response.raise_for_status()
 
-            return
+        return

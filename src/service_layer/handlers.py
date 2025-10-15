@@ -33,10 +33,7 @@ async def handle_complete_task(
     with uow:
         task = uow.tasks.get(command.task_id)
 
-        if not task:
-            return
-
-        if task.completed:
+        if not task or task.completed:
             return
 
         uow.tasks.save(task)

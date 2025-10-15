@@ -64,9 +64,6 @@ def test_http_client_get_by_status(http_client: HTTPClient):
 
 @pytest.mark.asyncio
 async def test_http_client_put_task(http_client: HTTPClient):
-    # TODO: we still see here a discrepancy between
-    # request- and domain- like tasks... We need an adapter
-    # that converts them (e.g., resolves filesystem to dataset and back again)
     await http_client.put_task(
         Task(
             owner_id=UUID("1001"),
@@ -96,6 +93,7 @@ def http_client() -> HTTPClient:
         pytest.skip(
             "Skipping E2E tests on MacOS runner due to networking restrictions",
         )
+
     return HTTPClient(
         remote_api_url=f"http://{TEST_SERVER_DOMAIN}:{TEST_SERVER_PORT}",
         client_id="test_id",

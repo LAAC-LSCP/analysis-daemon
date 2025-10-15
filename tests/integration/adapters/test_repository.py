@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Optional
 
 import pytest
 from sqlalchemy import text
@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 import src.domain.model as model
 from src.adapters.sqlalchemy_repository import SQLAlchemyRepository
-from src.core.types import UUID
+from src.core.types import UUID, TaskStatus
 
 
 def test_repository_saves_task(session: Session):
@@ -175,14 +175,38 @@ def test_repository_get_by_owners(
     assert saved_tasks == [task_1, task_2, task_3, task_4]
 
 
+def test_repository_get_by_status(
+    session: Session,
+    simple_task_factory: Callable[[UUID, UUID, Optional[TaskStatus]], model.Task],
+):
+    repo = SQLAlchemyRepository(session)
+
+    task_1 = simple_task_factory(UUID("owner_1"), UUID("1"), TaskStatus.RUNNING)
+    task_2 = simple_task_factory(UUID("owner_2"), UUID("2"), TaskStatus.PENDING)
+
+    repo.save(task_1)
+    repo.save(task_2)
+    session.commit()
+
+    running_tasks = repo.get_by_status(TaskStatus.RUNNING)
+    pending_tasks = repo.get_by_status(TaskStatus.PENDING)
+
+    assert running_tasks is not None and pending_tasks is not None
+    assert [running_tasks, pending_tasks] == [[task_1], [task_2]]
+
+
 @pytest.fixture
-def simple_task_factory() -> Callable[[UUID, UUID], model.Task]:
-    def factory(owner_id: UUID, _id: UUID) -> model.Task:
+def simple_task_factory() -> Callable[[UUID, UUID, Optional[TaskStatus]], model.Task]:
+    def factory(
+        owner_id: UUID, _id: UUID, status: Optional[TaskStatus] = None
+    ) -> model.Task:
+        status = status or TaskStatus.PENDING
+
         return model.Task(
             owner_id=owner_id,
             filesystem=Path("."),
             created_at=datetime.now(),
-            status=model.TaskStatus.PENDING,
+            status=status,
             model=model.Model.VTC,
             script_path=Path("/test.sh"),
             _id=_id,

@@ -5,7 +5,7 @@ from src.adapters.tracking_repository import TrackingRepository
 from src.domain.commands import Command
 from src.domain.events import Event
 from src.service_layer.unit_of_work.uow import AbstractUoW
-from tests.unit.service_layer.fakes import FakeRepository
+from tests.unit.service_layer.fake_repository import FakeRepository
 
 
 class Event1(Event):

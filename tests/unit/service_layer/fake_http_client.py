@@ -1,6 +1,7 @@
 from typing import List
 
 from src.core.response_types import Tasks
+from src.core.types import TaskStatus
 from src.service_layer.http_client import HTTPClient
 
 
@@ -24,3 +25,10 @@ class FakeHTTPClient(HTTPClient):
         self._counter += 1
 
         return self._results[idx]
+
+    def get_all_tasks_with_status(self, status: TaskStatus) -> Tasks:
+        idx: int = self._counter % len(self._results)
+
+        self._counter += 1
+
+        return [result for result in self._results[idx] if result.status == status]

@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -8,9 +8,6 @@ from src.adapters.tracking_repository import TrackingRepository
 from src.service_layer.unit_of_work.uow import AbstractUoW
 
 type SessionFactory = Callable[[], Session]
-
-
-DEFAULT_DATABASE_URL: str = "sqlite:///database.db"
 
 
 class SQLAlchemyUoW(AbstractUoW[TrackingRepository[SQLAlchemyRepository]]):
@@ -23,11 +20,9 @@ class SQLAlchemyUoW(AbstractUoW[TrackingRepository[SQLAlchemyRepository]]):
 
     def __init__(
         self,
-        session_factory: Optional[SessionFactory] = None,
+        session_factory: SessionFactory,
     ):
-        self.session_factory = session_factory or self.get_session_factory(
-            DEFAULT_DATABASE_URL
-        )
+        self.session_factory = session_factory
 
     def __enter__(self) -> "SQLAlchemyUoW":
         self.session = self.session_factory()

@@ -3,6 +3,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
+from src.config.config import ConfigModel
+from src.core import response_types
 from src.core.types import UUID, Model, TaskStatus
 from src.domain.commands import Command
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
@@ -14,7 +16,7 @@ class Task:
     filesystem: Path
     status: TaskStatus
     script_path: Optional[Path]
-    model: Optional[Model]
+    model: Model
     events: List[Event]
     commands: List[Command]
 
@@ -34,7 +36,7 @@ class Task:
         self.status = status or TaskStatus.PENDING
         self._id = _id or UUID(str(uuid.uuid4()))
         self.script_path = script_path or None
-        self.model = model or None
+        self.model = model or Model.UNKNOWN
 
         self.owner_id = owner_id
         self.filesystem = filesystem
@@ -104,6 +106,28 @@ class Task:
             TaskStarted(
                 task_id=self._id,
             )
+        )
+
+    def to_response_type_task(self, config: ConfigModel) -> "response_types.Task":
+        dataset_name: str | None = next(
+            (
+                fs.dataset_name
+                for fs in config.filesystems
+                if fs.path == str(self.filesystem)
+            ),
+            None,
+        )
+
+        if dataset_name is None:
+            raise ValueError(f"No filesystem found with path {str(self.filesystem)}")
+
+        return response_types.Task(
+            datetime=self.created_at,
+            owner_id=self.owner_id,
+            model_name=self.model,
+            dataset_name=dataset_name,
+            status=self.status,
+            id=self._id,
         )
 
     def __eq__(self, other):

@@ -2,6 +2,7 @@
 The run-daemon command is the entry-point for our daemon in a production environment
 """
 
+import asyncio
 from pathlib import Path
 
 import click
@@ -17,9 +18,9 @@ from src.service_layer.bootstrap import bootstrap
     default="configuration.toml",
     help="Path to a TOML config file (overrides default).",
 )
-async def run_daemon(config: str) -> None:
+def run_daemon(config: str) -> None:
     service = bootstrap(Path(config))
-    await service.main_loop()
+    asyncio.run(service.main_loop())
 
 
 # For the purpose of debugging
