@@ -36,8 +36,7 @@ include = [
 
 
 [tool.poetry.scripts]
-run-daemon = "src.cli.run_daemon:run_daemon"
-run-migrations = "src.cli.run_migrations:run_migrations"
+echolalia = "src.cli.echolalia:echolalia"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
 pytest-asyncio = "^1.1.0"

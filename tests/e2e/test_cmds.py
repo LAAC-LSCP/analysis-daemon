@@ -19,7 +19,7 @@ def test_package_installation():
 
 def test_run_migrations_creates_db(temp_workspace: PosixPath, config_path: Path):
     result = subprocess.run(
-        ["run-migrations", "--config", str(config_path)],
+        ["echolalia", "run-migrations", "--config", str(config_path)],
         capture_output=True,
         cwd=temp_workspace,
     )
