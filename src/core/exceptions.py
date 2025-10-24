@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from src.core.types import TaskStatus
+
 
 class CoreException(Exception):
     """Base exception for core errors."""
@@ -46,6 +48,17 @@ class ScriptPathDoesNotExistInDataset(CoreException):
         self.script_path = script_path
         self.dataset_name = dataset_name
         super().__init__(
-            f"Script path '{script_path} does not exist' \
+            f"Script path '{script_path}' does not exist \
             in dataset '{dataset_name}'."
+        )
+
+
+class InValidTaskStatus(CoreException):
+    """Raised when trying to pass an invalid task status"""
+
+    def __init__(self, task_status: str):
+        self.task_status = task_status
+
+        super().__init__(
+            f"task_status '{task_status}' not in {str([s.value for s in TaskStatus])}"
         )

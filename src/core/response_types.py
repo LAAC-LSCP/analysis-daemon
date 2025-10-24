@@ -30,6 +30,19 @@ class Status(TypedDict):
     created: datetime
 
 
+class PostPayload(TypedDict):
+    """
+    The 'post' endpoint is quite restricted for security reasons
+    and therefore has a kind of odd payload, not a partial task
+    as you might expect
+    """
+
+    analytics_uid_label: str
+    uid_dataset: str
+    kc_sub: str
+    estimated_duration: int
+
+
 @dataclass
 class Task:
     datetime: datetime
@@ -121,4 +134,14 @@ class Task:
             script_path=script_path,
             model=self.model_name,
             _id=self.id,
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"Task {self.id}\n"
+            f"  Model: {self.model_name}\n"
+            f"  Dataset: {self.dataset_name}\n"
+            f"  Status: {self.status}\n"
+            f"  Owner: {self.owner_id}\n"
+            f"  Created: {self.datetime.strftime('%Y-%m-%d %H:%M:%S')}"
         )

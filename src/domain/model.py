@@ -108,6 +108,7 @@ class Task:
             )
         )
 
+    # TODO: is "network" not a better word here?
     def to_response_type_task(self, config: ConfigModel) -> "response_types.Task":
         dataset_name: str | None = next(
             (
