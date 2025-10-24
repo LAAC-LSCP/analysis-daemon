@@ -109,12 +109,10 @@ class Task:
         if filesystem_config is None:
             raise ValueError(f"No filesystem found for dataset {self.dataset_name}")
 
-        # TODO: clear symptom that the configuration isn't quite set up right... But
-        # too early to go fix this, more important things to do.
         script_path: Path | None = next(
             (
-                script.script_path
-                for script in filesystem_config.scripts
+                script.path
+                for script in config.scripts
                 if script.model_name == self.model_name
             ),
             None,

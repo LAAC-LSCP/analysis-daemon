@@ -72,16 +72,19 @@ def _replace_relative_with_absolute_paths(
     config_as_toml: dict, config_file: Path
 ) -> dict:
     config_as_toml["filesystems"] = [
-        _fs_with_abs_path(fs, config_file) for fs in config_as_toml["filesystems"]
+        _item_with_abs_path(fs, config_file) for fs in config_as_toml["filesystems"]
+    ]
+    config_as_toml["scripts"] = [
+        _item_with_abs_path(script, config_file) for script in config_as_toml["scripts"]
     ]
 
     return config_as_toml
 
 
-def _fs_with_abs_path(fs: dict, config_file: Path) -> dict:
-    fs["path"] = str((config_file.parent / fs["path"]).resolve())
+def _item_with_abs_path(item: dict, config_file: Path) -> dict:
+    item["path"] = str((config_file.parent / item["path"]).resolve())
 
-    return fs
+    return item
 
 
 @pytest.fixture(scope="session")

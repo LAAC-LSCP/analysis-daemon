@@ -19,8 +19,8 @@ class DatabaseConfig(BaseModel):
 
 
 class ScriptConfig(BaseModel):
-    script_name: str = Field(min_length=1)
-    script_path: Path
+    name: str = Field(min_length=1)
+    path: Path
     model_name: str
 
     @model_validator(mode="after")
@@ -34,19 +34,6 @@ class ScriptConfig(BaseModel):
 class FileSystemConfig(BaseModel):
     dataset_name: str = Field(min_length=1)
     path: DirectoryPath
-    scripts: List[ScriptConfig]
-
-    @model_validator(mode="after")
-    def check_scripts_exist(self) -> "FileSystemConfig":
-        for script in self.scripts:
-            script_abs_path = self.path / script.script_path
-
-            if not script_abs_path.is_file():
-                raise ValidationError(
-                    f"File at {str(script_abs_path)} does not exist", []
-                )
-
-        return self
 
 
 class JobsConfig(BaseModel):
@@ -65,6 +52,7 @@ class ConfigModel(BaseModel):
     jobs: JobsConfig
     http: HTTPConfig
     filesystems: List[FileSystemConfig]
+    scripts: List[ScriptConfig]
 
 
 def load_config(file_path: Path) -> ConfigModel:
