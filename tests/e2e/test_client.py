@@ -1,12 +1,10 @@
 import platform
 from datetime import datetime
-from pathlib import Path
 
 import pytest
 
 from src.core import response_types
 from src.core.types import UUID, Model, TaskStatus
-from src.domain.model import Task
 from src.service_layer.http_client import HTTPClient
 from tests.e2e.conftest import TEST_SERVER_DOMAIN, TEST_SERVER_PORT
 
@@ -65,14 +63,13 @@ def test_http_client_get_by_status(http_client: HTTPClient):
 @pytest.mark.asyncio
 async def test_http_client_put_task(http_client: HTTPClient):
     await http_client.put_task(
-        Task(
+        response_types.Task(
+            datetime=datetime.now(),
             owner_id=UUID("1001"),
-            filesystem=Path("/the_filesystem"),
-            created_at=datetime(year=2024, month=1, day=1),
+            model_name=Model.VTC,
+            dataset_name="loann_2025",
             status=TaskStatus.RUNNING,
-            script_path=None,
-            model=Model.VTC,
-            _id=UUID("3"),
+            id=UUID("3"),
         )
     )
 

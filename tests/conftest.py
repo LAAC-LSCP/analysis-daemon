@@ -1,5 +1,4 @@
 import shutil
-import tempfile
 import tomllib
 from pathlib import Path
 from typing import Generator
@@ -45,27 +44,26 @@ def session(session_factory) -> Generator[Session]:
 
 
 @pytest.fixture(scope="session")
-def config_path() -> Generator[Path]:
+def config_path(tmp_path_factory: pytest.TempPathFactory) -> Generator[Path]:
     current_dir: Path = Path(__file__).parent
 
     config_file: Path = current_dir / "fake_filesystem" / "configuration.toml"
+    temp_dir = tmp_path_factory.mktemp("config")
+    temp_config_file = temp_dir / "configuration.toml"
 
     # The testing configuration.toml has relative paths. Need to replace with absolute
-    with tempfile.NamedTemporaryFile(delete=True) as tf:
-        config_as_toml: dict
+    with open(config_file, "rb") as f:
+        config_as_toml = tomllib.load(f)
 
-        with open(config_file, "rb") as f:
-            config_as_toml = tomllib.load(f)
+    config_as_toml = _replace_relative_with_absolute_paths(
+        config_as_toml,
+        config_file,
+    )
 
-        config_as_toml = _replace_relative_with_absolute_paths(
-            config_as_toml,
-            config_file,
-        )
-
+    with open(temp_config_file, "wb") as tf:
         tomli_w.dump(config_as_toml, tf)
-        tf.flush()
 
-        yield Path(tf.name)
+    yield temp_config_file
 
 
 def _replace_relative_with_absolute_paths(

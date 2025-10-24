@@ -5,8 +5,7 @@ import requests
 from tenacity import retry, wait_fixed
 
 import src.core.response_types as response_types
-from src.core.types import UUID, Model, TaskStatus
-from src.domain.model import Task as DomainTask
+from src.core.types import UUID, TaskStatus
 
 Headers = Mapping[str, str]
 
@@ -154,30 +153,14 @@ class HTTPClient:
 
         return response_types.Task.from_dict(data)
 
-    # TODO: Isn't it weird that this is the only one using a DomainTask. Probably want
-    # to use response-type tasks here. Besides, the conversion method exists that makes
-    # this really simple
     @retry(
         reraise=True,
         wait=wait_fixed(_retry_time_s),
     )
-    async def put_task(self, task: DomainTask) -> None:
-        uri: str = self._remote_api_url + f"/api/analytics/tasks/{task._id}"
+    async def put_task(self, task: response_types.Task) -> None:
+        uri: str = self._remote_api_url + f"/api/analytics/tasks/{task.id}"
 
-        # TODO: I think it's useful to change the namings later on
-        # in how we define tasks in our domain
-        # also some helpers that convert our domain- and request-like tasks
-        # might be useful
-        request_task = response_types.Task(
-            datetime=task.created_at,
-            owner_id=task.owner_id,
-            model_name=task.model or Model.UNKNOWN,
-            dataset_name=str(task.filesystem),
-            status=task.status,
-            id=task._id,
-        )
-
-        payload: Mapping[str, str] = request_task.to_dict()
+        payload: Mapping[str, str] = task.to_dict()
 
         # While getting should block the scheduler's main loop, as scheduling depends
         # on retrieving tasks updates and retries should not

@@ -7,12 +7,12 @@ or for testing purposes
 
 import asyncio
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 import click
 from click import Context
 
-from src.config.config import ConfigModel, load_config
+from src.config.config import load_config
 from src.core.exceptions import InValidTaskStatus
 from src.core.response_types import PostPayload, Task
 from src.core.types import UUID, Model, TaskStatus
@@ -47,7 +47,7 @@ def task_manager(ctx: Context):
 @click.pass_context
 def get(ctx: Context, id: Optional[str], status: Optional[str]):
     """Prints tasks received from the Echolalia server"""
-    http_client, _ = _get_http_client(ctx.obj["config"])
+    http_client = _get_http_client(ctx.obj["config"])
 
     if id is not None:
         task = http_client.get_task_by_id(UUID(id))
@@ -78,7 +78,7 @@ def get(ctx: Context, id: Optional[str], status: Optional[str]):
 def post(ctx: Context):
     """Put a task on the remote server"""
     config = ctx.obj["config"]
-    http_client, _ = _get_http_client(config)
+    http_client = _get_http_client(config)
 
     payload: PostPayload = {
         "analytics_uid_label": "",
@@ -147,7 +147,7 @@ def put(
     task_status: Optional[TaskStatus] = TaskStatus(status) if status else None
 
     config = ctx.obj["config"]
-    http_client, config_model = _get_http_client(config)
+    http_client = _get_http_client(config)
 
     existing_task = http_client.get_task_by_id(UUID(id))
 
@@ -166,25 +166,22 @@ of 'put'?"
         id=UUID(id),
     )
 
-    asyncio.run(_post_async(http_client, config_model, task))
+    asyncio.run(_post_async(http_client, task))
 
     print(task)
 
 
-async def _post_async(http_client: HTTPClient, config: ConfigModel, task: Task):
-    await http_client.put_task(task.to_model_type_task(config))
+async def _post_async(http_client: HTTPClient, task: Task):
+    await http_client.put_task(task)
 
 
-def _get_http_client(config: Path) -> Tuple[HTTPClient, ConfigModel]:
+def _get_http_client(config: Path) -> HTTPClient:
     config_model = load_config(config)
 
-    return (
-        HTTPClient(
-            remote_api_url=str(config_model.http.base_url),
-            client_id=config_model.http.client_id,
-            client_secret=config_model.http.client_secret,
-        ),
-        config_model,
+    return HTTPClient(
+        remote_api_url=str(config_model.http.base_url),
+        client_id=config_model.http.client_id,
+        client_secret=config_model.http.client_secret,
     )
 
 
