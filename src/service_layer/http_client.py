@@ -138,6 +138,25 @@ class HTTPClient:
                     {exc}"
             ) from exc
 
+    # TODO: negotiate with Echolalia team to use dataset name instead of id
+    def post_task(self, payload: response_types.PostPayload) -> response_types.Task:
+        uri: str = self._remote_api_url + "/api/analytics/tasks"
+        data: dict
+
+        try:
+            response = requests.post(
+                uri, json=payload, headers=self.headers, timeout=self._timeout_s
+            )
+            response.raise_for_status()
+            data = response.json()
+        except requests.RequestException as exc:
+            raise RuntimeError(f"Failed to post task: {exc}") from exc
+
+        return response_types.Task.from_dict(data)
+
+    # TODO: Isn't it weird that this is the only one using a DomainTask. Probably want
+    # to use response-type tasks here. Besides, the conversion method exists that makes
+    # this really simple
     @retry(
         reraise=True,
         wait=wait_fixed(_retry_time_s),

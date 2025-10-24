@@ -30,6 +30,19 @@ class Status(TypedDict):
     created: datetime
 
 
+class PostPayload(TypedDict):
+    """
+    The 'post' endpoint is quite restricted for security reasons
+    and therefore has a kind of odd payload, not a partial task
+    as you might expect
+    """
+
+    analytics_uid_label: str
+    uid_dataset: str
+    kc_sub: str
+    estimated_duration: int
+
+
 @dataclass
 class Task:
     datetime: datetime
