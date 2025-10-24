@@ -9,6 +9,7 @@ from click import Context
 
 from src.cli.run_daemon import run_daemon
 from src.cli.run_migrations import run_migrations
+from src.cli.task_manager import task_manager
 
 
 @click.group()
@@ -30,6 +31,7 @@ def echolalia(ctx: Context, config: Path):
 
 echolalia.add_command(run_daemon)
 echolalia.add_command(run_migrations)
+echolalia.add_command(task_manager)
 
 if __name__ == "__main__":
     echolalia()

@@ -135,3 +135,13 @@ class Task:
             model=self.model_name,
             _id=self.id,
         )
+
+    def __str__(self) -> str:
+        return (
+            f"Task {self.id}\n"
+            f"  Model: {self.model_name}\n"
+            f"  Dataset: {self.dataset_name}\n"
+            f"  Status: {self.status}\n"
+            f"  Owner: {self.owner_id}\n"
+            f"  Created: {self.datetime.strftime('%Y-%m-%d %H:%M:%S')}"
+        )

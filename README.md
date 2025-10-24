@@ -17,6 +17,11 @@ For updating the DB
 echolalia --config [path to configuration toml file] run-migrations
 ```
 
+To manage tasks directly from the CLI, say for bug-fixing purposes, see
+```bash
+echolalia --config [path to configuration toml file] task-manager --help
+```
+
 ## Configuration
 
 An example configuration is given below for configuration.toml.
