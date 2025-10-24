@@ -15,6 +15,16 @@ dataset_name = "loann_2025"
 path = "./datasets/loann_2025"
 
   [[filesystems.scripts]]
-  script_name = "run_vtc"
-  script_path = "run_model.sh"
+  script_name = "run alice"
+  script_path = "run_alice.sh"
+  model_name = "alice"
+
+  [[filesystems.scripts]]
+  script_name = "run vcm"
+  script_path = "run_vcm.sh"
+  model_name = "vcm"
+
+  [[filesystems.scripts]]
+  script_name = "run vtc"
+  script_path = "run_vtc.sh"
   model_name = "vtc"
