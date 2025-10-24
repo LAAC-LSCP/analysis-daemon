@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.9.0...v1.10.0) (2025-10-24)
+
+
+### Features
+
+* Task manager cli ([f451fbe](https://github.com/LAAC-LSCP/analysis-daemon/commit/f451fbeabf45e15eb17f6118be3c7206d300462b))
+
 ## [1.9.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.8.0...v1.9.0) (2025-10-15)
 
 
