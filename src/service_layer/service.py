@@ -31,9 +31,6 @@ class Service:
     Then doing some post-processing on the received tasks to avoid duplication
     And loading the tasks on the associated task queues
 
-    TODO: consider how the application "ticks", that is, for now a tick loads on the
-    queue and the queue handles all messages it has immediately and greedily
-
     But moving forward we might want to put the queues on their own threads and run
     them continuously, or (for testability) let queues themselves have an internal
     clock that ticks

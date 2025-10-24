@@ -13,6 +13,4 @@ command data.
 
 Both queues are contained by a single broker which can route a message to either queue,
 for the moment simply depending on the type of message (a Command or an Event?)
-
-TODO: Outline the command queue algorithm
 """

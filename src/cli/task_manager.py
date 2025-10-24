@@ -92,8 +92,6 @@ def post(ctx: Context):
     print(task)
 
 
-# TODO: Below, isn't it more reasonable to define the task as it's defined on the
-# network
 @click.command()
 @click.pass_context
 @click.option(
