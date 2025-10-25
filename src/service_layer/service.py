@@ -1,10 +1,10 @@
 import asyncio
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import Optional, Set
 
 import src.core.response_types as response_types
-from src.config.config import ConfigModel
+from src.config.config import ConfigModel, ScriptConfig
+from src.core.exceptions import NoScriptWithModel
 from src.core.types import TaskStatus
 from src.domain.commands import CreateTask
 from src.domain.model import Task
@@ -114,12 +114,22 @@ class Service:
         ) - set(existing_tasks)
 
     def _get_create_task_command(self, task: Task) -> CreateTask:
-        # TODO: Probably don't need script_paths.
-        # It's all clear from the config and model
+        script: ScriptConfig | None = next(
+            (
+                script
+                for script in self._config.scripts
+                if script.model_name == task.model
+            ),
+            None,
+        )
+
+        if script is None:
+            raise NoScriptWithModel(task.model)
+
         return CreateTask(
             task_id=task._id,
             owner_id=task.owner_id,
             filesystem=task.filesystem,
-            script_path=task.script_path or Path(""),
+            script_path=script.path,
             model=task.model,
         )
