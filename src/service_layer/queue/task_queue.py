@@ -5,46 +5,38 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from queue import PriorityQueue
 from typing import (
-    Any,
-    Awaitable,
-    Callable,
     Generic,
     List,
     Optional,
     Tuple,
-    TypeVar,
 )
 
 from src.domain import commands
-from src.service_layer.types import Message
+from src.service_layer.default_handlers import MessageHandlers, MessageT
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
-
-MessageType = TypeVar("MessageType", bound=Message)
-MessageCallback = Callable[[Any, PublishingUoW], Awaitable[Any]]
-Handlers = dict[Any, List[MessageCallback]]
 
 
 @dataclass(order=True)
-class PrioritizedItem(Generic[MessageType]):
+class PrioritizedItem(Generic[MessageT]):
     priority: int
-    item: MessageType = field(compare=False)
+    item: MessageT = field(compare=False)
 
 
-class TaskQueue(ABC, Generic[MessageType]):
+class TaskQueue(ABC, Generic[MessageT]):
     S_PER_UPDATE: int = 30
 
     _max_running_items: int
 
     _queue: PriorityQueue
-    _running_items: List[Tuple[MessageType, Process | None]]
+    _running_items: List[Tuple[MessageT, Process | None]]
     _uow: PublishingUoW
     _shutdown: bool
-    _handlers: Handlers
+    _handlers: MessageHandlers
 
     def __init__(
         self,
         uow: PublishingUoW,
-        handlers: Handlers,
+        handlers: MessageHandlers,
         max_running_items: Optional[int] = None,
     ):
         self._uow = uow
@@ -81,10 +73,10 @@ class TaskQueue(ABC, Generic[MessageType]):
         )
 
         for _ in range(num_items_to_pop):
-            item: MessageType = self._queue.get().item
+            item: MessageT = self._queue.get().item
             await self._process_item(item)
 
-    async def _process_item(self, item: MessageType) -> None:
+    async def _process_item(self, item: MessageT) -> None:
         if self._is_external_job(item):
             proc: Process = await asyncio.create_subprocess_exec(
                 "echo",
@@ -99,32 +91,32 @@ class TaskQueue(ABC, Generic[MessageType]):
             self._running_items.append((item, None))
             await self._run_python_job(item)
 
-    def _is_external_job(self, item: MessageType) -> bool:
+    def _is_external_job(self, item: MessageT) -> bool:
         return isinstance(item, commands.CreateTask)
 
-    async def _run_python_job(self, item: MessageType):
-        for handler in self._handlers[type(item)]:
+    async def _run_python_job(self, item: MessageT):
+        for handler in self._handlers[type(item)]:  # type: ignore
             await handler(item, self._uow)
 
         self._atomic_remove_from_running_items(item)
 
-    async def _monitor_job(self, item: MessageType, proc: Process):
+    async def _monitor_job(self, item: MessageT, proc: Process):
         await proc.wait()
 
         self._atomic_remove_from_running_items(item)
 
         _, _ = await proc.communicate()
 
-    def _atomic_remove_from_running_items(self, item: MessageType):
+    def _atomic_remove_from_running_items(self, item: MessageT):
         self._running_items = [(m, p) for (m, p) in self._running_items if m != item]
 
-    def put(self, message: MessageType) -> None:
+    def put(self, message: MessageT) -> None:
         priority = self._get_priority(message)
 
-        prioritized_item = PrioritizedItem[MessageType](priority=priority, item=message)
+        prioritized_item = PrioritizedItem[MessageT](priority=priority, item=message)
 
         self._queue.put(prioritized_item)
 
     @abstractmethod
-    def _get_priority(self, _: MessageType) -> int:
+    def _get_priority(self, _: MessageT) -> int:
         raise NotImplementedError

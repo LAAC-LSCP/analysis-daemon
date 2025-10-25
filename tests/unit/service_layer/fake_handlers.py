@@ -1,13 +1,15 @@
-from typing import Any, Awaitable, Callable, List, Optional, Tuple, Type
+from typing import Any, List, Optional, Tuple, Type
 
 import src.domain.commands as commands
 import src.domain.events as events
 from src.service_layer.default_handlers import (
     COMMAND_HANDLERS,
+    CommandHandler,
     CommandHandlers,
+    EventHandler,
     EventHandlers,
+    Message,
 )
-from src.service_layer.types import Message
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 Calls = List[Tuple[Type[Message], Optional[Any]]]
@@ -94,10 +96,8 @@ class FakeHandlers:
             for cmd_cls in self._command_results
         }
 
-    def _get_event_callback(
-        self, event_cls: Type[events.Event]
-    ) -> Callable[[Any, PublishingUoW], Awaitable[None]]:
-        async def _call_event(_: events.Event, __: PublishingUoW) -> None:
+    def _get_event_callback(self, event_cls: Type[events.Event]) -> EventHandler:
+        async def _call_event(event: events.Event, uow: PublishingUoW) -> None:
             self._calls.append((event_cls, None))
 
         return _call_event
@@ -105,9 +105,7 @@ class FakeHandlers:
     async def _call_event(self, cls: Type[events.Event], _: PublishingUoW) -> None:
         self._calls.append((cls, None))
 
-    def _get_command_callback(
-        self, cmd_cls: Type[commands.Command]
-    ) -> Callable[[Any, PublishingUoW], Any]:
+    def _get_command_callback(self, cmd_cls: Type[commands.Command]) -> CommandHandler:
         async def _call_command(command: commands.Command, uow: PublishingUoW) -> Any:
             # For normal behaviour
             for handler in COMMAND_HANDLERS[type(command)]:
