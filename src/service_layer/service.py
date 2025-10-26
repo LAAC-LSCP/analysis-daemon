@@ -4,6 +4,7 @@ from typing import Optional, Set
 
 import src.core.response_types as response_types
 from src.config.config import ConfigModel, ScriptConfig
+from src.core.decorators import catch_and_log_exception
 from src.core.exceptions import NoScriptWithModel
 from src.core.types import TaskStatus
 from src.domain.commands import CreateTask
@@ -92,6 +93,9 @@ class Service:
 
         self._broker.shutdown()
 
+    @catch_and_log_exception(
+        context_message="Error during database transaction in service tick cycle"
+    )
     def _tick(self) -> None:
         with self._uow:
             new_tasks: Set[Task] = self._get_new_tasks()
@@ -102,6 +106,9 @@ class Service:
 
             self._uow.commit()
 
+    @catch_and_log_exception(
+        default_return=set(), context_message="Error during discovery of new tasks"
+    )
     def _get_new_tasks(self) -> Set[Task]:
         remote_tasks: response_types.Tasks = (
             self._http_client.get_all_tasks_with_status(TaskStatus.PENDING)
