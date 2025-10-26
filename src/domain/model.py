@@ -78,6 +78,7 @@ class Task:
 
     def queue_task(self) -> None:
         self.status = TaskStatus.PENDING
+
         self.events.append(
             TaskCreated(
                 task_id=self._id,
@@ -90,7 +91,7 @@ class Task:
         self.events.append(
             TaskFailed(
                 task_id=self._id,
-                error_message=f"Task with id {self._id} failed: {repr(e)}",
+                stack_trace=f"Task with id {self._id} failed: {repr(e)}",
             )
         )
 
