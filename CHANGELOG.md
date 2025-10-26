@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.10.0...v1.11.0) (2025-10-26)
+
+
+### Features
+
+* improve configuration ([cac115f](https://github.com/LAAC-LSCP/analysis-daemon/commit/cac115f4daf79552e3dfe2b940d7ed47c73909da))
+
 ## [1.10.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.9.0...v1.10.0) (2025-10-24)
 
 
