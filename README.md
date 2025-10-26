@@ -45,17 +45,22 @@ partition = "echolalia"
 dataset_name = "dataset_1"
 path = "/Users/me/Desktop/datasets/dataset_1"
 
-  [[filesystems.scripts]]
-  script_name = "run_vtc"
-  script_path = "scripts/run_vtc.py"
-  model_name = "vtc"
-
 [[filesystems]]
 dataset_name = "dataset_2"
 path = "/Users/me/Desktop/datasets/dataset_2"
 
-  [[filesystems.scripts]]
-  script_name = "run_vtc"
-  script_path = "scripts/run_vtc.py"
-  model_name = "vtc"
+[[scripts]]
+script_name = "run_vtc"
+script_path = "/Users/me/Desktop/scripts/run_vtc.sh"
+model_name = "vtc"
+
+[[scripts]]
+script_name = "run_vcm"
+script_path = "/Users/me/Desktop/scripts/run_vcm.sh"
+model_name = "vcm"
+
+[[scripts]]
+script_name = "run_alice"
+script_path = "/Users/me/Desktop/scripts/run_alice.sh"
+model_name = "alice"
 ```

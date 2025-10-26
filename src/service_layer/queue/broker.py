@@ -1,8 +1,8 @@
 from src.domain.commands import Command
 from src.domain.events import Event
+from src.service_layer.default_handlers import Message
 from src.service_layer.queue.command_queue import CommandQueue
 from src.service_layer.queue.event_queue import EventQueue
-from src.service_layer.types import Message
 
 
 class MessageBroker:

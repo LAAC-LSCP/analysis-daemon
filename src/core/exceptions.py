@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.core.types import TaskStatus
+from src.core.types import Model, TaskStatus
 
 
 class CoreException(Exception):
@@ -27,6 +27,14 @@ class NoFileSystemWithDataset(CoreException):
         super().__init__(
             f"Dataset '{dataset_name}' does not exist in configured filesystems."
         )
+
+
+class NoScriptWithModel(CoreException):
+    """Raised when there is no script found for a given model"""
+
+    def __init__(self, model: Model):
+        self.model = model
+        super().__init__(f"No script found in configuration with model {model.value}")
 
 
 class ScriptNameNotInDataset(CoreException):

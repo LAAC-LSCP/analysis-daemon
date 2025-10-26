@@ -14,7 +14,17 @@ partition = "echolalia"
 dataset_name = "loann_2025"
 path = "./datasets/loann_2025"
 
-  [[filesystems.scripts]]
-  script_name = "run_vtc"
-  script_path = "run_model.sh"
-  model_name = "vtc"
+[[scripts]]
+name = "run alice"
+path = "./scripts/run_alice.sh"
+model_name = "alice"
+
+[[scripts]]
+name = "run vcm"
+path = "./scripts/run_vcm.sh"
+model_name = "vcm"
+
+[[scripts]]
+name = "run vtc"
+path = "./scripts/run_vtc.sh"
+model_name = "vtc"

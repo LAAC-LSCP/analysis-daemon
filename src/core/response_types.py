@@ -52,26 +52,13 @@ class Task:
     status: TaskStatus
     id: UUID
 
-    # TODO: this is quite hacky. I probably want to remove this
-    # later when I write better task-loading logic
-    # in fact it's much preferred to work with the id alone e.g., for replacing tasks
     def __eq__(self, other):
         if not isinstance(other, Task):
             return NotImplemented
-        return (
-            self.owner_id == other.owner_id
-            and self.model_name == other.model_name
-            and self.dataset_name == other.dataset_name
-        )
+        return self.id == other.id
 
     def __hash__(self):
-        return hash(
-            (
-                self.owner_id,
-                self.model_name,
-                self.dataset_name,
-            )
-        )
+        return hash(self.id)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -109,12 +96,10 @@ class Task:
         if filesystem_config is None:
             raise ValueError(f"No filesystem found for dataset {self.dataset_name}")
 
-        # TODO: clear symptom that the configuration isn't quite set up right... But
-        # too early to go fix this, more important things to do.
         script_path: Path | None = next(
             (
-                script.script_path
-                for script in filesystem_config.scripts
+                script.path
+                for script in config.scripts
                 if script.model_name == self.model_name
             ),
             None,

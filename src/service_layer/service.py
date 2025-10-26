@@ -1,10 +1,10 @@
 import asyncio
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import Optional, Set
 
 import src.core.response_types as response_types
-from src.config.config import ConfigModel
+from src.config.config import ConfigModel, ScriptConfig
+from src.core.exceptions import NoScriptWithModel
 from src.core.types import TaskStatus
 from src.domain.commands import CreateTask
 from src.domain.model import Task
@@ -30,9 +30,6 @@ class Service:
     The program works by every so often querying Echolalia for new tasks
     Then doing some post-processing on the received tasks to avoid duplication
     And loading the tasks on the associated task queues
-
-    TODO: consider how the application "ticks", that is, for now a tick loads on the
-    queue and the queue handles all messages it has immediately and greedily
 
     But moving forward we might want to put the queues on their own threads and run
     them continuously, or (for testability) let queues themselves have an internal
@@ -117,12 +114,22 @@ class Service:
         ) - set(existing_tasks)
 
     def _get_create_task_command(self, task: Task) -> CreateTask:
-        # TODO: Probably don't need script_paths.
-        # It's all clear from the config and model
+        script: ScriptConfig | None = next(
+            (
+                script
+                for script in self._config.scripts
+                if script.model_name == task.model
+            ),
+            None,
+        )
+
+        if script is None:
+            raise NoScriptWithModel(task.model)
+
         return CreateTask(
             task_id=task._id,
             owner_id=task.owner_id,
             filesystem=task.filesystem,
-            script_path=task.script_path or Path(""),
+            script_path=script.path,
             model=task.model,
         )

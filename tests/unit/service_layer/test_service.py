@@ -22,7 +22,7 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
         results=[
             [
                 Task(
-                    dataset_name="loann-2025",
+                    dataset_name="loann_2025",
                     datetime=dt,
                     model_name=Model.VTC,
                     owner_id=UUID("123"),
@@ -30,9 +30,9 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
                     id=UUID("1"),
                 ),
                 Task(
-                    dataset_name="loann-2025",
+                    dataset_name="loann_2025",
                     datetime=dt,
-                    model_name=Model.UNKNOWN,
+                    model_name=Model.VCM,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
                     id=UUID("2"),
@@ -50,7 +50,6 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
     )
 
     service._tick()
-    # await service._broker.command_queue.test()
 
     assert service._broker.command_queue._queue.qsize() == 2
 
@@ -70,7 +69,7 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
         results=[
             [
                 Task(
-                    dataset_name="loann-2025",
+                    dataset_name="loann_2025",
                     datetime=dt,
                     model_name=Model.VTC,
                     owner_id=UUID("123"),
@@ -80,7 +79,7 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
             ],
             [
                 Task(
-                    dataset_name="loann-2025",
+                    dataset_name="loann_2025",
                     datetime=dt,
                     model_name=Model.VTC,
                     owner_id=UUID("123"),
@@ -88,7 +87,7 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                     id=UUID("1"),
                 ),
                 Task(
-                    dataset_name="loann-2025",
+                    dataset_name="loann_2025",
                     datetime=dt,
                     model_name=Model.VTC,
                     owner_id=UUID("123"),

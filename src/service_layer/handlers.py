@@ -4,7 +4,7 @@ from src.domain.model import Task
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 
-async def handle_not_implemented(_: Event, __: PublishingUoW) -> None:
+async def handle_not_implemented(event: Event, uow: PublishingUoW) -> None:
     raise NotImplementedError
 
 
