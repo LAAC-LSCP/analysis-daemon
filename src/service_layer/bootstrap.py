@@ -9,8 +9,10 @@ from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 from src.service_layer.unit_of_work.sqlalchemy_uow import SQLAlchemyUoW
 
 
-def setup_logging():
-    logging.basicConfig(level=logging.INFO)
+def setup_logging() -> logging.Logger:
+    logging.basicConfig(filename="echolalia.log", level=logging.INFO)
+
+    return logging.getLogger(__name__)
 
 
 def bootstrap(config_file: Path) -> Service:
@@ -40,12 +42,14 @@ def bootstrap(config_file: Path) -> Service:
         client_secret=config.http.client_secret,
     )
 
-    setup_logging()
+    logger = setup_logging()
 
     service = Service(
         uow=sql_uow,
         http_client=http_client,
         config=config,
     )
+
+    logger.info("Bootstrap phase complete")
 
     return service
