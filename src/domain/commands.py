@@ -29,6 +29,8 @@ class CreateTask(Command):
 @dataclass
 class RunTask(Command):
     task_id: UUID
+    filesystem_path: Path
+    script_path: Path
 
 
 @dataclass

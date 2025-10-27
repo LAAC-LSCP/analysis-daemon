@@ -15,7 +15,7 @@ class Task:
     created_at: datetime
     filesystem: Path
     status: TaskStatus
-    script_path: Optional[Path]
+    script_path: Path
     model: Model
     events: List[Event]
     commands: List[Command]
@@ -26,18 +26,18 @@ class Task:
         self,
         owner_id: UUID,
         filesystem: Path,
+        script_path: Path,
         created_at: Optional[datetime] = None,
         status: Optional[TaskStatus] = None,
-        script_path: Optional[Path] = None,
         model: Optional[Model] = None,
         _id: Optional[UUID] = None,
     ):
         self.created_at = created_at or datetime.now()
         self.status = status or TaskStatus.PENDING
         self._id = _id or UUID(str(uuid.uuid4()))
-        self.script_path = script_path or None
         self.model = model or Model.UNKNOWN
 
+        self.script_path = script_path
         self.owner_id = owner_id
         self.filesystem = filesystem
 
@@ -87,6 +87,8 @@ class Task:
         self.commands.append(
             RunTask(
                 task_id=self._id,
+                script_path=self.script_path,
+                filesystem_path=self.filesystem,
             )
         )
 
@@ -100,7 +102,7 @@ class Task:
             )
         )
 
-    def run(self) -> None:
+    def start_run(self) -> None:
         if self.status != TaskStatus.PENDING:
             raise ValueError(
                 f"Cannot start task in {self.status} state"
@@ -113,6 +115,8 @@ class Task:
                 task_id=self._id,
             )
         )
+
+    def end_run(self) -> None:
         self.commands.append(CompleteTask(task_id=self._id))
 
     # TODO: is "network" not a better word here?

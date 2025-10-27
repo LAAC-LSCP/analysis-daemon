@@ -12,8 +12,11 @@ from src.adapters.orm import metadata, start_mappers
 from src.config.config import ConfigModel, load_config
 
 
-@pytest.fixture
-def test_system_dir(tmp_path_factory) -> Path:
+@pytest.fixture(scope="session")
+def test_system_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """
+    A temporary copy of the fake filesystem directory
+    """
     src = Path(__file__).parent / "fake_filesystem"
     dst = tmp_path_factory.mktemp("fake_filesystem")
     shutil.copytree(src, dst, dirs_exist_ok=True)
@@ -44,12 +47,10 @@ def session(session_factory) -> Generator[Session]:
 
 
 @pytest.fixture(scope="session")
-def config_path(tmp_path_factory: pytest.TempPathFactory) -> Generator[Path]:
-    current_dir: Path = Path(__file__).parent
-
-    config_file: Path = current_dir / "fake_filesystem" / "configuration.toml"
-    temp_dir = tmp_path_factory.mktemp("config")
-    temp_config_file = temp_dir / "configuration.toml"
+def config_path(test_system_dir: Path) -> Generator[Path]:
+    fake_filesystem_dir: Path = Path(__file__).parent / "fake_filesystem"
+    config_file: Path = fake_filesystem_dir / "configuration.toml"
+    temp_config_file: Path = test_system_dir / "configuration_toml"
 
     # The testing configuration.toml has relative paths. Need to replace with absolute
     with open(config_file, "rb") as f:

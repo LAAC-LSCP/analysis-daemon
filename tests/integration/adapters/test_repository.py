@@ -51,6 +51,7 @@ def test_repository_overwrite_task(session: Session):
     task = model.Task(
         owner_id=UUID("owner"),
         filesystem=Path("."),
+        script_path=Path("/test.sh"),
         created_at=dt,
         status=model.TaskStatus.RUNNING,
         _id=UUID("abc"),
@@ -76,6 +77,7 @@ def test_repository_mark_task_completed(session: Session):
     task = model.Task(
         owner_id=UUID("owner"),
         created_at=dt,
+        script_path=Path("/test.sh"),
         filesystem=Path("."),
         _id=UUID("abc"),
     )
@@ -100,11 +102,13 @@ def test_repository_saves_multiple_tasks(session: Session):
     task_1 = model.Task(
         owner_id=UUID("owner"),
         filesystem=Path("."),
+        script_path=Path("/test.sh"),
         _id=UUID("abc"),
     )
     task_2 = model.Task(
         owner_id=UUID("owner"),
         filesystem=Path("."),
+        script_path=Path("/test.sh"),
         _id=UUID("def"),
     )
 
