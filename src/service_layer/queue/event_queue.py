@@ -15,3 +15,7 @@ class EventQueue(TaskQueue[Event]):
     def _get_priority(self, _: Event) -> int:
         # All messages are the same priority
         return 1
+
+    def _put_emitted_items(self):
+        for event in self._uow.collect_new_events():
+            self.put(event)

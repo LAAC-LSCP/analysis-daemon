@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from abc import ABC, abstractmethod
 from asyncio.subprocess import Process
 from dataclasses import dataclass, field
@@ -14,6 +15,8 @@ from typing import (
 from src.domain import commands
 from src.service_layer.default_handlers import MessageHandlers, MessageT
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(order=True)
@@ -76,20 +79,25 @@ class TaskQueue(ABC, Generic[MessageT]):
             item: MessageT = self._queue.get().item
             await self._process_item(item)
 
-    async def _process_item(self, item: MessageT) -> None:
-        if self._is_external_job(item):
-            proc: Process = await asyncio.create_subprocess_exec(
-                "echo",
-                "hello",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
+        self._put_emitted_items()
 
-            self._running_items.append((item, proc))
-            asyncio.create_task(self._monitor_job(item, proc))
-        else:
-            self._running_items.append((item, None))
-            await self._run_python_job(item)
+    async def _process_item(self, item: MessageT) -> None:
+        try:
+            if self._is_external_job(item):
+                proc: Process = await asyncio.create_subprocess_exec(
+                    "echo",
+                    "hello",
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+
+                self._running_items.append((item, proc))
+                asyncio.create_task(self._monitor_job(item, proc))
+            else:
+                self._running_items.append((item, None))
+                await self._run_python_job(item)
+        except Exception:
+            logger.exception(f"Exception processing item {item}")
 
     def _is_external_job(self, item: MessageT) -> bool:
         return isinstance(item, commands.CreateTask)
@@ -116,6 +124,10 @@ class TaskQueue(ABC, Generic[MessageT]):
         prioritized_item = PrioritizedItem[MessageT](priority=priority, item=message)
 
         self._queue.put(prioritized_item)
+
+    @abstractmethod
+    def _put_emitted_items(self) -> None:
+        raise NotImplementedError
 
     @abstractmethod
     def _get_priority(self, _: MessageT) -> int:

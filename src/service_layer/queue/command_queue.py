@@ -12,3 +12,7 @@ class CommandQueue(TaskQueue[Command]):
     def _get_priority(self, _: Command) -> int:
         # TODO: add priority logic
         return 1
+
+    def _put_emitted_items(self):
+        for command in self._uow.collect_new_commands():
+            self.put(command)

@@ -41,6 +41,7 @@ async def handle_create_task(
         model=command.model,
         script_path=command.script_path,
     )
+    task.queue_task()
 
     with uow:
         uow.tasks.save(task)
@@ -58,6 +59,8 @@ async def handle_complete_task(
         if not task or task.completed:
             return
 
+        task.mark_completed()
+
         uow.tasks.save(task)
 
         uow.commit()
@@ -74,6 +77,8 @@ async def handle_run_task(
 
     if task.running:
         return
+
+    task.run()
 
     uow.tasks.save(task)
 
