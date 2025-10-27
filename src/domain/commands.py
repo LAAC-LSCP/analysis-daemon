@@ -5,7 +5,7 @@ from src.core.types import UUID, Model
 
 
 class Command:
-    pass
+    task_id: UUID
 
 
 @dataclass

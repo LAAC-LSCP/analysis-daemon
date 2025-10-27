@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.core.types import Model, TaskStatus
+from src.core.types import UUID, Model, TaskStatus
 
 
 class CoreException(Exception):
@@ -66,7 +66,14 @@ class InValidTaskStatus(CoreException):
 
     def __init__(self, task_status: str):
         self.task_status = task_status
-
         super().__init__(
             f"task_status '{task_status}' not in {str([s.value for s in TaskStatus])}"
         )
+
+
+class TaskNotFound(CoreException):
+    """Raised when a task is not found"""
+
+    def __init__(self, task_id: UUID):
+        self._task_id = task_id
+        super().__init__(f"task with id {task_id}' could not be found")

@@ -77,8 +77,8 @@ class TaskQueue(ABC, Generic[MessageT]):
         try:
             for handler in self._handlers[type(item)]:  # type: ignore
                 await handler(item, self._uow)
-        except Exception:
-            logger.exception(f"Exception processing item {item}")
+        except Exception as e:
+            self._handle_item_failure(item, self._uow, e)
 
     def put(self, message: MessageT) -> None:
         priority = self._get_priority(message)
@@ -86,6 +86,12 @@ class TaskQueue(ABC, Generic[MessageT]):
         prioritized_item = PrioritizedItem[MessageT](priority=priority, item=message)
 
         self._queue.put(prioritized_item)
+
+    @abstractmethod
+    def _handle_item_failure(
+        self, item: MessageT, uow: PublishingUoW, e: Exception
+    ) -> None:
+        raise NotImplementedError
 
     @abstractmethod
     def _put_emitted_items(self) -> None:

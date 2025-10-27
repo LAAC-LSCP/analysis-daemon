@@ -6,7 +6,7 @@ from typing import List, Optional
 from src.config.config import ConfigModel
 from src.core import response_types
 from src.core.types import UUID, Model, TaskStatus
-from src.domain.commands import Command
+from src.domain.commands import Command, CompleteTask, RunTask
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
 
 
@@ -84,6 +84,11 @@ class Task:
                 task_id=self._id,
             )
         )
+        self.commands.append(
+            RunTask(
+                task_id=self._id,
+            )
+        )
 
     def mark_failed(self, e: Exception) -> None:
         self.status = TaskStatus.FAILED
@@ -108,6 +113,7 @@ class Task:
                 task_id=self._id,
             )
         )
+        self.commands.append(CompleteTask(task_id=self._id))
 
     # TODO: is "network" not a better word here?
     def to_response_type_task(self, config: ConfigModel) -> "response_types.Task":
