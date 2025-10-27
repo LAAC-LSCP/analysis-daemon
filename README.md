@@ -50,17 +50,17 @@ dataset_name = "dataset_2"
 path = "/Users/me/Desktop/datasets/dataset_2"
 
 [[scripts]]
-script_name = "run_vtc"
-script_path = "/Users/me/Desktop/scripts/run_vtc.sh"
-model_name = "vtc"
+name = "run_vtc"
+path = "/Users/me/Desktop/scripts/run_vtc.sh"
+model = "vtc"
 
 [[scripts]]
-script_name = "run_vcm"
-script_path = "/Users/me/Desktop/scripts/run_vcm.sh"
-model_name = "vcm"
+name = "run_vcm"
+script = "/Users/me/Desktop/scripts/run_vcm.sh"
+model = "vcm"
 
 [[scripts]]
-script_name = "run_alice"
-script_path = "/Users/me/Desktop/scripts/run_alice.sh"
-model_name = "alice"
+name = "run_alice"
+script = "/Users/me/Desktop/scripts/run_alice.sh"
+model = "alice"
 ```
