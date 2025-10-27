@@ -1,3 +1,4 @@
+from enum import IntEnum
 from typing import Any, List, Optional, Tuple, Type
 
 import src.domain.commands as commands
@@ -13,6 +14,10 @@ from src.service_layer.default_handlers import (
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 Calls = List[Tuple[Type[Message], Optional[Any]]]
+
+
+class ExceptionResults(IntEnum):
+    TASK_FAILURE = 0
 
 
 class FakeHandlers:
@@ -96,6 +101,18 @@ class FakeHandlers:
             for cmd_cls in self._command_results
         }
 
+    def set_command_handler(
+        self, cls: Type[commands.Command], callbacks: List[CommandHandler]
+    ) -> None:
+        command_handlers = {**COMMAND_HANDLERS, **{cls: callbacks}}
+
+        self._command_handlers = {
+            cmd_cls: [
+                self._get_command_callback(cmd_cls, command_handlers=command_handlers)
+            ]
+            for cmd_cls in self._command_results
+        }
+
     def _get_event_callback(self, event_cls: Type[events.Event]) -> EventHandler:
         async def _call_event(event: events.Event, uow: PublishingUoW) -> None:
             self._calls.append((event_cls, None))
@@ -105,11 +122,22 @@ class FakeHandlers:
     async def _call_event(self, cls: Type[events.Event], _: PublishingUoW) -> None:
         self._calls.append((cls, None))
 
-    def _get_command_callback(self, cmd_cls: Type[commands.Command]) -> CommandHandler:
+    def _get_command_callback(
+        self,
+        cmd_cls: Type[commands.Command],
+        command_handlers: Optional[CommandHandlers] = None,
+    ) -> CommandHandler:
+        command_handlers = command_handlers or COMMAND_HANDLERS
+
         async def _call_command(command: commands.Command, uow: PublishingUoW) -> Any:
             # For normal behaviour
-            for handler in COMMAND_HANDLERS[type(command)]:
-                await handler(command, uow)
+            try:
+                for handler in command_handlers[type(command)]:
+                    await handler(command, uow)
+            except Exception as e:
+                self._calls.append((cmd_cls, ExceptionResults.TASK_FAILURE))
+
+                raise (e)
 
             # For spying
             idx: int = self._results_counter[cmd_cls]

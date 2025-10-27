@@ -97,6 +97,9 @@ class Service:
         context_message="Error during database transaction in service tick cycle"
     )
     def _tick(self) -> None:
+        self._queue_emitted_events()
+        self._queue_emitted_commands()
+
         with self._uow:
             new_tasks: Set[Task] = self._get_new_tasks()
 
@@ -105,6 +108,16 @@ class Service:
                 self._uow.tasks.save(task)
 
             self._uow.commit()
+
+    @catch_and_log_exception(context_message="Error collecting new commands")
+    def _queue_emitted_commands(self):
+        for command in self._uow.collect_new_commands():
+            self._broker.put(command)
+
+    @catch_and_log_exception(context_message="Error collecting new events")
+    def _queue_emitted_events(self):
+        for event in self._uow.collect_new_events():
+            self._broker.put(event)
 
     @catch_and_log_exception(
         default_return=set(), context_message="Error during discovery of new tasks"

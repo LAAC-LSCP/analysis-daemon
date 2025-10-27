@@ -66,6 +66,8 @@ class TrackingRepository(AbstractRepository, Generic[RepoType]):
     def save(self, task: Task) -> Task:
         task = self._repository.save(task)
 
+        # Discard because otherwise tasks cannot update
+        self.seen.discard(task)
         self.seen.add(task)
 
         return task
