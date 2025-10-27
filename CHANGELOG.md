@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.11.0...v1.12.0) (2025-10-27)
+
+
+### Features
+
+* improve error handling ([31d573e](https://github.com/LAAC-LSCP/analysis-daemon/commit/31d573e709f4a489814cf5e17451042bc96eecad))
+
 ## [1.11.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.10.0...v1.11.0) (2025-10-26)
 
 
