@@ -25,4 +25,4 @@ class TaskCompleted(Event):
 @dataclass
 class TaskFailed(Event):
     task_id: UUID
-    error_message: str
+    stack_trace: str

@@ -23,6 +23,8 @@ To enter the Python virtual environment run
 eval $(poetry env activate)
 ```
 
+If a suitable Python version cannot be found, it's recommended to use `pyenv` to install it, e.g., `pyenv install 3.13.0`.
+
 Note this doesn't spawn a subshell, so `exit` will close your shell entirely. You could use the poetry shell plugin for more control. Finally, it is important to enter the virtual environment before installing dependencies.
 
 To build the project just run

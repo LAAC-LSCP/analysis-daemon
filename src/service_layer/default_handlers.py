@@ -31,8 +31,8 @@ COMMAND_HANDLERS: CommandHandlers = {
     commands.CreateTask: [handlers.handle_create_task],
 }
 EVENT_HANDLERS: EventHandlers = {
-    events.TaskStarted: [handlers.handle_not_implemented],
-    events.TaskFailed: [handlers.handle_not_implemented],
-    events.TaskCreated: [handlers.handle_not_implemented],
-    events.TaskCompleted: [handlers.handle_not_implemented],
+    events.TaskStarted: [handlers.handle_task_started],
+    events.TaskFailed: [handlers.handle_task_failed],
+    events.TaskCreated: [handlers.handle_task_created],
+    events.TaskCompleted: [handlers.handle_task_completed],
 }

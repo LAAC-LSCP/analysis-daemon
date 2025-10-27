@@ -1,11 +1,33 @@
+import logging
+
 from src.domain.commands import CompleteTask, CreateTask, RunTask
-from src.domain.events import Event
+from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
 from src.domain.model import Task
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 
-async def handle_not_implemented(event: Event, uow: PublishingUoW) -> None:
+async def handle_task_not_implemented(event: Event, uow: PublishingUoW) -> None:
     raise NotImplementedError
+
+
+async def handle_task_started(event: TaskStarted, uow: PublishingUoW) -> None:
+    logger = logging.getLogger(__name__)
+    logger.info(f"Task with ID {event.task_id} started")
+
+
+async def handle_task_failed(event: TaskFailed, uow: PublishingUoW) -> None:
+    logger = logging.getLogger(__name__)
+    logger.error(f"Task with ID {event.task_id} failed: {event.stack_trace}")
+
+
+async def handle_task_created(event: TaskCreated, uow: PublishingUoW) -> None:
+    logger = logging.getLogger(__name__)
+    logger.info(f"Task with ID {event.task_id} created")
+
+
+async def handle_task_completed(event: TaskCompleted, uow: PublishingUoW) -> None:
+    logger = logging.getLogger(__name__)
+    logger.info(f"Task with ID {event.task_id} completed")
 
 
 async def handle_create_task(

@@ -24,3 +24,6 @@ prod.toml
 
 # --- Database (created by run_daemon() or run_migrations()) --- #
 database.db
+
+# --- log --- #
+*.log
