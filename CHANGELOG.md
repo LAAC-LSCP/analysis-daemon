@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.13.0...v1.14.0) (2025-10-27)
+
+
+### Features
+
+* run bash scripts ([dc37f8b](https://github.com/LAAC-LSCP/analysis-daemon/commit/dc37f8b61427110fd0de48e789a810ef87c31b24))
+
 ## [1.13.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.12.0...v1.13.0) (2025-10-27)
 
 
