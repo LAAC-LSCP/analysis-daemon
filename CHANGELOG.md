@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.12.0...v1.13.0) (2025-10-27)
+
+
+### Features
+
+* support event storming ([5ccf471](https://github.com/LAAC-LSCP/analysis-daemon/commit/5ccf4711a2a5cc0a9d9a6f655c10e6a49fe735a2))
+
 ## [1.12.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.11.0...v1.12.0) (2025-10-27)
 
 
