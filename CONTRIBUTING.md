@@ -67,6 +67,10 @@ We bump our releases and update our changelog automatically, but this requires c
 
 We recommend using squash-merge for pull requests for many reasons. Rebase-merge works too, but if you're doing something like red/green development, or did not validate all your individual commits against the actions, the main branch may not be clean after a rebase-merge (in the sense that every snapshot be clean).
 
+```note
+Note: if squashing or rebasing, the commit message must conform to commitlint's rules, otherwise release-please will not create a PR. Furthermore, once the PR is created, it must be manually merged due to branch protection rules (no need to do anything more). TODO: If we had a bot set up with permission to merge to main, 
+```
+
 ## Migrations
 The database may change over time, whether for reasons of data or schema. Either way, we depend on alembic to handle migrations. We initialise the database through a migration. We have wrapped our alembic logic in a command
 
