@@ -87,6 +87,8 @@ class Task:
         self.commands.append(
             RunTask(
                 task_id=self._id,
+                script_path=self.script_path,
+                filesystem_path=self.filesystem,
             )
         )
 
@@ -100,7 +102,7 @@ class Task:
             )
         )
 
-    def run(self) -> None:
+    def start_run(self) -> None:
         if self.status != TaskStatus.PENDING:
             raise ValueError(
                 f"Cannot start task in {self.status} state"
@@ -113,6 +115,8 @@ class Task:
                 task_id=self._id,
             )
         )
+
+    def end_run(self) -> None:
         self.commands.append(CompleteTask(task_id=self._id))
 
     # TODO: is "network" not a better word here?

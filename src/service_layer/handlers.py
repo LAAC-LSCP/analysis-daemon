@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from src.core.exceptions import TaskNotFound
@@ -61,11 +62,18 @@ async def handle_run_task(
         if task.running:
             return
 
-        task.run()
-
+        task.start_run()
         uow.tasks.save(task)
-
         uow.commit()
+
+    # TODO: this is kind of a blocking call for the task queue
+    # But that is fine, since we will be using a job scheduler
+    # which means this will be more or less instantaneous
+    # although when we have the job scheduler set up, we'll
+    # have to track when job completes in the task queue
+    await _run_task(command)
+
+    task.end_run()
 
 
 async def handle_complete_task(
@@ -86,3 +94,26 @@ async def handle_complete_task(
         uow.tasks.save(task)
 
         uow.commit()
+
+
+# TODO: move things to separate files
+async def _run_task(command: RunTask) -> None:
+    # Execute the batch script through bash
+    proc = await asyncio.create_subprocess_exec(
+        "bash",
+        str(command.script_path),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
+    _, stderr = await proc.communicate()
+
+    if proc.returncode != 0:
+        error_msg = (
+            stderr.decode() if stderr else f"Script exited with code {proc.returncode}"
+        )
+        raise RuntimeError(f"Script execution failed: {error_msg}")
+
+    logger.info(
+        f"Script {command.script_path} run successfully for task {command.task_id}"
+    )
