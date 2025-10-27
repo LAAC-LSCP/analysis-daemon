@@ -109,6 +109,7 @@ def test_uow_rolls_back_uncommitted_changes(session_factory: SessionFactory):
         task = Task(
             owner_id=UUID("owner"),
             filesystem=Path("/filesystem"),
+            script_path=Path("/test.sh"),
             created_at=created_at,
         )
         uow.tasks.save(task)

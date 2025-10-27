@@ -15,9 +15,9 @@ from src.domain.model import Task
 class TaskArgs:
     owner_id: UUID
     filesystem: Path
+    script_path: Path
     created_at: datetime = field(default_factory=datetime.now)
     status: str = TaskStatus.PENDING
-    script_path: Optional[Path] = None
     model: Optional[Model] = None
 
     _id: Optional[UUID] = None
