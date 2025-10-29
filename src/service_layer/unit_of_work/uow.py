@@ -1,10 +1,10 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Generic
 
 from src.service_layer.types import RepoType
 
 
-class AbstractUoW(Generic[RepoType]):
+class AbstractUoW(Generic[RepoType], ABC):
     """
     The unit of work pattern is a wrapper around a repository, allowing for certain
     atomicity guarantees, creating a sort of transaction-like syntax for
