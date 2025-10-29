@@ -4,12 +4,12 @@ from typing import Any, List, Optional, Tuple, Type
 import src.domain.commands as commands
 import src.domain.events as events
 from src.service_layer.default_handlers import (
-    COMMAND_HANDLERS,
     CommandHandler,
     CommandHandlers,
     EventHandler,
     EventHandlers,
     Message,
+    get_command_handlers,
 )
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
@@ -104,7 +104,7 @@ class FakeHandlers:
     def set_command_handler(
         self, cls: Type[commands.Command], callbacks: List[CommandHandler]
     ) -> None:
-        command_handlers = {**COMMAND_HANDLERS, **{cls: callbacks}}
+        command_handlers = {**get_command_handlers(), **{cls: callbacks}}
 
         self._command_handlers = {
             cmd_cls: [
@@ -127,7 +127,7 @@ class FakeHandlers:
         cmd_cls: Type[commands.Command],
         command_handlers: Optional[CommandHandlers] = None,
     ) -> CommandHandler:
-        command_handlers = command_handlers or COMMAND_HANDLERS
+        command_handlers = command_handlers or get_command_handlers()
 
         async def _call_command(command: commands.Command, uow: PublishingUoW) -> Any:
             # For normal behaviour

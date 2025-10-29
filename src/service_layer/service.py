@@ -10,10 +10,10 @@ from src.core.types import TaskStatus
 from src.domain.commands import CreateTask, RunTask
 from src.domain.model import Task
 from src.service_layer.default_handlers import (
-    COMMAND_HANDLERS,
-    EVENT_HANDLERS,
     CommandHandlers,
     EventHandlers,
+    get_command_handlers,
+    get_event_handlers,
 )
 from src.service_layer.http_client import HTTPClient
 from src.service_layer.queue.broker import MessageBroker
@@ -58,8 +58,8 @@ class Service:
         self._config = config
         self._uow = uow
 
-        event_handlers = event_handlers or EVENT_HANDLERS
-        command_handlers = command_handlers or COMMAND_HANDLERS
+        event_handlers = event_handlers or get_event_handlers(http_client, config)
+        command_handlers = command_handlers or get_command_handlers()
 
         event_queue = EventQueue(handlers=event_handlers, uow=uow)
         command_queue = CommandQueue(handlers=command_handlers, uow=uow)
