@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -6,11 +7,48 @@ from src.config.config import ConfigModel
 from src.core.response_types import Task
 from src.core.types import UUID, Model, TaskStatus
 from src.domain import commands, events
+from src.domain.model import Task as ModelTask
 from src.service_layer.service import Service
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 from tests.integration.service_layer.fakes import FakeUoW
 from tests.unit.service_layer.fake_handlers import ExceptionResults, FakeHandlers
 from tests.unit.service_layer.fake_http_client import FakeHTTPClient
+
+
+def test_service_resumes_running_tasks(config_model: ConfigModel):
+    dt = datetime.now()
+    task = ModelTask(
+        owner_id=UUID("123"),
+        filesystem=Path("dataset"),
+        script_path=Path("script"),
+        created_at=dt,
+        status=TaskStatus.RUNNING,
+        model=Model.VTC,
+        _id=UUID("1"),
+    )
+
+    uow = PublishingUoW(FakeUoW())
+    handlers = FakeHandlers(uow, {})
+    http_client = FakeHTTPClient(results=[])
+
+    with uow:
+        uow.tasks.save(task)
+
+        uow.commit()
+
+    service = Service(
+        uow=uow,
+        http_client=http_client,
+        config=config_model,
+        event_handlers=handlers.event_handlers,
+        command_handlers=handlers.command_handlers,
+    )
+
+    queue = service._broker.command_queue._queue
+    assert queue.qsize() == 1
+    assert queue.get().item == commands.RunTask(
+        task_id=UUID("1"), filesystem_path=Path("dataset"), script_path=Path("script")
+    )
 
 
 @pytest.mark.asyncio

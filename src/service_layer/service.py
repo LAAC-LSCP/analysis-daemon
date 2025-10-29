@@ -7,7 +7,7 @@ from src.config.config import ConfigModel, ScriptConfig
 from src.core.decorators import catch_and_log_exception
 from src.core.exceptions import NoScriptWithModel
 from src.core.types import TaskStatus
-from src.domain.commands import CreateTask
+from src.domain.commands import CreateTask, RunTask
 from src.domain.model import Task
 from src.service_layer.default_handlers import (
     COMMAND_HANDLERS,
@@ -70,8 +70,17 @@ class Service:
 
         self._shutdown = False
 
+        self._resume_on_startup()
+
     def shutdown(self) -> None:
         self._shutdown = True
+
+    def _resume_on_startup(self) -> None:
+        with self._uow:
+            running_tasks = self._uow.tasks.get_by_status(TaskStatus.RUNNING)
+
+            for task in running_tasks:
+                self._broker.put(self._get_run_task_command(task))
 
     async def main_loop(self) -> None:
         await asyncio.gather(
@@ -152,4 +161,23 @@ class Service:
             filesystem=task.filesystem,
             script_path=script.path,
             model=task.model,
+        )
+
+    def _get_run_task_command(self, task: Task) -> RunTask:
+        script: ScriptConfig | None = next(
+            (
+                script
+                for script in self._config.scripts
+                if script.model_name == task.model
+            ),
+            None,
+        )
+
+        if script is None:
+            raise NoScriptWithModel(task.model)
+
+        return RunTask(
+            task_id=task._id,
+            filesystem_path=task.filesystem,
+            script_path=task.script_path,
         )
