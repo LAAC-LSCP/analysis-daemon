@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.15.0...v1.16.0) (2025-10-29)
+
+
+### Features
+
+* add crash recovery ([e758485](https://github.com/LAAC-LSCP/analysis-daemon/commit/e758485722826190cd006e1bba380cea11717c20))
+
 ## [1.15.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.14.0...v1.15.0) (2025-10-29)
 
 
