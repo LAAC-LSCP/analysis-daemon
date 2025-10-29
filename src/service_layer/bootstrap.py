@@ -2,10 +2,11 @@ import logging
 from pathlib import Path
 
 from src.adapters.orm import start_mappers
-from src.config.config import load_config
+from src.config.config import ConfigModel, load_config
 from src.service_layer.http_client import HTTPClient
 from src.service_layer.service import Service
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
+from src.service_layer.unit_of_work.sqlalchemy_config_uow import SQLAlchemyConfigUoW
 from src.service_layer.unit_of_work.sqlalchemy_uow import SQLAlchemyUoW
 
 
@@ -28,13 +29,15 @@ def bootstrap(config_file: Path) -> Service:
     for the entire application
     """
     config = load_config(config_file)
+    start_mappers()
+
+    _save_latest_config(config)
 
     sql_uow = PublishingUoW(
         SQLAlchemyUoW(
             session_factory=SQLAlchemyUoW.get_session_factory(config.database.url),
         )
     )
-    start_mappers()
 
     http_client = HTTPClient(
         remote_api_url=str(config.http.base_url),
@@ -53,3 +56,14 @@ def bootstrap(config_file: Path) -> Service:
     logger.info("Bootstrap phase complete")
 
     return service
+
+
+def _save_latest_config(config: ConfigModel):
+    config_uow = SQLAlchemyConfigUoW(
+        session_factory=SQLAlchemyConfigUoW.get_session_factory(config.database.url),
+    )
+
+    with config_uow:
+        config_uow.configs.save_config(config)
+
+        config_uow.commit()
