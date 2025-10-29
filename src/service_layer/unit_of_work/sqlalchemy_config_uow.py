@@ -1,15 +1,15 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
-from src.adapters.sqlalchemy_repository import SQLAlchemyRepository
-from src.adapters.tracking_repository import TrackingRepository
+from src.adapters.sqlalchemy_config_repository import SQLAlchemyConfigRepository
 from src.service_layer.unit_of_work import SessionFactory
-from src.service_layer.unit_of_work.uow import AbstractUoW
+from src.service_layer.unit_of_work.config_uow import AbstractConfigUoW
 
 
-class SQLAlchemyUoW(AbstractUoW[TrackingRepository[SQLAlchemyRepository]]):
-    session_factory: SessionFactory
-    session: Session
+class SQLAlchemyConfigUoW(AbstractConfigUoW[SQLAlchemyConfigRepository]):
+    """
+    Similar to the SQLAlchemyUoW, but specifically for configs
+    """
 
     @staticmethod
     def get_session_factory(db_url: str) -> SessionFactory:
@@ -21,9 +21,9 @@ class SQLAlchemyUoW(AbstractUoW[TrackingRepository[SQLAlchemyRepository]]):
     ):
         self.session_factory = session_factory
 
-    def __enter__(self) -> "SQLAlchemyUoW":
+    def __enter__(self) -> "SQLAlchemyConfigUoW":
         self.session = self.session_factory()
-        self.tasks = TrackingRepository(SQLAlchemyRepository(self.session))
+        self.configs = SQLAlchemyConfigRepository(self.session)
 
         return self
 

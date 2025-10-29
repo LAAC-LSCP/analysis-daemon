@@ -60,7 +60,7 @@ def load_config(file_path: Path) -> ConfigModel:
     loads the config for the service from a toml file
     Args:
         file_path: path of the toml config file
-    Returns:
+    Returns: a config object
     """
     with open(file_path, "rb") as f:
         raw = tomllib.load(f)

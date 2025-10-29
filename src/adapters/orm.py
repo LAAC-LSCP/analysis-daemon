@@ -8,8 +8,10 @@ from pathlib import Path
 from typing import Optional
 
 from sqlalchemy import (
+    JSON,
     Column,
     DateTime,
+    Integer,
     MetaData,
     String,
     Table,
@@ -92,6 +94,15 @@ tasks = Table(
 )
 
 
+configs = Table(
+    "configs",
+    metadata,
+    Column("version", Integer, primary_key=True),
+    Column("data", JSON, nullable=False),
+    Column("created_at", DateTime, nullable=False, default=func.now()),
+)
+
+
 def start_mappers():
     mapper_registry = registry()
 
@@ -104,4 +115,9 @@ def start_mappers():
             "filesystem": tasks.c.filesystem_path,
             "script_path": tasks.c.script_rel_path,
         },
+    )
+
+    mapper_registry.map_imperatively(
+        model.Config,
+        configs,
     )
