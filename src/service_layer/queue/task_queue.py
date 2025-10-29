@@ -9,7 +9,7 @@ from typing import (
     Optional,
 )
 
-from src.service_layer.default_handlers import MessageHandlers, MessageT
+from src.service_layer.handlers.types import MessageHandlers, MessageT
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 logger = logging.getLogger(__name__)

@@ -3,13 +3,13 @@ from typing import Any, List, Optional, Tuple, Type
 
 import src.domain.commands as commands
 import src.domain.events as events
-from src.service_layer.default_handlers import (
+from src.service_layer.handlers.command_handlers import get_command_handlers
+from src.service_layer.handlers.types import (
     CommandHandler,
     CommandHandlers,
     EventHandler,
     EventHandlers,
     Message,
-    get_command_handlers,
 )
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 

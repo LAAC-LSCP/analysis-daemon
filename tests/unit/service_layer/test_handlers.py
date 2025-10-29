@@ -4,7 +4,7 @@ import pytest
 
 from src.core.types import UUID, Model
 from src.domain import commands
-from src.service_layer.default_handlers import handle_create_task
+from src.service_layer.handlers.command_handlers import handle_create_task
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 from tests.integration.service_layer.fakes import FakeUoW
 

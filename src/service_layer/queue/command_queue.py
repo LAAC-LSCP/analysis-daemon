@@ -1,7 +1,7 @@
 from src.core.decorators import catch_and_log_exception
 from src.core.exceptions import TaskNotFound
 from src.domain.commands import Command
-from src.service_layer.default_handlers import CommandHandlers
+from src.service_layer.handlers.types import CommandHandlers
 from src.service_layer.queue.task_queue import TaskQueue
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 

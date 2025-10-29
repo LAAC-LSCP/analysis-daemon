@@ -9,12 +9,9 @@ from src.core.exceptions import NoScriptWithModel
 from src.core.types import TaskStatus
 from src.domain.commands import CreateTask, RunTask
 from src.domain.model import Task
-from src.service_layer.default_handlers import (
-    CommandHandlers,
-    EventHandlers,
-    get_command_handlers,
-    get_event_handlers,
-)
+from src.service_layer.handlers.command_handlers import get_command_handlers
+from src.service_layer.handlers.event_handlers import get_event_handlers
+from src.service_layer.handlers.types import CommandHandlers, EventHandlers
 from src.service_layer.http_client import HTTPClient
 from src.service_layer.queue.broker import MessageBroker
 from src.service_layer.queue.command_queue import CommandQueue
