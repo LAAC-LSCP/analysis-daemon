@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.14.0...v1.15.0) (2025-10-29)
+
+
+### Features
+
+* config tracking ([0dd2570](https://github.com/LAAC-LSCP/analysis-daemon/commit/0dd2570969b08e165195886696a3fe7ebf869536))
+
 ## [1.14.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.13.0...v1.14.0) (2025-10-27)
 
 
