@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 
 from src.adapters.orm import start_mappers
@@ -10,10 +11,37 @@ from src.service_layer.unit_of_work.sqlalchemy_config_uow import SQLAlchemyConfi
 from src.service_layer.unit_of_work.sqlalchemy_uow import SQLAlchemyUoW
 
 
-def setup_logging() -> logging.Logger:
-    logging.basicConfig(filename="echolalia.log", level=logging.INFO)
+def setup_logging(config: ConfigModel) -> logging.Logger:
+    log_directory = config.log_directory
 
-    return logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
+    console_handler = logging.StreamHandler()
+    console_format = logging.Formatter(
+        "%(asctime)s | %(levelname)-8s | %(name)s:%(lineno)d | %(message)s"
+    )
+    console_handler.setFormatter(console_format)
+
+    if not log_directory.exists():
+        log_directory.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Created log directory at: {str(log_directory)}")
+
+    file_handler = logging.FileHandler(
+        filename=os.path.join(log_directory, "echolalia.log"),
+        mode="a",
+        encoding="utf-8",
+    )
+    file_format = logging.Formatter(
+        "%(asctime)s | %(levelname)-8s | %(name)s:%(lineno)d | "
+        "%(process)d | %(threadName)s | %(message)s"
+    )
+    file_handler.setFormatter(file_format)
+
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+
+    return logger
 
 
 def bootstrap(config_file: Path) -> Service:
@@ -45,7 +73,7 @@ def bootstrap(config_file: Path) -> Service:
         client_secret=config.http.client_secret,
     )
 
-    logger = setup_logging()
+    logger = setup_logging(config)
 
     service = Service(
         uow=sql_uow,
