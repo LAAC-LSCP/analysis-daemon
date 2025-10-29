@@ -157,7 +157,7 @@ class Config:
     data: Dict
     created_at: datetime
 
-    def __init__(self, version: int, data: Dict, created_at: datetime):
+    def __init__(self, version: int, data: Dict, created_at: Optional[datetime] = None):
         self.version = version
         self.data = data
-        self.created_at = created_at
+        self.created_at = created_at or datetime.now()
