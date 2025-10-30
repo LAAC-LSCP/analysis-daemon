@@ -1,9 +1,7 @@
-from enum import IntEnum
-from typing import Any, List, Optional, Tuple, Type
+from typing import Annotated, Any, List, Optional, Tuple, Type
 
 import src.domain.commands as commands
 import src.domain.events as events
-from src.service_layer.handlers.command_handlers import get_command_handlers
 from src.service_layer.handlers.types import (
     CommandHandler,
     CommandHandlers,
@@ -13,11 +11,11 @@ from src.service_layer.handlers.types import (
 )
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
-Calls = List[Tuple[Type[Message], Optional[Any]]]
-
-
-class ExceptionResults(IntEnum):
-    TASK_FAILURE = 0
+Call = Tuple[
+    Type[Message],
+    Annotated[str, "handler name"],
+    Annotated[int, "nth call (or exception)"],
+]
 
 
 class FakeHandlers:
@@ -32,10 +30,9 @@ class FakeHandlers:
     _command_handlers: CommandHandlers
     _event_handlers: EventHandlers
 
-    _command_results: dict[Type[commands.Command], List[Any]]
-    _results_counter: dict[Type[Message], int]
-
-    _calls: Calls
+    _call_count = 0
+    _calls: List[Call]
+    _exceptions: List[Call]
 
     _uow: PublishingUoW
 
@@ -48,13 +45,18 @@ class FakeHandlers:
         return self._command_handlers
 
     @property
-    def calls(self) -> Calls:
+    def calls(self) -> List[Call]:
         return self._calls
+
+    @property
+    def exceptions(self) -> List[Call]:
+        return self._exceptions
 
     def __init__(
         self,
         uow: PublishingUoW,
-        command_results: Optional[dict[Type[commands.Command], List[Any]]] = None,
+        command_handlers: Optional[CommandHandlers] = None,
+        event_handlers: Optional[EventHandlers] = None,
     ):
         """
         Initialize the FakeHandlers.
@@ -71,83 +73,113 @@ class FakeHandlers:
             })
         """
         self._uow = uow
-        command_results = command_results or {}
 
-        self._command_results = {
-            **{
-                commands.StartTask: [None],
-                commands.RunTask: [None],
-                commands.CreateTask: [None],
-                commands.CompleteTask: [None],
-            },
-            **command_results,
-        }
-
-        self._results_counter = {cmd_cls: 0 for cmd_cls in self._command_results}
         self._calls = []
+        self._exceptions = []
 
-        self._set_handlers()
-
-    def _set_handlers(self) -> None:
-        self._event_handlers = {
-            events.TaskStarted: [self._get_event_callback(events.TaskStarted)],
-            events.TaskCompleted: [self._get_event_callback(events.TaskCompleted)],
-            events.TaskFailed: [self._get_event_callback(events.TaskFailed)],
-            events.TaskCreated: [self._get_event_callback(events.TaskCreated)],
-        }
-
-        self._command_handlers = {
-            cmd_cls: [self._get_command_callback(cmd_cls)]
-            for cmd_cls in self._command_results
-        }
-
-    def set_command_handler(
-        self, cls: Type[commands.Command], callbacks: List[CommandHandler]
-    ) -> None:
-        command_handlers = {**get_command_handlers(), **{cls: callbacks}}
-
-        self._command_handlers = {
-            cmd_cls: [
-                self._get_command_callback(cmd_cls, command_handlers=command_handlers)
+        self._command_handlers = command_handlers or {
+            cmd: [FakeHandlers.empty_command_handler]
+            for cmd in [
+                commands.CreateTask,
+                commands.StartTask,
+                commands.RunTask,
+                commands.CompleteTask,
             ]
-            for cmd_cls in self._command_results
+        }
+        self._event_handlers = event_handlers or {
+            event: [FakeHandlers.empty_event_handler]
+            for event in [
+                events.TaskCreated,
+                events.TaskStarted,
+                events.TaskCompleted,
+                events.TaskFailed,
+            ]
         }
 
-    def _get_event_callback(self, event_cls: Type[events.Event]) -> EventHandler:
+        self._command_handlers = {
+            cmd: [self._track_command_handler(cmd, handler) for handler in handlers]
+            for cmd, handlers in self._command_handlers.items()
+        }
+        self._event_handlers = {
+            event: [self._track_event_handler(event, handler) for handler in handlers]
+            for event, handlers in self._event_handlers.items()
+        }
+
+    def set_handlers_for_command(
+        self, cmd_cls: Type[commands.Command], handlers: List[CommandHandler]
+    ) -> None:
+        self._command_handlers = {
+            **self._command_handlers,
+            **{
+                cmd_cls: [
+                    self._track_command_handler(cmd_cls, handler)
+                    for handler in handlers
+                ]
+            },
+        }
+
+    def _track_command_handler(
+        self, cmd_cls: Type[commands.Command], command_handler: CommandHandler
+    ) -> CommandHandler:
+        async def _call_command(command: commands.Command, uow: PublishingUoW) -> None:
+            try:
+                await command_handler(command, uow)
+                self._calls.append(
+                    (
+                        cmd_cls,
+                        str(command_handler.__name__),  # type: ignore
+                        self._call_count,
+                    )
+                )
+                self._call_count += 1
+            except Exception as e:
+                self._exceptions.append(
+                    (
+                        cmd_cls,
+                        str(command_handler.__name__),  # type: ignore
+                        self._call_count,
+                    )
+                )
+                self._call_count += 1
+
+                raise e
+
+        return _call_command
+
+    def _track_event_handler(
+        self, event_cls: Type[events.Event], event_handler: EventHandler
+    ) -> EventHandler:
         async def _call_event(event: events.Event, uow: PublishingUoW) -> None:
-            self._calls.append((event_cls, None))
+            try:
+                await event_handler(event, uow)
+                self._calls.append(
+                    (
+                        event_cls,
+                        str(event_handler.__name__),  # type: ignore
+                        self._call_count,
+                    )
+                )
+                self._call_count += 1
+            except Exception as e:
+                self._exceptions.append(
+                    (
+                        event_cls,
+                        str(event_handler.__name__),  # type: ignore
+                        self._call_count,
+                    )
+                )
+                self._call_count += 1
+
+                raise e
 
         return _call_event
 
-    async def _call_event(self, cls: Type[events.Event], _: PublishingUoW) -> None:
-        self._calls.append((cls, None))
+    @classmethod
+    async def empty_command_handler(
+        cls, command: commands.Command, uow: PublishingUoW
+    ) -> Any:
+        return
 
-    def _get_command_callback(
-        self,
-        cmd_cls: Type[commands.Command],
-        command_handlers: Optional[CommandHandlers] = None,
-    ) -> CommandHandler:
-        command_handlers = command_handlers or get_command_handlers()
-
-        async def _call_command(command: commands.Command, uow: PublishingUoW) -> Any:
-            # For normal behaviour
-            try:
-                for handler in command_handlers[type(command)]:
-                    await handler(command, uow)
-            except Exception as e:
-                self._calls.append((cmd_cls, ExceptionResults.TASK_FAILURE))
-
-                raise (e)
-
-            # For spying
-            idx: int = self._results_counter[cmd_cls]
-            result: Any = self._command_results[cmd_cls][idx]
-
-            self._calls.append((cmd_cls, result))
-
-            self._results_counter[cmd_cls] += 1
-            self._results_counter[cmd_cls] %= len(self._command_results[cmd_cls])
-
-            return result
-
-        return _call_command
+    @classmethod
+    async def empty_event_handler(cls, event: events.Event, uow: PublishingUoW) -> Any:
+        return

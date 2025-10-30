@@ -1,6 +1,6 @@
 from typing import List
 
-from src.core.response_types import Tasks
+from src.core.response_types import Task, Tasks
 from src.core.types import TaskStatus
 from src.service_layer.http_client import HTTPClient
 
@@ -32,3 +32,6 @@ class FakeHTTPClient(HTTPClient):
         self._counter += 1
 
         return [result for result in self._results[idx] if result.status == status]
+
+    async def put_task(self, task: Task) -> None:
+        self._results.append([task])

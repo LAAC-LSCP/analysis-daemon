@@ -125,7 +125,7 @@ class Task:
             (
                 fs.dataset_name
                 for fs in config.filesystems
-                if fs.path == str(self.filesystem)
+                if fs.path == Path(self.filesystem)
             ),
             None,
         )
