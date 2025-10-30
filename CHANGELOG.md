@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.16.0...v1.17.0) (2025-10-30)
+
+
+### Features
+
+* notify echolalia on all task changes ([5231814](https://github.com/LAAC-LSCP/analysis-daemon/commit/5231814a5155ad597fd060aca862551fa546f5be))
+
 ## [1.16.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.15.0...v1.16.0) (2025-10-29)
 
 
