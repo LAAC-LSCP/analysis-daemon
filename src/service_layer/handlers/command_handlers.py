@@ -2,36 +2,16 @@ import asyncio
 import logging
 
 from src.core.exceptions import TaskNotFound
-from src.domain.commands import CompleteTask, CreateTask, RunTask
-from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
+from src.domain import commands
 from src.domain.model import Task
+from src.service_layer.handlers.types import CommandHandlers
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 logger = logging.getLogger(__name__)
 
 
-async def handle_task_not_implemented(event: Event, uow: PublishingUoW) -> None:
-    raise NotImplementedError
-
-
-async def handle_task_started(event: TaskStarted, uow: PublishingUoW) -> None:
-    logger.info(f"Task with ID {event.task_id} started")
-
-
-async def handle_task_failed(event: TaskFailed, uow: PublishingUoW) -> None:
-    logger.error(f"Task with ID {event.task_id} failed: {event.stack_trace}")
-
-
-async def handle_task_created(event: TaskCreated, uow: PublishingUoW) -> None:
-    logger.info(f"Task with ID {event.task_id} created")
-
-
-async def handle_task_completed(event: TaskCompleted, uow: PublishingUoW) -> None:
-    logger.info(f"Task with ID {event.task_id} completed")
-
-
 async def handle_create_task(
-    command: CreateTask,
+    command: commands.CreateTask,
     uow: PublishingUoW,
 ) -> None:
     task = Task(
@@ -50,7 +30,7 @@ async def handle_create_task(
 
 
 async def handle_run_task(
-    command: RunTask,
+    command: commands.RunTask,
     uow: PublishingUoW,
 ) -> None:
     with uow:
@@ -77,7 +57,7 @@ async def handle_run_task(
 
 
 async def handle_complete_task(
-    command: CompleteTask,
+    command: commands.CompleteTask,
     uow: PublishingUoW,
 ) -> None:
     with uow:
@@ -97,7 +77,7 @@ async def handle_complete_task(
 
 
 # TODO: move things to separate files
-async def _run_task(command: RunTask) -> None:
+async def _run_task(command: commands.RunTask) -> None:
     # Execute the batch script through bash
     proc = await asyncio.create_subprocess_exec(
         "bash",
@@ -117,3 +97,11 @@ async def _run_task(command: RunTask) -> None:
     logger.info(
         f"Script {command.script_path} run successfully for task {command.task_id}"
     )
+
+
+def get_command_handlers() -> CommandHandlers:
+    return {
+        commands.CompleteTask: [handle_complete_task],
+        commands.RunTask: [handle_run_task],
+        commands.CreateTask: [handle_create_task],
+    }

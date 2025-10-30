@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Generic
 
 from sqlalchemy.orm import Session
@@ -7,7 +7,7 @@ from src.service_layer.types import ConfigRepoType
 from src.service_layer.unit_of_work import SessionFactory
 
 
-class AbstractConfigUoW(Generic[ConfigRepoType]):
+class AbstractConfigUoW(Generic[ConfigRepoType], ABC):
     """
     Similar to the regular uow, but for the configs table
     """

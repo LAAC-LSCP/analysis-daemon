@@ -1,7 +1,6 @@
 from typing import Any, Awaitable, Callable, Dict, List, Protocol, Type, TypeVar, Union
 
 from src.domain import commands, events
-from src.service_layer import handlers
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 type Message = Union[events.Event, commands.Command]
@@ -24,15 +23,3 @@ class EventHandler(Protocol[EventT]):
 type CommandHandlers = Dict[Type[commands.Command], List[CommandHandler[Any]]]
 type EventHandlers = Dict[Type[events.Event], List[EventHandler[Any]]]
 type MessageHandlers = Union[CommandHandlers, EventHandlers]
-
-COMMAND_HANDLERS: CommandHandlers = {
-    commands.CompleteTask: [handlers.handle_complete_task],
-    commands.RunTask: [handlers.handle_run_task],
-    commands.CreateTask: [handlers.handle_create_task],
-}
-EVENT_HANDLERS: EventHandlers = {
-    events.TaskStarted: [handlers.handle_task_started],
-    events.TaskFailed: [handlers.handle_task_failed],
-    events.TaskCreated: [handlers.handle_task_created],
-    events.TaskCompleted: [handlers.handle_task_completed],
-}

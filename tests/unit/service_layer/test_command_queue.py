@@ -10,6 +10,7 @@ from tests.unit.service_layer.fake_handlers import FakeHandlers
 
 def test_command_queue_priority():
     uow = PublishingUoW(FakeUoW())
+
     fake_handlers: FakeHandlers = FakeHandlers(uow)
     queue = CommandQueue(uow=uow, handlers=fake_handlers)
 

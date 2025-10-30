@@ -4,7 +4,7 @@ from src.core.types import UUID
 
 
 class Event:
-    pass
+    task_id: UUID
 
 
 @dataclass
