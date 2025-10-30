@@ -53,6 +53,9 @@ class ConfigModel(BaseModel):
     http: HTTPConfig
     filesystems: List[FileSystemConfig]
     scripts: List[ScriptConfig]
+    log_directory: Path = Field(
+        default=Path("/tmp/logs"), description="Directory for log files"
+    )
 
 
 def load_config(file_path: Path) -> ConfigModel:
