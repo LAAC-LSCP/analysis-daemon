@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.18.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.17.0...v1.18.0) (2025-10-30)
+
+
+### Features
+
+* improve logging ([5537676](https://github.com/LAAC-LSCP/analysis-daemon/commit/55376762742fd5671ab42de78f5d1fe83dfe739b))
+* **logging:** improve logging ([5537676](https://github.com/LAAC-LSCP/analysis-daemon/commit/55376762742fd5671ab42de78f5d1fe83dfe739b))
+
 ## [1.17.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.16.0...v1.17.0) (2025-10-30)
 
 
