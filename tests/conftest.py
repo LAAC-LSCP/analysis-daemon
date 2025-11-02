@@ -50,19 +50,19 @@ def session(session_factory) -> Generator[Session]:
 def config_path(test_system_dir: Path) -> Generator[Path]:
     fake_filesystem_dir: Path = Path(__file__).parent / "fake_filesystem"
     config_file: Path = fake_filesystem_dir / "configuration.toml"
-    temp_config_file: Path = test_system_dir / "configuration_toml"
+    temp_config_file: Path = test_system_dir / "configuration.toml"
 
     # The testing configuration.toml has relative paths. Need to replace with absolute
     with open(config_file, "rb") as f:
         config_as_toml = tomllib.load(f)
 
-    config_as_toml = _replace_relative_with_absolute_paths(
+    temp_config_as_toml = _replace_relative_with_absolute_paths(
         config_as_toml,
-        config_file,
+        temp_config_file,
     )
 
     with open(temp_config_file, "wb") as tf:
-        tomli_w.dump(config_as_toml, tf)
+        tomli_w.dump(temp_config_as_toml, tf)
 
     yield temp_config_file
 
@@ -76,6 +76,9 @@ def _replace_relative_with_absolute_paths(
     config_as_toml["scripts"] = [
         _item_with_abs_path(script, config_file) for script in config_as_toml["scripts"]
     ]
+    config_as_toml["log_directory"] = _str_as_abs_path(
+        config_as_toml["log_directory"], config_file
+    )
 
     return config_as_toml
 
@@ -84,6 +87,10 @@ def _item_with_abs_path(item: dict, config_file: Path) -> dict:
     item["path"] = str((config_file.parent / item["path"]).resolve())
 
     return item
+
+
+def _str_as_abs_path(rel_path: str, config_file: Path) -> str:
+    return str((config_file.parent / Path(rel_path)).resolve())
 
 
 @pytest.fixture(scope="session")
