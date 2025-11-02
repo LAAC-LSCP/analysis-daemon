@@ -3,9 +3,8 @@ from datetime import datetime, timedelta
 from typing import Optional, Set
 
 import src.core.response_types as response_types
-from src.config.config import ConfigModel, ScriptConfig
+from src.config.config import ConfigModel
 from src.core.decorators import catch_and_log_exception
-from src.core.exceptions import NoScriptWithModel
 from src.core.types import TaskStatus
 from src.domain.commands import CreateTask, RunTask
 from src.domain.model import Task
@@ -127,39 +126,15 @@ class Service:
         ) - set(existing_tasks)
 
     def _get_create_task_command(self, task: Task) -> CreateTask:
-        script: ScriptConfig | None = next(
-            (
-                script
-                for script in self._config.scripts
-                if script.model_name == task.model
-            ),
-            None,
-        )
-
-        if script is None:
-            raise NoScriptWithModel(task.model)
-
         return CreateTask(
             task_id=task._id,
             owner_id=task.owner_id,
             filesystem=task.filesystem,
-            script_path=script.path,
             model=task.model,
+            config=self._config,
         )
 
     def _get_run_task_command(self, task: Task) -> RunTask:
-        script: ScriptConfig | None = next(
-            (
-                script
-                for script in self._config.scripts
-                if script.model_name == task.model
-            ),
-            None,
-        )
-
-        if script is None:
-            raise NoScriptWithModel(task.model)
-
         return RunTask(
             task_id=task._id,
             filesystem_path=task.filesystem,

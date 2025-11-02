@@ -44,7 +44,6 @@ class FakeRepository(AbstractRepository):
                     filesystem=t.filesystem,
                     created_at=t.created_at,
                     status=TaskStatus(t.status),
-                    script_path=t.script_path,
                     model=t.model,
                     _id=t._id,
                 )

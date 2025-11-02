@@ -89,7 +89,6 @@ tasks = Table(
     Column("task_status", String, nullable=False),
     Column("created_at", DateTime, nullable=False, default=func.now()),
     Column("filesystem_path", PathType, nullable=False),
-    Column("script_rel_path", PathType),
     Column("model", ModelType),
 )
 
@@ -113,7 +112,6 @@ def start_mappers():
             "_id": tasks.c.id,
             "status": tasks.c.task_status,
             "filesystem": tasks.c.filesystem_path,
-            "script_path": tasks.c.script_rel_path,
         },
     )
 

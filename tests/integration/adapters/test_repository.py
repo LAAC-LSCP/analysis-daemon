@@ -20,7 +20,6 @@ def test_repository_saves_task(session: Session):
         created_at=dt,
         status=model.TaskStatus.PENDING,
         model=model.Model.VTC,
-        script_path=Path("/test.sh"),
         _id=UUID("abc"),
     )
 
@@ -28,10 +27,7 @@ def test_repository_saves_task(session: Session):
     session.commit()
 
     rows = session.execute(
-        text(
-            "SELECT id, owner_id, task_status, created_at, script_rel_path, model FROM"
-            " tasks"
-        )
+        text("SELECT id, owner_id, task_status, created_at, model FROM" " tasks")
     )
     assert list(rows) == [
         (
@@ -39,7 +35,6 @@ def test_repository_saves_task(session: Session):
             "owner",
             model.TaskStatus.PENDING.value,
             str(dt),
-            "/test.sh",
             model.Model.VTC.value,
         )
     ]
@@ -51,7 +46,6 @@ def test_repository_overwrite_task(session: Session):
     task = model.Task(
         owner_id=UUID("owner"),
         filesystem=Path("."),
-        script_path=Path("/test.sh"),
         created_at=dt,
         status=model.TaskStatus.RUNNING,
         _id=UUID("abc"),
@@ -77,7 +71,6 @@ def test_repository_mark_task_completed(session: Session):
     task = model.Task(
         owner_id=UUID("owner"),
         created_at=dt,
-        script_path=Path("/test.sh"),
         filesystem=Path("."),
         _id=UUID("abc"),
     )
@@ -102,13 +95,11 @@ def test_repository_saves_multiple_tasks(session: Session):
     task_1 = model.Task(
         owner_id=UUID("owner"),
         filesystem=Path("."),
-        script_path=Path("/test.sh"),
         _id=UUID("abc"),
     )
     task_2 = model.Task(
         owner_id=UUID("owner"),
         filesystem=Path("."),
-        script_path=Path("/test.sh"),
         _id=UUID("def"),
     )
 
@@ -129,7 +120,6 @@ def test_repository_get_task(session: Session):
         created_at=dt,
         status=model.TaskStatus.PENDING,
         model=model.Model.VTC,
-        script_path=Path("/test.sh"),
         _id=UUID("abc"),
     )
 
@@ -212,7 +202,6 @@ def simple_task_factory() -> Callable[[UUID, UUID, Optional[TaskStatus]], model.
             created_at=datetime.now(),
             status=status,
             model=model.Model.VTC,
-            script_path=Path("/test.sh"),
             _id=_id,
         )
 

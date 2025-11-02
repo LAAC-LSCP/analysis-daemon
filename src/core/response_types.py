@@ -116,7 +116,6 @@ class Task:
             filesystem=filesystem_config.path,
             created_at=self.datetime,
             status=self.status,
-            script_path=script_path,
             model=self.model_name,
             _id=self.id,
         )

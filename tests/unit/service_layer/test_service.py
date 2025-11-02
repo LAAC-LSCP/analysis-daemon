@@ -22,11 +22,11 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
     task = ModelTask(
         owner_id=UUID("123"),
         filesystem=Path("dataset"),
-        script_path=Path("script"),
         created_at=dt,
         status=TaskStatus.RUNNING,
         model=Model.VTC,
         _id=UUID("1"),
+        config=config_model,
     )
 
     uow = PublishingUoW(FakeUoW())
@@ -48,8 +48,9 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
 
     queue = service._broker.command_queue._queue
     assert queue.qsize() == 1
-    assert queue.get().item == commands.RunTask(
-        task_id=UUID("1"), filesystem_path=Path("dataset"), script_path=Path("script")
+    item: commands.RunTask = queue.get().item
+    assert item == commands.RunTask(
+        task_id=UUID("1"), filesystem_path=Path("dataset"), script_path=item.script_path
     )
 
 

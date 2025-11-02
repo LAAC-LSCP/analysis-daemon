@@ -79,10 +79,10 @@ def test_uow_can_save(session_factory: SessionFactory):
             owner_id=UUID("owner"),
             filesystem=Path("/filesystem"),
             created_at=created_at,
-            script_path=Path("script.sh"),
             status=TaskStatus.RUNNING,
             model=Model.VTC,
             _id=UUID("abc"),
+            config=None,
         )
         uow.tasks.save(task)
         uow.commit()
@@ -96,7 +96,6 @@ def test_uow_can_save(session_factory: SessionFactory):
             TaskStatus.RUNNING.value,
             str(created_at),
             "/filesystem",
-            "script.sh",
             Model.VTC.value,
         )
     ]
@@ -109,7 +108,6 @@ def test_uow_rolls_back_uncommitted_changes(session_factory: SessionFactory):
         task = Task(
             owner_id=UUID("owner"),
             filesystem=Path("/filesystem"),
-            script_path=Path("/test.sh"),
             created_at=created_at,
         )
         uow.tasks.save(task)
