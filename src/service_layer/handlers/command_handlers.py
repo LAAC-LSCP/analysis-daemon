@@ -17,7 +17,7 @@ async def handle_create_task(
     task = Task(
         _id=command.task_id,
         owner_id=command.owner_id,
-        filesystem=command.filesystem,
+        dataset=command.dataset,
         model=command.model,
         config=command.config,  # TODO: temporary until join
     )

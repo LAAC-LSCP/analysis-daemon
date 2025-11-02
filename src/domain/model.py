@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 from src.config.config import ConfigModel
 from src.core import response_types
-from src.core.exceptions import NoScriptWithModel
+from src.core.exceptions import NoFileSystemWithDataset, NoScriptWithModel
 from src.core.types import UUID, Model, TaskStatus
 from src.domain.commands import Command, CompleteTask, RunTask
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
@@ -14,7 +14,7 @@ from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, Tas
 class Task:
     owner_id: UUID
     created_at: datetime
-    filesystem: Path
+    dataset: str
     status: TaskStatus
     model: Model
     events: List[Event]
@@ -25,7 +25,7 @@ class Task:
     def __init__(
         self,
         owner_id: UUID,
-        filesystem: Path,
+        dataset: str,
         config: Optional[ConfigModel] = None,
         created_at: Optional[datetime] = None,
         status: Optional[TaskStatus] = None,
@@ -41,7 +41,7 @@ class Task:
         self.config = config
 
         self.owner_id = owner_id
-        self.filesystem = filesystem
+        self.dataset = dataset
 
         self.events = []
         self.commands = []
@@ -81,6 +81,25 @@ class Task:
 
         return script_path
 
+    @property
+    def filesystem_path(self) -> Path:
+        if self.config is None:
+            raise ValueError("config is `None`")
+
+        filesystem_path: Path | None = next(
+            (
+                fs.path
+                for fs in self.config.filesystems
+                if fs.dataset_name == self.dataset
+            ),
+            None,
+        )
+
+        if filesystem_path is None:
+            raise NoFileSystemWithDataset(self.dataset)
+
+        return filesystem_path
+
     def mark_completed(self) -> None:
         self.status = TaskStatus.COMPLETED
 
@@ -102,7 +121,7 @@ class Task:
             RunTask(
                 task_id=self._id,
                 script_path=self.script_path,
-                filesystem_path=self.filesystem,
+                dataset=self.dataset,
             )
         )
 
@@ -139,13 +158,15 @@ class Task:
             (
                 fs.dataset_name
                 for fs in config.filesystems
-                if fs.path == Path(self.filesystem)
+                if fs.path == Path(self.filesystem_path)
             ),
             None,
         )
 
         if dataset_name is None:
-            raise ValueError(f"No filesystem found with path {str(self.filesystem)}")
+            raise ValueError(
+                f"No filesystem found with path {str(self.filesystem_path)}"
+            )
 
         return response_types.Task(
             datetime=self.created_at,

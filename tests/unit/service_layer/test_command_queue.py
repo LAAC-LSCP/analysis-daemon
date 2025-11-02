@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from src.config.config import ConfigModel
 from src.core.types import UUID, Model
 from src.domain.commands import CreateTask
@@ -21,7 +19,7 @@ def test_command_queue_priority(config_model: ConfigModel):
     command = CreateTask(
         task_id=UUID("1"),
         owner_id=UUID("Lawrence"),
-        filesystem=Path("."),
+        dataset="loann_2025",
         model=Model.VTC,
         config=config_model,
     )

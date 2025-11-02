@@ -1,5 +1,4 @@
 from datetime import datetime
-from pathlib import Path
 
 import pytest
 
@@ -21,7 +20,7 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
     dt = datetime.now()
     task = ModelTask(
         owner_id=UUID("123"),
-        filesystem=Path("dataset"),
+        dataset="loann_2025",
         created_at=dt,
         status=TaskStatus.RUNNING,
         model=Model.VTC,
@@ -50,7 +49,7 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
     assert queue.qsize() == 1
     item: commands.RunTask = queue.get().item
     assert item == commands.RunTask(
-        task_id=UUID("1"), filesystem_path=Path("dataset"), script_path=item.script_path
+        task_id=UUID("1"), dataset="loann_2025", script_path=item.script_path
     )
 
 

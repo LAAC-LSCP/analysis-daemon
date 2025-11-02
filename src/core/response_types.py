@@ -5,10 +5,9 @@ from the Echolalia-owned endpoints
 
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List, TypedDict
 
-from src.config.config import ConfigModel, FileSystemConfig
+from src.config.config import ConfigModel
 from src.core.types import UUID, Model, TaskStatus
 from src.domain import model
 
@@ -88,36 +87,14 @@ class Task:
         )
 
     def to_model_type_task(self, config: ConfigModel) -> "model.Task":
-        filesystem_config: FileSystemConfig | None = next(
-            (fs for fs in config.filesystems if fs.dataset_name == self.dataset_name),
-            None,
-        )
-
-        if filesystem_config is None:
-            raise ValueError(f"No filesystem found for dataset {self.dataset_name}")
-
-        script_path: Path | None = next(
-            (
-                script.path
-                for script in config.scripts
-                if script.model_name == self.model_name
-            ),
-            None,
-        )
-
-        if script_path is None:
-            raise ValueError(
-                f"No script found in dataset {self.dataset_name} \
-                with model {self.model_name}"
-            )
-
         return model.Task(
             owner_id=self.owner_id,
-            filesystem=filesystem_config.path,
+            dataset=self.dataset_name,
             created_at=self.datetime,
             status=self.status,
             model=self.model_name,
             _id=self.id,
+            config=config,
         )
 
     def __str__(self) -> str:

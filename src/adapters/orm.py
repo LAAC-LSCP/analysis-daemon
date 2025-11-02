@@ -88,7 +88,7 @@ tasks = Table(
     Column("owner_id", String, nullable=False),
     Column("task_status", String, nullable=False),
     Column("created_at", DateTime, nullable=False, default=func.now()),
-    Column("filesystem_path", PathType, nullable=False),
+    Column("dataset", String, nullable=False),
     Column("model", ModelType),
 )
 
@@ -111,7 +111,7 @@ def start_mappers():
         properties={
             "_id": tasks.c.id,
             "status": tasks.c.task_status,
-            "filesystem": tasks.c.filesystem_path,
+            "dataset": tasks.c.dataset,
         },
     )
 

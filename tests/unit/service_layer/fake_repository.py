@@ -14,7 +14,7 @@ from src.domain.model import Task
 @dataclass
 class TaskArgs:
     owner_id: UUID
-    filesystem: Path
+    dataset: str
     script_path: Path
     created_at: datetime = field(default_factory=datetime.now)
     status: str = TaskStatus.PENDING
@@ -41,7 +41,7 @@ class FakeRepository(AbstractRepository):
             [
                 Task(
                     owner_id=t.owner_id,
-                    filesystem=t.filesystem,
+                    dataset=t.dataset,
                     created_at=t.created_at,
                     status=TaskStatus(t.status),
                     model=t.model,
@@ -73,8 +73,8 @@ class FakeRepository(AbstractRepository):
     def get_by_status(self, status: TaskStatus) -> List[Task]:
         return [t for t in self._tasks if t.status == status]
 
-    def get_by_filesystem(self, filesystem: Path) -> List[Task]:
-        return [t for t in self._tasks if t.filesystem == filesystem]
+    def get_by_dataset(self, dataset: str) -> List[Task]:
+        return [t for t in self._tasks if t.dataset == dataset]
 
     def save(self, task: Task) -> Task:
         if not task._id:

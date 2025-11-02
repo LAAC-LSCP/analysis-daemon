@@ -129,7 +129,7 @@ class Service:
         return CreateTask(
             task_id=task._id,
             owner_id=task.owner_id,
-            filesystem=task.filesystem,
+            dataset=task.dataset,
             model=task.model,
             config=self._config,
         )
@@ -137,6 +137,6 @@ class Service:
     def _get_run_task_command(self, task: Task) -> RunTask:
         return RunTask(
             task_id=task._id,
-            filesystem_path=task.filesystem,
+            dataset=task.dataset,
             script_path=task.script_path,
         )

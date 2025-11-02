@@ -1,5 +1,4 @@
 from datetime import datetime
-from pathlib import Path
 from typing import Callable, Optional
 
 import pytest
@@ -8,19 +7,21 @@ from sqlalchemy.orm import Session
 
 import src.domain.model as model
 from src.adapters.sqlalchemy_repository import SQLAlchemyRepository
+from src.config.config import ConfigModel
 from src.core.types import UUID, TaskStatus
 
 
-def test_repository_saves_task(session: Session):
+def test_repository_saves_task(session: Session, config_model: ConfigModel):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
         owner_id=UUID("owner"),
-        filesystem=Path("."),
+        dataset="loann_2025",
         created_at=dt,
         status=model.TaskStatus.PENDING,
         model=model.Model.VTC,
         _id=UUID("abc"),
+        config=config_model,
     )
 
     repo.save(task)
@@ -40,15 +41,16 @@ def test_repository_saves_task(session: Session):
     ]
 
 
-def test_repository_overwrite_task(session: Session):
+def test_repository_overwrite_task(session: Session, config_model: ConfigModel):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
         owner_id=UUID("owner"),
-        filesystem=Path("."),
+        dataset="loann_2025",
         created_at=dt,
         status=model.TaskStatus.RUNNING,
         _id=UUID("abc"),
+        config=config_model,
     )
 
     repo.save(task)
@@ -65,14 +67,15 @@ def test_repository_overwrite_task(session: Session):
     assert list(rows) == [("abc", "completed")]
 
 
-def test_repository_mark_task_completed(session: Session):
+def test_repository_mark_task_completed(session: Session, config_model: ConfigModel):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
         owner_id=UUID("owner"),
         created_at=dt,
-        filesystem=Path("."),
+        dataset="loann_2025",
         _id=UUID("abc"),
+        config=config_model,
     )
 
     repo.save(task)
@@ -89,18 +92,20 @@ def test_repository_mark_task_completed(session: Session):
     assert list(rows) == [("abc", model.TaskStatus.COMPLETED)]
 
 
-def test_repository_saves_multiple_tasks(session: Session):
+def test_repository_saves_multiple_tasks(session: Session, config_model: ConfigModel):
     repo = SQLAlchemyRepository(session)
 
     task_1 = model.Task(
         owner_id=UUID("owner"),
-        filesystem=Path("."),
+        dataset="loann_2025",
         _id=UUID("abc"),
+        config=config_model,
     )
     task_2 = model.Task(
         owner_id=UUID("owner"),
-        filesystem=Path("."),
+        dataset="loann_2025",
         _id=UUID("def"),
+        config=config_model,
     )
 
     repo.save(task_1)
@@ -111,16 +116,17 @@ def test_repository_saves_multiple_tasks(session: Session):
     assert list(rows) == [("abc",), ("def",)]
 
 
-def test_repository_get_task(session: Session):
+def test_repository_get_task(session: Session, config_model: ConfigModel):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
         owner_id=UUID("owner"),
-        filesystem=Path("."),
+        dataset="loann_2025",
         created_at=dt,
         status=model.TaskStatus.PENDING,
         model=model.Model.VTC,
         _id=UUID("abc"),
+        config=config_model,
     )
 
     repo.save(task)
@@ -198,7 +204,7 @@ def simple_task_factory() -> Callable[[UUID, UUID, Optional[TaskStatus]], model.
 
         return model.Task(
             owner_id=owner_id,
-            filesystem=Path("."),
+            dataset="loann_2025",
             created_at=datetime.now(),
             status=status,
             model=model.Model.VTC,

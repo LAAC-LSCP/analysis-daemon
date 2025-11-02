@@ -13,7 +13,7 @@ class Command:
 class CreateTask(Command):
     task_id: UUID
     owner_id: UUID
-    filesystem: Path
+    dataset: str
     model: Model
     config: ConfigModel
 
@@ -30,7 +30,7 @@ class CreateTask(Command):
 @dataclass
 class RunTask(Command):
     task_id: UUID
-    filesystem_path: Path
+    dataset: str
     script_path: Path
 
 

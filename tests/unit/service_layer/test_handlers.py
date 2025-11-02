@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 
 from src.config.config import ConfigModel
@@ -17,7 +15,7 @@ async def test_adding_returns_task_id(config_model: ConfigModel):
         commands.CreateTask(
             task_id=UUID("abc"),
             owner_id=UUID("owner"),
-            filesystem=Path("/path1"),
+            dataset="loann_2025",
             model=Model.VTC,
             config=config_model,
         ),
@@ -35,7 +33,7 @@ async def test_commit(config_model: ConfigModel):
         commands.CreateTask(
             task_id=UUID("abc"),
             owner_id=UUID("owner"),
-            filesystem=Path("/path1"),
+            dataset="loann_2025",
             model=Model.VTC,
             config=config_model,
         ),
