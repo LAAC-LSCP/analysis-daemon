@@ -4,7 +4,6 @@ and creates an even simpler interface within our domain (e.g., tasks)
 """
 
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import List, Optional, Set
 
 from src.core.types import UUID, TaskStatus
@@ -33,7 +32,7 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_by_filesystem(self, filesystem_path: Path) -> List[Task]:
+    def get_by_dataset(self, dataset: str) -> List[Task]:
         raise NotImplementedError
 
     @abstractmethod

@@ -5,7 +5,8 @@ from typing import Dict, List, Optional
 
 from src.config.config import ConfigModel
 from src.core import response_types
-from src.core.types import UUID, Model, TaskStatus
+from src.core.exceptions import NoFileSystemWithDataset, NoScriptWithOperation
+from src.core.types import UUID, Operation, TaskStatus
 from src.domain.commands import Command, CompleteTask, RunTask
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
 
@@ -13,33 +14,34 @@ from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, Tas
 class Task:
     owner_id: UUID
     created_at: datetime
-    filesystem: Path
+    dataset: str
     status: TaskStatus
-    script_path: Path
-    model: Model
+    operation: Operation
     events: List[Event]
     commands: List[Command]
-
+    config: ConfigModel | None
     _id: UUID
 
     def __init__(
         self,
         owner_id: UUID,
-        filesystem: Path,
-        script_path: Path,
+        dataset: str,
+        status: TaskStatus,
+        operation: Operation,
+        config: Optional[ConfigModel] = None,
         created_at: Optional[datetime] = None,
-        status: Optional[TaskStatus] = None,
-        model: Optional[Model] = None,
         _id: Optional[UUID] = None,
     ):
         self.created_at = created_at or datetime.now()
         self.status = status or TaskStatus.PENDING
         self._id = _id or UUID(str(uuid.uuid4()))
-        self.model = model or Model.UNKNOWN
+        self.operation = operation
+        # TODO: undo dependency injection when
+        # config_version is added to the task table
+        self.config = config
 
-        self.script_path = script_path
         self.owner_id = owner_id
-        self.filesystem = filesystem
+        self.dataset = dataset
 
         self.events = []
         self.commands = []
@@ -61,11 +63,42 @@ class Task:
         return self.status == TaskStatus.PENDING
 
     @property
-    def full_script_path(self) -> Path | None:
-        if self.script_path is None:
-            return None
+    def script_path(self) -> Path:
+        if self.config is None:
+            raise ValueError("config is `None`")
 
-        return self.filesystem / self.script_path
+        script_path: Path | None = next(
+            (
+                script.path
+                for script in self.config.scripts
+                if str(self.operation) == script.model_name
+            ),
+            None,
+        )
+
+        if script_path is None:
+            raise NoScriptWithOperation(self.operation)
+
+        return script_path
+
+    @property
+    def filesystem_path(self) -> Path:
+        if self.config is None:
+            raise ValueError("config is `None`")
+
+        filesystem_path: Path | None = next(
+            (
+                fs.path
+                for fs in self.config.filesystems
+                if fs.dataset_name == self.dataset
+            ),
+            None,
+        )
+
+        if filesystem_path is None:
+            raise NoFileSystemWithDataset(self.dataset)
+
+        return filesystem_path
 
     def mark_completed(self) -> None:
         self.status = TaskStatus.COMPLETED
@@ -88,7 +121,7 @@ class Task:
             RunTask(
                 task_id=self._id,
                 script_path=self.script_path,
-                filesystem_path=self.filesystem,
+                dataset=self.dataset,
             )
         )
 
@@ -125,18 +158,20 @@ class Task:
             (
                 fs.dataset_name
                 for fs in config.filesystems
-                if fs.path == Path(self.filesystem)
+                if fs.path == Path(self.filesystem_path)
             ),
             None,
         )
 
         if dataset_name is None:
-            raise ValueError(f"No filesystem found with path {str(self.filesystem)}")
+            raise ValueError(
+                f"No filesystem found with path {str(self.filesystem_path)}"
+            )
 
         return response_types.Task(
             datetime=self.created_at,
             owner_id=self.owner_id,
-            model_name=self.model,
+            model_name=self.operation,
             dataset_name=dataset_name,
             status=self.status,
             id=self._id,

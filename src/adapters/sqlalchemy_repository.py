@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import List, Optional, Set
 
 from sqlalchemy.orm import Session
@@ -35,8 +34,8 @@ class SQLAlchemyRepository(AbstractRepository):
             .all()
         )
 
-    def get_by_filesystem(self, filesystem_path: Path) -> List[Task]:
-        return self._session.query(Task).filter_by(filesystem=filesystem_path).all()
+    def get_by_dataset(self, dataset: str) -> List[Task]:
+        return self._session.query(Task).filter_by(dataset=dataset).all()
 
     def get_by_status(self, task_status: TaskStatus) -> List[Task]:
         return self._session.query(Task).filter_by(status=task_status).all()

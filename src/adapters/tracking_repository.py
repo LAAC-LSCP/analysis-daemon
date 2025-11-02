@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Generic, List, Optional, Set
 
 from src.adapters.repository import AbstractRepository
@@ -47,8 +46,8 @@ class TrackingRepository(AbstractRepository, Generic[RepoType]):
 
         return tasks
 
-    def get_by_filesystem(self, filesystem_path: Path) -> List[Task]:
-        tasks = self._repository.get_by_filesystem(filesystem_path)
+    def get_by_dataset(self, dataset: str) -> List[Task]:
+        tasks = self._repository.get_by_dataset(dataset)
 
         if tasks:
             self.seen.update(tasks)
