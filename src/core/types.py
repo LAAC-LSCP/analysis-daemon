@@ -9,11 +9,9 @@ class TaskStatus(StrEnum):
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-    UNKNOWN = "unknown"
 
 
 class Operation(StrEnum):
     VTC = "vtc"
     ALICE = "alice"
     VCM = "vcm"
-    UNKNOWN = "unknown"

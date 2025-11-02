@@ -49,16 +49,10 @@ class TaskStatusType(TypeDecorator):
     impl = StringType(length=256)
 
     def process_bind_param(self, value: Optional[model.TaskStatus], _) -> str:
-        if value is None:
-            return model.TaskStatus.UNKNOWN.value
-
-        return value.value
+        return value.value  # type: ignore
 
     def process_result_value(self, value: Optional[str], _) -> model.TaskStatus:
-        if value is None:
-            return model.TaskStatus.UNKNOWN
-
-        return model.TaskStatus(value)
+        return model.TaskStatus(value)  # type: ignore
 
 
 class OperationType(TypeDecorator):
@@ -69,16 +63,10 @@ class OperationType(TypeDecorator):
     impl = StringType(length=256)
 
     def process_bind_param(self, value: Optional[model.Operation], _) -> str:
-        if value is None:
-            return model.Operation.UNKNOWN.value
-
-        return value.value
+        return value.value  # type: ignore
 
     def process_result_value(self, value: Optional[str], _) -> model.Operation:
-        if value is None:
-            return model.Operation.UNKNOWN
-
-        return model.Operation(value)
+        return model.Operation(value)  # type: ignore
 
 
 tasks = Table(

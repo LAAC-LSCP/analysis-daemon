@@ -16,9 +16,9 @@ class TaskArgs:
     owner_id: UUID
     dataset: str
     script_path: Path
+    operation: Operation
     created_at: datetime = field(default_factory=datetime.now)
     status: str = TaskStatus.PENDING
-    operation: Optional[Operation] = None
 
     _id: Optional[UUID] = None
 

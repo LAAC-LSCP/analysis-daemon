@@ -49,6 +49,7 @@ def test_repository_overwrite_task(session: Session, config_model: ConfigModel):
         dataset="loann_2025",
         created_at=dt,
         status=model.TaskStatus.RUNNING,
+        operation=model.Operation.VTC,
         _id=UUID("abc"),
         config=config_model,
     )
@@ -74,6 +75,8 @@ def test_repository_mark_task_completed(session: Session, config_model: ConfigMo
         owner_id=UUID("owner"),
         created_at=dt,
         dataset="loann_2025",
+        status=TaskStatus.PENDING,
+        operation=model.Operation.VTC,
         _id=UUID("abc"),
         config=config_model,
     )
@@ -98,12 +101,16 @@ def test_repository_saves_multiple_tasks(session: Session, config_model: ConfigM
     task_1 = model.Task(
         owner_id=UUID("owner"),
         dataset="loann_2025",
+        status=TaskStatus.PENDING,
+        operation=model.Operation.VTC,
         _id=UUID("abc"),
         config=config_model,
     )
     task_2 = model.Task(
         owner_id=UUID("owner"),
         dataset="loann_2025",
+        status=TaskStatus.PENDING,
+        operation=model.Operation.VTC,
         _id=UUID("def"),
         config=config_model,
     )

@@ -17,32 +17,36 @@ class CustomException(Exception):
 def _add_task(
     session: Session,
     dataset: str,
+    status: TaskStatus,
+    operation: Operation,
     task_id: Optional[UUID] = None,
     owner_id: Optional[UUID] = None,
-    task_status: Optional[TaskStatus] = None,
     created_at: Optional[datetime] = None,
 ):
+    dataset = dataset
+    status = status
+    operation = operation
+
     task_id = task_id or UUID("task-id")
     owner_id = owner_id or UUID("owner")
-    dataset = dataset
-    task_status = task_status or TaskStatus.PENDING
     created_at = created_at or datetime.now()
 
     session.execute(
         text(
             (
                 "INSERT INTO tasks (id, owner_id, dataset, "
-                "created_at, task_status)"
+                "operation, created_at, task_status)"
                 " VALUES (:task_id, :owner_id, :dataset, "
-                ":created_at, :task_status)"
+                ":operation, :created_at, :task_status)"
             )
         ),
         dict(
             task_id=task_id,
             owner_id=owner_id,
             dataset=dataset,
+            operation=operation,
             created_at=created_at,
-            task_status=task_status,
+            task_status=status,
         ),
     )
 
@@ -53,7 +57,13 @@ def test_uow_can_get(session_factory: SessionFactory):
     specifically getting tasks
     """
     session = session_factory()
-    _add_task(session, dataset="loann_2025", task_id=UUID("task-id"))
+    _add_task(
+        session,
+        dataset="loann_2025",
+        task_id=UUID("task-id"),
+        operation=Operation.VTC,
+        status=TaskStatus.PENDING,
+    )
     session.commit()
 
     uow = SQLAlchemyUoW(session_factory)
@@ -108,6 +118,8 @@ def test_uow_rolls_back_uncommitted_changes(session_factory: SessionFactory):
             owner_id=UUID("owner"),
             dataset="loann_2025",
             created_at=created_at,
+            operation=Operation.VTC,
+            status=TaskStatus.PENDING,
         )
         uow.tasks.save(task)
 
@@ -120,7 +132,12 @@ def test_rolls_back_on_error(session_factory: SessionFactory):
     uow = SQLAlchemyUoW(session_factory)
     with pytest.raises(CustomException):
         with uow:
-            _add_task(uow.session, dataset="loann_2025")
+            _add_task(
+                uow.session,
+                dataset="loann_2025",
+                operation=Operation.VTC,
+                status=TaskStatus.PENDING,
+            )
             raise CustomException()
 
     new_session = session_factory()

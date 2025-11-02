@@ -26,16 +26,16 @@ class Task:
         self,
         owner_id: UUID,
         dataset: str,
+        status: TaskStatus,
+        operation: Operation,
         config: Optional[ConfigModel] = None,
         created_at: Optional[datetime] = None,
-        status: Optional[TaskStatus] = None,
-        operation: Optional[Operation] = None,
         _id: Optional[UUID] = None,
     ):
         self.created_at = created_at or datetime.now()
         self.status = status or TaskStatus.PENDING
         self._id = _id or UUID(str(uuid.uuid4()))
-        self.operation = operation or Operation.UNKNOWN
+        self.operation = operation
         # TODO: undo dependency injection when
         # config_version is added to the task table
         self.config = config

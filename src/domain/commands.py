@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from src.config.config import ConfigModel
-from src.core.types import UUID, Operation
+from src.core.types import UUID, Operation, TaskStatus
 
 
 class Command:
@@ -16,6 +16,10 @@ class CreateTask(Command):
     dataset: str
     operation: Operation
     config: ConfigModel
+
+    @property
+    def status(self) -> TaskStatus:
+        return TaskStatus.PENDING
 
     def __eq__(self, other):
         if not isinstance(other, CreateTask):
