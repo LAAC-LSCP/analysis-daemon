@@ -111,7 +111,6 @@ def start_mappers():
         properties={
             "_id": tasks.c.id,
             "status": tasks.c.task_status,
-            "dataset": tasks.c.dataset,
         },
     )
 
