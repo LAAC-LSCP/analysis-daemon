@@ -26,9 +26,11 @@ echolalia --config [path to configuration toml file] task-manager --help
 
 An example configuration is given below for configuration.toml.
 
-You'll need to create a file like this on your own system.
+You'll need to create a file like this on your own system. Note that file paths should be absolute, not relative paths.
 
 ```
+log_directory = "/Users/me/Desktop/echolalia_log"
+
 [database]
 url = "sqlite:///database.db"
 

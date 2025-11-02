@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -11,8 +10,6 @@ from typing import (
 
 from src.service_layer.handlers.types import MessageHandlers, MessageT
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass(order=True)

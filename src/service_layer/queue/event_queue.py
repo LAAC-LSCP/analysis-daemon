@@ -1,12 +1,8 @@
-import logging
-
 from src.core.decorators import catch_and_log_exception
 from src.domain.events import Event
 from src.service_layer.handlers.types import EventHandlers
 from src.service_layer.queue.task_queue import TaskQueue
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
-
-logger = logging.getLogger(__name__)
 
 
 class EventQueue(TaskQueue[Event]):
