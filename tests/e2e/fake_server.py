@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any, Set
 
 import src.core.response_types as response_types
-from src.core.types import UUID, Model, TaskStatus
+from src.core.types import UUID, Operation, TaskStatus
 
 
 class FakeServerHandler(BaseHTTPRequestHandler):
@@ -21,7 +21,7 @@ class FakeServerHandler(BaseHTTPRequestHandler):
         response_types.Task(
             datetime=datetime(year=2021, month=1, day=1),
             owner_id=UUID("1001"),
-            model_name=Model.VTC,
+            model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.PENDING,
             id=UUID("1"),
@@ -29,7 +29,7 @@ class FakeServerHandler(BaseHTTPRequestHandler):
         response_types.Task(
             datetime=datetime(year=2022, month=1, day=1),
             owner_id=UUID("1002"),
-            model_name=Model.VTC,
+            model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.RUNNING,
             id=UUID("2"),

@@ -49,36 +49,24 @@ class TaskStatusType(TypeDecorator):
     impl = StringType(length=256)
 
     def process_bind_param(self, value: Optional[model.TaskStatus], _) -> str:
-        if value is None:
-            return model.TaskStatus.UNKNOWN.value
-
-        return value.value
+        return value.value  # type: ignore
 
     def process_result_value(self, value: Optional[str], _) -> model.TaskStatus:
-        if value is None:
-            return model.TaskStatus.UNKNOWN
-
-        return model.TaskStatus(value)
+        return model.TaskStatus(value)  # type: ignore
 
 
-class ModelType(TypeDecorator):
+class OperationType(TypeDecorator):
     """
-    Binds model names to strings during forward/backwards object relational mapping
+    Binds operation names to strings during forward/backwards object relational mapping
     """
 
     impl = StringType(length=256)
 
-    def process_bind_param(self, value: Optional[model.Model], _) -> str:
-        if value is None:
-            return model.Model.UNKNOWN.value
+    def process_bind_param(self, value: Optional[model.Operation], _) -> str:
+        return value.value  # type: ignore
 
-        return value.value
-
-    def process_result_value(self, value: Optional[str], _) -> model.Model:
-        if value is None:
-            return model.Model.UNKNOWN
-
-        return model.Model(value)
+    def process_result_value(self, value: Optional[str], _) -> model.Operation:
+        return model.Operation(value)  # type: ignore
 
 
 tasks = Table(
@@ -88,9 +76,8 @@ tasks = Table(
     Column("owner_id", String, nullable=False),
     Column("task_status", String, nullable=False),
     Column("created_at", DateTime, nullable=False, default=func.now()),
-    Column("filesystem_path", PathType, nullable=False),
-    Column("script_rel_path", PathType),
-    Column("model", ModelType),
+    Column("dataset", String, nullable=False),
+    Column("operation", OperationType),
 )
 
 
@@ -112,8 +99,6 @@ def start_mappers():
         properties={
             "_id": tasks.c.id,
             "status": tasks.c.task_status,
-            "filesystem": tasks.c.filesystem_path,
-            "script_path": tasks.c.script_rel_path,
         },
     )
 

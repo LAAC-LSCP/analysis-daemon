@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.core.types import UUID, Model, TaskStatus
+from src.core.types import UUID, Operation, TaskStatus
 
 
 class CoreException(Exception):
@@ -29,12 +29,14 @@ class NoFileSystemWithDataset(CoreException):
         )
 
 
-class NoScriptWithModel(CoreException):
-    """Raised when there is no script found for a given model"""
+class NoScriptWithOperation(CoreException):
+    """Raised when there is no script found for a given operation"""
 
-    def __init__(self, model: Model):
-        self.model = model
-        super().__init__(f"No script found in configuration with model {model.value}")
+    def __init__(self, operation: Operation):
+        self.operation = operation
+        super().__init__(
+            f"No script found in configuration with operation {operation.value}"
+        )
 
 
 class ScriptNameNotInDataset(CoreException):

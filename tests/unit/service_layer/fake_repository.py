@@ -7,18 +7,18 @@ from random import Random
 from typing import List, Optional, Set
 
 from src.adapters.repository import AbstractRepository
-from src.core.types import UUID, Model, TaskStatus
+from src.core.types import UUID, Operation, TaskStatus
 from src.domain.model import Task
 
 
 @dataclass
 class TaskArgs:
     owner_id: UUID
-    filesystem: Path
+    dataset: str
     script_path: Path
+    operation: Operation
     created_at: datetime = field(default_factory=datetime.now)
     status: str = TaskStatus.PENDING
-    model: Optional[Model] = None
 
     _id: Optional[UUID] = None
 
@@ -41,11 +41,10 @@ class FakeRepository(AbstractRepository):
             [
                 Task(
                     owner_id=t.owner_id,
-                    filesystem=t.filesystem,
+                    dataset=t.dataset,
                     created_at=t.created_at,
                     status=TaskStatus(t.status),
-                    script_path=t.script_path,
-                    model=t.model,
+                    operation=t.operation,
                     _id=t._id,
                 )
                 for t in tasks
@@ -74,8 +73,8 @@ class FakeRepository(AbstractRepository):
     def get_by_status(self, status: TaskStatus) -> List[Task]:
         return [t for t in self._tasks if t.status == status]
 
-    def get_by_filesystem(self, filesystem: Path) -> List[Task]:
-        return [t for t in self._tasks if t.filesystem == filesystem]
+    def get_by_dataset(self, dataset: str) -> List[Task]:
+        return [t for t in self._tasks if t.dataset == dataset]
 
     def save(self, task: Task) -> Task:
         if not task._id:
