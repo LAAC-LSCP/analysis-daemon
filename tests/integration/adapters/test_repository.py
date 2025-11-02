@@ -19,7 +19,7 @@ def test_repository_saves_task(session: Session, config_model: ConfigModel):
         dataset="loann_2025",
         created_at=dt,
         status=model.TaskStatus.PENDING,
-        model=model.Model.VTC,
+        operation=model.Operation.VTC,
         _id=UUID("abc"),
         config=config_model,
     )
@@ -28,7 +28,7 @@ def test_repository_saves_task(session: Session, config_model: ConfigModel):
     session.commit()
 
     rows = session.execute(
-        text("SELECT id, owner_id, task_status, created_at, model FROM" " tasks")
+        text("SELECT id, owner_id, task_status, created_at, operation FROM" " tasks")
     )
     assert list(rows) == [
         (
@@ -36,7 +36,7 @@ def test_repository_saves_task(session: Session, config_model: ConfigModel):
             "owner",
             model.TaskStatus.PENDING.value,
             str(dt),
-            model.Model.VTC.value,
+            model.Operation.VTC.value,
         )
     ]
 
@@ -124,7 +124,7 @@ def test_repository_get_task(session: Session, config_model: ConfigModel):
         dataset="loann_2025",
         created_at=dt,
         status=model.TaskStatus.PENDING,
-        model=model.Model.VTC,
+        operation=model.Operation.VTC,
         _id=UUID("abc"),
         config=config_model,
     )
@@ -207,7 +207,7 @@ def simple_task_factory() -> Callable[[UUID, UUID, Optional[TaskStatus]], model.
             dataset="loann_2025",
             created_at=datetime.now(),
             status=status,
-            model=model.Model.VTC,
+            operation=model.Operation.VTC,
             _id=_id,
         )
 

@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from src.core.types import UUID, Model, TaskStatus
+from src.core.types import UUID, Operation, TaskStatus
 from src.domain.model import Task
 from src.service_layer.unit_of_work.sqlalchemy_uow import SessionFactory, SQLAlchemyUoW
 
@@ -79,7 +79,7 @@ def test_uow_can_save(session_factory: SessionFactory):
             dataset="loann_2025",
             created_at=created_at,
             status=TaskStatus.RUNNING,
-            model=Model.VTC,
+            operation=Operation.VTC,
             _id=UUID("abc"),
             config=None,
         )
@@ -95,7 +95,7 @@ def test_uow_can_save(session_factory: SessionFactory):
             TaskStatus.RUNNING.value,
             str(created_at),
             "loann_2025",
-            Model.VTC.value,
+            Operation.VTC.value,
         )
     ]
 

@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, Dict, List, TypedDict
 
 from src.config.config import ConfigModel
-from src.core.types import UUID, Model, TaskStatus
+from src.core.types import UUID, Operation, TaskStatus
 from src.domain import model
 
 type Tasks = List["Task"]
@@ -46,7 +46,7 @@ class PostPayload(TypedDict):
 class Task:
     datetime: datetime
     owner_id: UUID
-    model_name: Model
+    model_name: Operation
     dataset_name: str
     status: TaskStatus
     id: UUID
@@ -80,7 +80,7 @@ class Task:
         return Task(
             datetime=datetime.fromisoformat(data["datetime"]),
             owner_id=UUID(data["owner_id"]),
-            model_name=Model(data["model_name"]),
+            model_name=Operation(data["model_name"]),
             dataset_name=data["dataset_name"],
             status=TaskStatus(data["status"]),
             id=UUID(data["id"]),
@@ -92,7 +92,7 @@ class Task:
             dataset=self.dataset_name,
             created_at=self.datetime,
             status=self.status,
-            model=self.model_name,
+            operation=self.model_name,
             _id=self.id,
             config=config,
         )

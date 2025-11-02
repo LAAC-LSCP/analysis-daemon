@@ -5,8 +5,8 @@ from typing import Dict, List, Optional
 
 from src.config.config import ConfigModel
 from src.core import response_types
-from src.core.exceptions import NoFileSystemWithDataset, NoScriptWithModel
-from src.core.types import UUID, Model, TaskStatus
+from src.core.exceptions import NoFileSystemWithDataset, NoScriptWithOperation
+from src.core.types import UUID, Operation, TaskStatus
 from src.domain.commands import Command, CompleteTask, RunTask
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
 
@@ -16,7 +16,7 @@ class Task:
     created_at: datetime
     dataset: str
     status: TaskStatus
-    model: Model
+    operation: Operation
     events: List[Event]
     commands: List[Command]
     config: ConfigModel | None
@@ -29,13 +29,13 @@ class Task:
         config: Optional[ConfigModel] = None,
         created_at: Optional[datetime] = None,
         status: Optional[TaskStatus] = None,
-        model: Optional[Model] = None,
+        operation: Optional[Operation] = None,
         _id: Optional[UUID] = None,
     ):
         self.created_at = created_at or datetime.now()
         self.status = status or TaskStatus.PENDING
         self._id = _id or UUID(str(uuid.uuid4()))
-        self.model = model or Model.UNKNOWN
+        self.operation = operation or Operation.UNKNOWN
         # TODO: undo dependency injection when
         # config_version is added to the task table
         self.config = config
@@ -71,13 +71,13 @@ class Task:
             (
                 script.path
                 for script in self.config.scripts
-                if str(self.model) == script.model_name
+                if str(self.operation) == script.model_name
             ),
             None,
         )
 
         if script_path is None:
-            raise NoScriptWithModel(self.model)
+            raise NoScriptWithOperation(self.operation)
 
         return script_path
 
@@ -171,7 +171,7 @@ class Task:
         return response_types.Task(
             datetime=self.created_at,
             owner_id=self.owner_id,
-            model_name=self.model,
+            model_name=self.operation,
             dataset_name=dataset_name,
             status=self.status,
             id=self._id,

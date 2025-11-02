@@ -15,7 +15,7 @@ from click import Context
 from src.config.config import load_config
 from src.core.exceptions import InValidTaskStatus
 from src.core.response_types import PostPayload, Task
-from src.core.types import UUID, Model, TaskStatus
+from src.core.types import UUID, Operation, TaskStatus
 from src.service_layer.http_client import HTTPClient
 
 
@@ -116,11 +116,11 @@ def post(ctx: Context):
     help="Task status",
 )
 @click.option(
-    "--model",
+    "--operation",
     "-m",
     required=False,
     type=str,
-    help="Model to be run",
+    help="Operation to be run",
 )
 @click.option(
     "--dataset-name",
@@ -134,13 +134,13 @@ def put(
     id: str,
     owner: Optional[str] = None,
     status: Optional[str] = None,
-    model: Optional[str] = None,
+    operation: Optional[str] = None,
     dataset_name: Optional[str] = None,
 ):
     """Create a task on the remote server
     If any field is unspecified, it fills it with the from the already existing task
     """
-    model_name: Optional[Model] = Model(model) if model else None
+    operation_name: Optional[Operation] = Operation(operation) if operation else None
     owner_id: Optional[UUID] = UUID(owner) if owner else None
     task_status: Optional[TaskStatus] = TaskStatus(status) if status else None
 
@@ -158,7 +158,7 @@ of 'put'?"
     task = Task(
         datetime=existing_task.datetime,
         owner_id=owner_id or existing_task.owner_id,
-        model_name=model_name or existing_task.model_name,
+        model_name=operation_name or existing_task.model_name,
         dataset_name=dataset_name or existing_task.dataset_name,
         status=task_status or existing_task.status,
         id=UUID(id),

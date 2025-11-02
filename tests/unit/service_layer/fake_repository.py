@@ -7,7 +7,7 @@ from random import Random
 from typing import List, Optional, Set
 
 from src.adapters.repository import AbstractRepository
-from src.core.types import UUID, Model, TaskStatus
+from src.core.types import UUID, Operation, TaskStatus
 from src.domain.model import Task
 
 
@@ -18,7 +18,7 @@ class TaskArgs:
     script_path: Path
     created_at: datetime = field(default_factory=datetime.now)
     status: str = TaskStatus.PENDING
-    model: Optional[Model] = None
+    operation: Optional[Operation] = None
 
     _id: Optional[UUID] = None
 
@@ -44,7 +44,7 @@ class FakeRepository(AbstractRepository):
                     dataset=t.dataset,
                     created_at=t.created_at,
                     status=TaskStatus(t.status),
-                    model=t.model,
+                    operation=t.operation,
                     _id=t._id,
                 )
                 for t in tasks

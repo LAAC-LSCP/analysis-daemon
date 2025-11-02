@@ -61,24 +61,24 @@ class TaskStatusType(TypeDecorator):
         return model.TaskStatus(value)
 
 
-class ModelType(TypeDecorator):
+class OperationType(TypeDecorator):
     """
-    Binds model names to strings during forward/backwards object relational mapping
+    Binds operation names to strings during forward/backwards object relational mapping
     """
 
     impl = StringType(length=256)
 
-    def process_bind_param(self, value: Optional[model.Model], _) -> str:
+    def process_bind_param(self, value: Optional[model.Operation], _) -> str:
         if value is None:
-            return model.Model.UNKNOWN.value
+            return model.Operation.UNKNOWN.value
 
         return value.value
 
-    def process_result_value(self, value: Optional[str], _) -> model.Model:
+    def process_result_value(self, value: Optional[str], _) -> model.Operation:
         if value is None:
-            return model.Model.UNKNOWN
+            return model.Operation.UNKNOWN
 
-        return model.Model(value)
+        return model.Operation(value)
 
 
 tasks = Table(
@@ -89,7 +89,7 @@ tasks = Table(
     Column("task_status", String, nullable=False),
     Column("created_at", DateTime, nullable=False, default=func.now()),
     Column("dataset", String, nullable=False),
-    Column("model", ModelType),
+    Column("operation", OperationType),
 )
 
 

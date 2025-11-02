@@ -4,7 +4,7 @@ import pytest
 
 from src.config.config import ConfigModel
 from src.core.response_types import Task
-from src.core.types import UUID, Model, TaskStatus
+from src.core.types import UUID, Operation, TaskStatus
 from src.domain import commands, events
 from src.domain.model import Task as ModelTask
 from src.service_layer.handlers.command_handlers import get_command_handlers
@@ -23,7 +23,7 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
         dataset="loann_2025",
         created_at=dt,
         status=TaskStatus.RUNNING,
-        model=Model.VTC,
+        operation=Operation.VTC,
         _id=UUID("1"),
         config=config_model,
     )
@@ -66,7 +66,7 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
                 Task(
                     dataset_name="loann_2025",
                     datetime=dt,
-                    model_name=Model.VTC,
+                    model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
                     id=UUID("1"),
@@ -74,7 +74,7 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
                 Task(
                     dataset_name="loann_2025",
                     datetime=dt,
-                    model_name=Model.VCM,
+                    model_name=Operation.VCM,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
                     id=UUID("2"),
@@ -116,7 +116,7 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                 Task(
                     dataset_name="loann_2025",
                     datetime=dt,
-                    model_name=Model.VTC,
+                    model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
                     id=UUID("1"),
@@ -126,7 +126,7 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                 Task(
                     dataset_name="loann_2025",
                     datetime=dt,
-                    model_name=Model.VTC,
+                    model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
                     id=UUID("1"),
@@ -134,7 +134,7 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                 Task(
                     dataset_name="loann_2025",
                     datetime=dt,
-                    model_name=Model.VTC,
+                    model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
                     id=UUID("2"),
@@ -171,7 +171,7 @@ async def test_event_storm_create_task(config_model: ConfigModel):
                 Task(
                     dataset_name="loann_2025",
                     datetime=dt,
-                    model_name=Model.VTC,
+                    model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
                     id=UUID("1"),
@@ -236,7 +236,7 @@ async def test_event_storm_create_task_with_error(config_model: ConfigModel):
                 Task(
                     dataset_name="loann_2025",
                     datetime=dt,
-                    model_name=Model.VTC,
+                    model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
                     id=UUID("1"),

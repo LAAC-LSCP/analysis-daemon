@@ -130,7 +130,7 @@ class Service:
             task_id=task._id,
             owner_id=task.owner_id,
             dataset=task.dataset,
-            model=task.model,
+            operation=task.operation,
             config=self._config,
         )
 

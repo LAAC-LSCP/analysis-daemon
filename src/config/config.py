@@ -11,7 +11,7 @@ from pydantic import (
     model_validator,
 )
 
-from src.core.types import Model
+from src.core.types import Operation
 
 
 class DatabaseConfig(BaseModel):
@@ -25,8 +25,8 @@ class ScriptConfig(BaseModel):
 
     @model_validator(mode="after")
     def check_model_name_valid(self) -> "ScriptConfig":
-        if self.model_name not in [m.value for m in Model]:
-            raise ValidationError(f"Model name not in {[m.value for m in Model]}", [])
+        if self.model_name not in [m.value for m in Operation]:
+            raise ValidationError(f"Model not in {[m.value for m in Operation]}", [])
 
         return self
 

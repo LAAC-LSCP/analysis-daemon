@@ -4,7 +4,7 @@ from datetime import datetime
 import pytest
 
 from src.core import response_types
-from src.core.types import UUID, Model, TaskStatus
+from src.core.types import UUID, Operation, TaskStatus
 from src.service_layer.http_client import HTTPClient
 from tests.e2e.conftest import TEST_SERVER_DOMAIN, TEST_SERVER_PORT
 
@@ -16,7 +16,7 @@ def test_http_client_get_all_tasks(http_client: HTTPClient):
         response_types.Task(
             datetime=datetime(year=2021, month=1, day=1),
             owner_id=UUID("1001"),
-            model_name=Model.VTC,
+            model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.PENDING,
             id=UUID("1"),
@@ -24,7 +24,7 @@ def test_http_client_get_all_tasks(http_client: HTTPClient):
         response_types.Task(
             datetime=datetime(year=2022, month=1, day=1),
             owner_id=UUID("1002"),
-            model_name=Model.VTC,
+            model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.RUNNING,
             id=UUID("2"),
@@ -38,7 +38,7 @@ def test_http_client_get_by_id(http_client: HTTPClient):
     assert task == response_types.Task(
         datetime=datetime(year=2021, month=1, day=1),
         owner_id=UUID("1001"),
-        model_name=Model.VTC,
+        model_name=Operation.VTC,
         dataset_name="loann_2025",
         status=TaskStatus.PENDING,
         id=UUID("1"),
@@ -52,7 +52,7 @@ def test_http_client_get_by_status(http_client: HTTPClient):
         response_types.Task(
             datetime=datetime(year=2022, month=1, day=1),
             owner_id=UUID("1002"),
-            model_name=Model.VTC,
+            model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.RUNNING,
             id=UUID("2"),
@@ -66,7 +66,7 @@ async def test_http_client_put_task(http_client: HTTPClient):
         response_types.Task(
             datetime=datetime.now(),
             owner_id=UUID("1001"),
-            model_name=Model.VTC,
+            model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.RUNNING,
             id=UUID("3"),

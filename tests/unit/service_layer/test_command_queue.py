@@ -1,5 +1,5 @@
 from src.config.config import ConfigModel
-from src.core.types import UUID, Model
+from src.core.types import UUID, Operation
 from src.domain.commands import CreateTask
 from src.service_layer.queue.command_queue import CommandQueue
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
@@ -20,7 +20,7 @@ def test_command_queue_priority(config_model: ConfigModel):
         task_id=UUID("1"),
         owner_id=UUID("Lawrence"),
         dataset="loann_2025",
-        model=Model.VTC,
+        operation=Operation.VTC,
         config=config_model,
     )
 

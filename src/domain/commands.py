@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from src.config.config import ConfigModel
-from src.core.types import UUID, Model
+from src.core.types import UUID, Operation
 
 
 class Command:
@@ -14,7 +14,7 @@ class CreateTask(Command):
     task_id: UUID
     owner_id: UUID
     dataset: str
-    model: Model
+    operation: Operation
     config: ConfigModel
 
     def __eq__(self, other):
