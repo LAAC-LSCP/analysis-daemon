@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.20.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.19.0...v1.20.0) (2025-11-03)
+
+
+### Features
+
+* update task model ([d2ec984](https://github.com/LAAC-LSCP/analysis-daemon/commit/d2ec9841ccbebe02c9ca86092102550a313ec6ad))
+
 ## [1.19.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.18.0...v1.19.0) (2025-11-02)
 
 
