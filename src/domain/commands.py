@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.config.config import ConfigModel
 from src.core.types import UUID, Operation, TaskStatus
 
 
@@ -15,7 +14,6 @@ class CreateTask(Command):
     owner_id: UUID
     dataset: str
     operation: Operation
-    config: ConfigModel
 
     @property
     def status(self) -> TaskStatus:

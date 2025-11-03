@@ -19,6 +19,7 @@ def _add_task(
     dataset: str,
     status: TaskStatus,
     operation: Operation,
+    config_version: Optional[int] = None,
     task_id: Optional[UUID] = None,
     owner_id: Optional[UUID] = None,
     created_at: Optional[datetime] = None,
@@ -30,14 +31,15 @@ def _add_task(
     task_id = task_id or UUID("task-id")
     owner_id = owner_id or UUID("owner")
     created_at = created_at or datetime.now()
+    config_version = config_version or 1
 
     session.execute(
         text(
             (
                 "INSERT INTO tasks (id, owner_id, dataset, "
-                "operation, created_at, task_status)"
+                "operation, created_at, task_status, config_version)"
                 " VALUES (:task_id, :owner_id, :dataset, "
-                ":operation, :created_at, :task_status)"
+                ":operation, :created_at, :task_status, :config_version)"
             )
         ),
         dict(
@@ -47,6 +49,7 @@ def _add_task(
             operation=operation,
             created_at=created_at,
             task_status=status,
+            config_version=config_version,
         ),
     )
 
@@ -90,8 +93,8 @@ def test_uow_can_save(session_factory: SessionFactory):
             created_at=created_at,
             status=TaskStatus.RUNNING,
             operation=Operation.VTC,
+            config_version=0,
             _id=UUID("abc"),
-            config=None,
         )
         uow.tasks.save(task)
         uow.commit()
@@ -106,6 +109,7 @@ def test_uow_can_save(session_factory: SessionFactory):
             str(created_at),
             "loann_2025",
             Operation.VTC.value,
+            0,
         )
     ]
 
@@ -120,6 +124,7 @@ def test_uow_rolls_back_uncommitted_changes(session_factory: SessionFactory):
             created_at=created_at,
             operation=Operation.VTC,
             status=TaskStatus.PENDING,
+            config_version=0,
         )
         uow.tasks.save(task)
 

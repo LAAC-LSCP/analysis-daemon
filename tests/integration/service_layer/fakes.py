@@ -2,6 +2,7 @@ from typing import Optional
 
 from src.adapters.repository import AbstractRepository
 from src.adapters.tracking_repository import TrackingRepository
+from src.config.config import ConfigModel
 from src.domain.commands import Command
 from src.domain.events import Event
 from src.service_layer.unit_of_work.uow import AbstractUoW
@@ -28,9 +29,13 @@ class FakeUoW(AbstractUoW[TrackingRepository[AbstractRepository]]):
     committed: bool
     _tracking: bool
 
-    def __init__(self, tracking: Optional[bool] = None):
+    # Include config here to account for the fact that we don't
+    # explicitly run config saving beforehand
+    def __init__(
+        self, config: Optional[ConfigModel] = None, tracking: Optional[bool] = None
+    ):
         self._tracking = tracking or True
-        self.tasks = TrackingRepository(FakeRepository())
+        self.tasks = TrackingRepository(FakeRepository(config=config))
 
         if self._tracking:
             self.tasks = TrackingRepository(self.tasks)

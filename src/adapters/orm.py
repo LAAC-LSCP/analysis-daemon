@@ -11,13 +11,14 @@ from sqlalchemy import (
     JSON,
     Column,
     DateTime,
+    ForeignKey,
     Integer,
     MetaData,
     String,
     Table,
     func,
 )
-from sqlalchemy.orm import registry
+from sqlalchemy.orm import registry, relationship
 from sqlalchemy.types import String as StringType
 from sqlalchemy.types import TypeDecorator
 
@@ -78,6 +79,7 @@ tasks = Table(
     Column("created_at", DateTime, nullable=False, default=func.now()),
     Column("dataset", String, nullable=False),
     Column("operation", OperationType),
+    Column("config_version", Integer, ForeignKey("configs.version"), nullable=False),
 )
 
 
@@ -98,6 +100,8 @@ def start_mappers():
         tasks,
         properties={
             "_id": tasks.c.id,
+            "_config": relationship(model.Config, backref="tasks"),
+            "config_version": tasks.c.config_version,
             "status": tasks.c.task_status,
         },
     )

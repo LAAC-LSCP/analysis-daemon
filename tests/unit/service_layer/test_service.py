@@ -24,11 +24,12 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
         created_at=dt,
         status=TaskStatus.RUNNING,
         operation=Operation.VTC,
+        config_version=0,
+        _config=config_model,
         _id=UUID("1"),
-        config=config_model,
     )
 
-    uow = PublishingUoW(FakeUoW())
+    uow = PublishingUoW(FakeUoW(config=config_model))
     handlers = FakeHandlers(uow, {})
     http_client = FakeHTTPClient(results=[])
 
@@ -40,7 +41,7 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
     service = Service(
         uow=uow,
         http_client=http_client,
-        config=config_model,
+        config=(config_model, 0),
         event_handlers=handlers.event_handlers,
         command_handlers=handlers.command_handlers,
     )
@@ -56,7 +57,7 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
 @pytest.mark.asyncio
 async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
     dt = datetime.now()
-    uow = PublishingUoW(FakeUoW())
+    uow = PublishingUoW(FakeUoW(config=config_model))
     handlers = FakeHandlers(
         uow, {commands.CreateTask: [FakeHandlers.empty_command_handler]}
     )
@@ -86,7 +87,7 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
     service = Service(
         uow=uow,
         http_client=http_client,
-        config=config_model,
+        config=(config_model, 0),
         event_handlers=handlers.event_handlers,
         command_handlers=handlers.command_handlers,
     )
@@ -105,7 +106,7 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
     Checks that the tasks are properly loaded, not duplicated
     """
     dt = datetime.now()
-    uow = PublishingUoW(FakeUoW())
+    uow = PublishingUoW(FakeUoW(config=config_model))
     handlers = FakeHandlers(
         uow,
         command_handlers={commands.CreateTask: [FakeHandlers.empty_command_handler]},
@@ -146,7 +147,7 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
     service = Service(
         uow=uow,
         http_client=http_client,
-        config=config_model,
+        config=(config_model, 0),
         event_handlers=handlers.event_handlers,
         command_handlers=handlers.command_handlers,
     )
@@ -164,7 +165,7 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
 async def test_event_storm_create_task(config_model: ConfigModel):
     """Test event storming of a creation task"""
     dt = datetime.now()
-    uow = PublishingUoW(FakeUoW())
+    uow = PublishingUoW(FakeUoW(config=config_model))
     http_client = FakeHTTPClient(
         results=[
             [
@@ -181,14 +182,14 @@ async def test_event_storm_create_task(config_model: ConfigModel):
     )
     handlers = FakeHandlers(
         uow,
-        command_handlers=get_command_handlers(),
+        command_handlers=get_command_handlers(config_model, 0),
         event_handlers=get_event_handlers(http_client, config_model),
     )
 
     service = Service(
         uow=uow,
         http_client=http_client,
-        config=config_model,
+        config=(config_model, 0),
         event_handlers=handlers.event_handlers,
         command_handlers=handlers.command_handlers,
     )
@@ -225,7 +226,7 @@ async def test_event_storm_create_task(config_model: ConfigModel):
 @pytest.mark.asyncio
 async def test_event_storm_create_task_with_error(config_model: ConfigModel):
     dt = datetime.now()
-    uow = PublishingUoW(FakeUoW())
+    uow = PublishingUoW(FakeUoW(config=config_model))
 
     async def handle_run_task(command: commands.RunTask, uow: PublishingUoW) -> None:
         raise Exception("Something went wrong!")
@@ -247,7 +248,7 @@ async def test_event_storm_create_task_with_error(config_model: ConfigModel):
 
     handlers = FakeHandlers(
         uow,
-        command_handlers=get_command_handlers(),
+        command_handlers=get_command_handlers(config_model, 0),
         event_handlers=get_event_handlers(http_client, config_model),
     )
     handlers.set_handlers_for_command(commands.RunTask, [handle_run_task])
@@ -255,7 +256,7 @@ async def test_event_storm_create_task_with_error(config_model: ConfigModel):
     service = Service(
         uow=uow,
         http_client=http_client,
-        config=config_model,
+        config=(config_model, 0),
         event_handlers=handlers.event_handlers,
         command_handlers=handlers.command_handlers,
     )
