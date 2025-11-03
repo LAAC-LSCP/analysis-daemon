@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.21.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.20.0...v1.21.0) (2025-11-03)
+
+
+### Features
+
+* add config version to tasks ([9bcbcfc](https://github.com/LAAC-LSCP/analysis-daemon/commit/9bcbcfcb19bdb8caa993df1b7e14641a3ea36131))
+* **tasks:** add config_version to tasks ([9bcbcfc](https://github.com/LAAC-LSCP/analysis-daemon/commit/9bcbcfcb19bdb8caa993df1b7e14641a3ea36131))
+
 ## [1.20.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.19.0...v1.20.0) (2025-11-03)
 
 
