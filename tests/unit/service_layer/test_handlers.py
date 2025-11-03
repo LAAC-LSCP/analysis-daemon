@@ -3,21 +3,20 @@ import pytest
 from src.config.config import ConfigModel
 from src.core.types import UUID, Operation
 from src.domain import commands
-from src.service_layer.handlers.command_handlers import handle_create_task
+from src.service_layer.handlers.command_handlers import get_handle_create_task
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 from tests.integration.service_layer.fakes import FakeUoW
 
 
 @pytest.mark.asyncio
 async def test_adding_returns_task_id(config_model: ConfigModel):
-    uow = PublishingUoW(FakeUoW())
-    await handle_create_task(
+    uow = PublishingUoW(FakeUoW(config=config_model))
+    await get_handle_create_task(config_model, 0)(
         commands.CreateTask(
             task_id=UUID("abc"),
             owner_id=UUID("owner"),
             dataset="loann_2025",
             operation=Operation.VTC,
-            config=config_model,
         ),
         uow,
     )
@@ -27,15 +26,14 @@ async def test_adding_returns_task_id(config_model: ConfigModel):
 
 @pytest.mark.asyncio
 async def test_commit(config_model: ConfigModel):
-    uow = PublishingUoW(FakeUoW())
+    uow = PublishingUoW(FakeUoW(config=config_model))
 
-    await handle_create_task(
+    await get_handle_create_task(config_model, 0)(
         commands.CreateTask(
             task_id=UUID("abc"),
             owner_id=UUID("owner"),
             dataset="loann_2025",
             operation=Operation.VTC,
-            config=config_model,
         ),
         uow,
     )

@@ -6,6 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 import src.domain.model as model
+from src.adapters.sqlalchemy_config_repository import SQLAlchemyConfigRepository
 from src.adapters.sqlalchemy_repository import SQLAlchemyRepository
 from src.config.config import ConfigModel
 from src.core.types import UUID, TaskStatus
@@ -14,21 +15,31 @@ from src.core.types import UUID, TaskStatus
 def test_repository_saves_task(session: Session, config_model: ConfigModel):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
+    config_repo = SQLAlchemyConfigRepository(session)
+
+    config_repo.save_config(config_model)
+
+    session.commit()
+
     task = model.Task(
         owner_id=UUID("owner"),
         dataset="loann_2025",
         created_at=dt,
         status=model.TaskStatus.PENDING,
         operation=model.Operation.VTC,
+        config_version=0,
         _id=UUID("abc"),
-        config=config_model,
     )
 
     repo.save(task)
     session.commit()
 
     rows = session.execute(
-        text("SELECT id, owner_id, task_status, created_at, operation FROM" " tasks")
+        text(
+            "SELECT id, owner_id, task_status, created_at, "
+            "operation, config_version FROM"
+            " tasks"
+        )
     )
     assert list(rows) == [
         (
@@ -37,11 +48,40 @@ def test_repository_saves_task(session: Session, config_model: ConfigModel):
             model.TaskStatus.PENDING.value,
             str(dt),
             model.Operation.VTC.value,
+            0,
         )
     ]
 
 
-def test_repository_overwrite_task(session: Session, config_model: ConfigModel):
+def test_repository_fetches_config(session: Session, config_model: ConfigModel):
+    dt = datetime.now()
+    repo = SQLAlchemyRepository(session)
+    config_repo = SQLAlchemyConfigRepository(session)
+
+    config_repo.save_config(config_model)
+
+    session.commit()
+
+    task = model.Task(
+        owner_id=UUID("owner"),
+        dataset="loann_2025",
+        created_at=dt,
+        status=model.TaskStatus.PENDING,
+        operation=model.Operation.VTC,
+        config_version=0,
+        _id=UUID("abc"),
+    )
+
+    repo.save(task)
+    session.commit()
+
+    retrieved_task = repo.get(UUID("abc"))
+
+    assert retrieved_task is not None
+    assert task.config == config_model
+
+
+def test_repository_overwrite_task(session: Session):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
@@ -50,8 +90,8 @@ def test_repository_overwrite_task(session: Session, config_model: ConfigModel):
         created_at=dt,
         status=model.TaskStatus.RUNNING,
         operation=model.Operation.VTC,
+        config_version=0,
         _id=UUID("abc"),
-        config=config_model,
     )
 
     repo.save(task)
@@ -68,7 +108,7 @@ def test_repository_overwrite_task(session: Session, config_model: ConfigModel):
     assert list(rows) == [("abc", "completed")]
 
 
-def test_repository_mark_task_completed(session: Session, config_model: ConfigModel):
+def test_repository_mark_task_completed(session: Session):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
@@ -77,8 +117,8 @@ def test_repository_mark_task_completed(session: Session, config_model: ConfigMo
         dataset="loann_2025",
         status=TaskStatus.PENDING,
         operation=model.Operation.VTC,
+        config_version=0,
         _id=UUID("abc"),
-        config=config_model,
     )
 
     repo.save(task)
@@ -95,7 +135,7 @@ def test_repository_mark_task_completed(session: Session, config_model: ConfigMo
     assert list(rows) == [("abc", model.TaskStatus.COMPLETED)]
 
 
-def test_repository_saves_multiple_tasks(session: Session, config_model: ConfigModel):
+def test_repository_saves_multiple_tasks(session: Session):
     repo = SQLAlchemyRepository(session)
 
     task_1 = model.Task(
@@ -103,8 +143,8 @@ def test_repository_saves_multiple_tasks(session: Session, config_model: ConfigM
         dataset="loann_2025",
         status=TaskStatus.PENDING,
         operation=model.Operation.VTC,
+        config_version=0,
         _id=UUID("abc"),
-        config=config_model,
     )
     task_2 = model.Task(
         owner_id=UUID("owner"),
@@ -112,7 +152,7 @@ def test_repository_saves_multiple_tasks(session: Session, config_model: ConfigM
         status=TaskStatus.PENDING,
         operation=model.Operation.VTC,
         _id=UUID("def"),
-        config=config_model,
+        config_version=0,
     )
 
     repo.save(task_1)
@@ -123,7 +163,7 @@ def test_repository_saves_multiple_tasks(session: Session, config_model: ConfigM
     assert list(rows) == [("abc",), ("def",)]
 
 
-def test_repository_get_task(session: Session, config_model: ConfigModel):
+def test_repository_get_task(session: Session):
     dt = datetime.now()
     repo = SQLAlchemyRepository(session)
     task = model.Task(
@@ -133,7 +173,7 @@ def test_repository_get_task(session: Session, config_model: ConfigModel):
         status=model.TaskStatus.PENDING,
         operation=model.Operation.VTC,
         _id=UUID("abc"),
-        config=config_model,
+        config_version=0,
     )
 
     repo.save(task)
@@ -215,6 +255,7 @@ def simple_task_factory() -> Callable[[UUID, UUID, Optional[TaskStatus]], model.
             created_at=datetime.now(),
             status=status,
             operation=model.Operation.VTC,
+            config_version=0,
             _id=_id,
         )
 

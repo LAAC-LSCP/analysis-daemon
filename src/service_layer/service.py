@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime, timedelta
-from typing import Optional, Set
+from typing import Annotated, Optional, Set, Tuple
 
 import src.core.response_types as response_types
 from src.config.config import ConfigModel
@@ -46,16 +46,18 @@ class Service:
         self,
         uow: PublishingUoW,
         http_client: HTTPClient,
-        config: ConfigModel,
+        config: Tuple[ConfigModel, Annotated[int, "latest version"]],
         event_handlers: Optional[EventHandlers] = None,
         command_handlers: Optional[CommandHandlers] = None,
     ):
         self._http_client = http_client
-        self._config = config
+        self._config = config[0]
         self._uow = uow
 
-        event_handlers = event_handlers or get_event_handlers(http_client, config)
-        command_handlers = command_handlers or get_command_handlers()
+        event_handlers = event_handlers or get_event_handlers(http_client, config[0])
+        command_handlers = command_handlers or get_command_handlers(
+            config[0], config[1]
+        )
 
         event_queue = EventQueue(handlers=event_handlers, uow=uow)
         command_queue = CommandQueue(handlers=command_handlers, uow=uow)
@@ -121,9 +123,9 @@ class Service:
 
         existing_tasks = self._uow.tasks.get_by_status(TaskStatus.PENDING)
 
-        return set(
-            task.to_model_type_task(config=self._config) for task in remote_tasks
-        ) - set(existing_tasks)
+        return set(task.to_model_type_task() for task in remote_tasks) - set(
+            existing_tasks
+        )
 
     def _get_create_task_command(self, task: Task) -> CreateTask:
         return CreateTask(
@@ -131,7 +133,6 @@ class Service:
             owner_id=task.owner_id,
             dataset=task.dataset,
             operation=task.operation,
-            config=self._config,
         )
 
     def _get_run_task_command(self, task: Task) -> RunTask:

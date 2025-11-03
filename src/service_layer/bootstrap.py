@@ -59,7 +59,7 @@ def bootstrap(config_file: Path) -> Service:
     config = load_config(config_file)
     start_mappers()
 
-    _save_latest_config(config)
+    latest_config_version = _save_latest_config(config)
 
     sql_uow = PublishingUoW(
         SQLAlchemyUoW(
@@ -78,7 +78,7 @@ def bootstrap(config_file: Path) -> Service:
     service = Service(
         uow=sql_uow,
         http_client=http_client,
-        config=config,
+        config=(config, latest_config_version),
     )
 
     logger.info("Bootstrap phase complete")
@@ -86,12 +86,15 @@ def bootstrap(config_file: Path) -> Service:
     return service
 
 
-def _save_latest_config(config: ConfigModel):
+def _save_latest_config(config: ConfigModel) -> int:
     config_uow = SQLAlchemyConfigUoW(
         session_factory=SQLAlchemyConfigUoW.get_session_factory(config.database.url),
     )
+    version: int
 
     with config_uow:
-        config_uow.configs.save_config(config)
+        version = config_uow.configs.save_config(config)[1]
 
         config_uow.commit()
+
+    return version

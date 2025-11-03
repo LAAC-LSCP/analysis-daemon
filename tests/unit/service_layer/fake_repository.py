@@ -7,6 +7,7 @@ from random import Random
 from typing import List, Optional, Set
 
 from src.adapters.repository import AbstractRepository
+from src.config.config import ConfigModel
 from src.core.types import UUID, Operation, TaskStatus
 from src.domain.model import Task
 
@@ -19,8 +20,10 @@ class TaskArgs:
     operation: Operation
     created_at: datetime = field(default_factory=datetime.now)
     status: str = TaskStatus.PENDING
+    config_version: int = 0
 
     _id: Optional[UUID] = None
+    _config: Optional[ConfigModel] = None
 
 
 class FakeRepository(AbstractRepository):
@@ -29,6 +32,7 @@ class FakeRepository(AbstractRepository):
     """
 
     _tasks: List[Task]
+    _config: Optional[ConfigModel]
     _rnd: Random
 
     """
@@ -45,14 +49,22 @@ class FakeRepository(AbstractRepository):
                     created_at=t.created_at,
                     status=TaskStatus(t.status),
                     operation=t.operation,
+                    config_version=t.config_version,
                     _id=t._id,
+                    _config=t._config,
                 )
                 for t in tasks
             ]
         )
 
-    def __init__(self, tasks: Optional[List[Task]] = None, seed: Optional[int] = None):
+    def __init__(
+        self,
+        tasks: Optional[List[Task]] = None,
+        config: Optional[ConfigModel] = None,
+        seed: Optional[int] = None,
+    ):
         self._tasks = []
+        self._config = config or None
         seed = seed or 0
 
         self._rnd = random.Random()
@@ -80,11 +92,25 @@ class FakeRepository(AbstractRepository):
         if not task._id:
             task = self._add_id(task)
 
+        if self._config is not None:
+            task._add_config(
+                self._config,
+                config_version=task.config_version,
+                created_at=task.created_at or datetime.now(),
+            )
+
         self._tasks.append(task)
 
         return task
 
     def _add_id(self, task: Task) -> Task:
-        task._id = UUID(str(uuid.UUID(int=self._rnd.getrandbits(128), version=4)))
+        task._id = UUID(
+            str(
+                uuid.UUID(
+                    int=self._rnd.getrandbits(128),
+                    version=4,
+                ),
+            )
+        )
 
         return task

@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, TypedDict
 
-from src.config.config import ConfigModel
 from src.core.types import UUID, Operation, TaskStatus
 from src.domain import model
 
@@ -86,7 +85,8 @@ class Task:
             id=UUID(data["id"]),
         )
 
-    def to_model_type_task(self, config: ConfigModel) -> "model.Task":
+    # TODO: pass in not config, but uow to get the config version
+    def to_model_type_task(self) -> "model.Task":
         return model.Task(
             owner_id=self.owner_id,
             dataset=self.dataset_name,
@@ -94,7 +94,7 @@ class Task:
             status=self.status,
             operation=self.model_name,
             _id=self.id,
-            config=config,
+            config_version=0,  # TODO: need to change this
         )
 
     def __str__(self) -> str:

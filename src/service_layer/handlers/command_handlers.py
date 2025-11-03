@@ -1,33 +1,48 @@
 import asyncio
 import logging
 
+from src.config.config import ConfigModel
 from src.core.exceptions import TaskNotFound
 from src.domain import commands
 from src.domain.model import Task
-from src.service_layer.handlers.types import CommandHandlers
+from src.service_layer.handlers.types import CommandHandler, CommandHandlers
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
 logger = logging.getLogger(__name__)
 
 
-async def handle_create_task(
-    command: commands.CreateTask,
-    uow: PublishingUoW,
-) -> None:
-    task = Task(
-        _id=command.task_id,
-        owner_id=command.owner_id,
-        dataset=command.dataset,
-        status=command.status,
-        operation=command.operation,
-        config=command.config,  # TODO: temporary until join
-    )
-    with uow:
-        uow.tasks.save(task)
+def get_handle_create_task(
+    latest_config: ConfigModel, latest_version: int
+) -> CommandHandler[commands.CreateTask]:
+    async def handle_create_task(
+        command: commands.CreateTask,
+        uow: PublishingUoW,
+    ) -> None:
+        """
+        Getting both latest version and latest config allows us to
+        add config info, as it is not automatically done by the ORM
 
-        task.queue_task()
+        Perhaps there's a better way of doing this.
+        """
+        task = Task(
+            _id=command.task_id,
+            owner_id=command.owner_id,
+            dataset=command.dataset,
+            status=command.status,
+            operation=command.operation,
+            config_version=latest_version,
+            _config=latest_config,
+        )
+        with uow:
+            uow.tasks.save(task)
 
-        uow.commit()
+            task.queue_task()
+
+            uow.commit()
+
+        return
+
+    return handle_create_task
 
 
 async def handle_run_task(
@@ -100,9 +115,13 @@ async def _run_task(command: commands.RunTask) -> None:
     )
 
 
-def get_command_handlers() -> CommandHandlers:
+def get_command_handlers(
+    latest_config: ConfigModel, latest_config_version: int
+) -> CommandHandlers:
     return {
         commands.CompleteTask: [handle_complete_task],
         commands.RunTask: [handle_run_task],
-        commands.CreateTask: [handle_create_task],
+        commands.CreateTask: [
+            get_handle_create_task(latest_config, latest_config_version)
+        ],
     }

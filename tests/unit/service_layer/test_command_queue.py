@@ -1,4 +1,3 @@
-from src.config.config import ConfigModel
 from src.core.types import UUID, Operation
 from src.domain.commands import CreateTask
 from src.service_layer.queue.command_queue import CommandQueue
@@ -7,7 +6,7 @@ from tests.integration.service_layer.fakes import FakeUoW
 from tests.unit.service_layer.fake_handlers import FakeHandlers
 
 
-def test_command_queue_priority(config_model: ConfigModel):
+def test_command_queue_priority():
     uow = PublishingUoW(FakeUoW())
 
     fake_handlers: FakeHandlers = FakeHandlers(uow)
@@ -21,7 +20,6 @@ def test_command_queue_priority(config_model: ConfigModel):
         owner_id=UUID("Lawrence"),
         dataset="loann_2025",
         operation=Operation.VTC,
-        config=config_model,
     )
 
     assert queue._get_priority(command) == 1

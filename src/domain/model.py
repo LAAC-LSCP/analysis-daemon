@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -17,10 +18,16 @@ class Task:
     dataset: str
     status: TaskStatus
     operation: Operation
+    config_version: int
+
+    # NOTE: _config is retrieved on fetch of existing tasks
+    # but on constructor call, not actually set by the ORM mapper
+    # Ditto for _id. Hence they can be passed as arguments
+    _config: Optional["Config"]
+    _id: UUID
+
     events: List[Event]
     commands: List[Command]
-    config: ConfigModel | None
-    _id: UUID
 
     def __init__(
         self,
@@ -28,23 +35,39 @@ class Task:
         dataset: str,
         status: TaskStatus,
         operation: Operation,
-        config: Optional[ConfigModel] = None,
+        config_version: int,
         created_at: Optional[datetime] = None,
+        _config: Optional[ConfigModel] = None,
         _id: Optional[UUID] = None,
     ):
         self.created_at = created_at or datetime.now()
         self.status = status or TaskStatus.PENDING
         self._id = _id or UUID(str(uuid.uuid4()))
-        self.operation = operation
-        # TODO: undo dependency injection when
-        # config_version is added to the task table
-        self.config = config
 
+        self.operation = operation
         self.owner_id = owner_id
         self.dataset = dataset
+        self.config_version = config_version
 
         self.events = []
         self.commands = []
+
+        if _config is not None:
+            self._add_config(_config, config_version, self.created_at)
+
+    def _add_config(
+        self, config: ConfigModel, config_version: int, created_at: datetime
+    ) -> None:
+        data: Dict = json.loads(config.model_dump_json())
+
+        self._config = Config(version=config_version, data=data, created_at=created_at)
+
+    @property
+    def config(self) -> Optional[ConfigModel]:
+        if self._config is not None:
+            return ConfigModel.model_validate(self._config.data)
+
+        return None
 
     @property
     def completed(self) -> bool:
