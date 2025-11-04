@@ -4,6 +4,7 @@ use the repository pattern in our codebase, meaning that this mapping gets mappe
 twice. This is important to keep in mind.
 """
 
+import json
 from pathlib import Path
 from typing import Optional
 
@@ -22,9 +23,42 @@ from sqlalchemy.orm import registry, relationship
 from sqlalchemy.types import String as StringType
 from sqlalchemy.types import TypeDecorator
 
+from src.core.types import ScriptArgs, ScriptFlags
 from src.domain import model
 
 metadata = MetaData()
+
+
+class ArgsType(TypeDecorator):
+    impl = StringType(length=256)
+
+    def process_bind_param(self, value: ScriptArgs | None, _) -> str:
+        if value is None:
+            return json.dumps({})
+
+        return json.dumps(value)
+
+    def process_result_value(self, value: str | None, _) -> ScriptArgs:
+        if value is None:
+            return {}
+
+        return json.loads(value)
+
+
+class FlagsType(TypeDecorator):
+    impl = StringType(length=256)
+
+    def process_bind_param(self, value: ScriptFlags | None, _) -> str:
+        if value is None:
+            return json.dumps([])
+
+        return json.dumps(value)
+
+    def process_result_value(self, value: str | None, _) -> ScriptFlags:
+        if value is None:
+            return []
+
+        return json.loads(value)
 
 
 class PathType(TypeDecorator):
@@ -79,6 +113,8 @@ tasks = Table(
     Column("created_at", DateTime, nullable=False, default=func.now()),
     Column("dataset", String, nullable=False),
     Column("operation", OperationType),
+    Column("args", ArgsType, nullable=True),
+    Column("flags", FlagsType, nullable=True),
     Column("config_version", Integer, ForeignKey("configs.version"), nullable=False),
 )
 

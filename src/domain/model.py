@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 from src.config.config import ConfigModel
 from src.core import response_types
 from src.core.exceptions import NoFileSystemWithDataset, NoScriptWithOperation
-from src.core.types import UUID, Operation, TaskStatus
+from src.core.types import UUID, Operation, ScriptArgs, ScriptFlags, TaskStatus
 from src.domain.commands import Command, CompleteTask, RunTask
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
 
@@ -18,6 +18,8 @@ class Task:
     dataset: str
     status: TaskStatus
     operation: Operation
+    args: ScriptArgs
+    flags: ScriptFlags
     config_version: int
 
     # NOTE: _config is retrieved on fetch of existing tasks
@@ -36,12 +38,16 @@ class Task:
         status: TaskStatus,
         operation: Operation,
         config_version: int,
+        args: Optional[ScriptArgs] = None,
+        flags: Optional[ScriptFlags] = None,
         created_at: Optional[datetime] = None,
         _config: Optional[ConfigModel] = None,
         _id: Optional[UUID] = None,
     ):
         self.created_at = created_at or datetime.now()
         self.status = status or TaskStatus.PENDING
+        self.args = args or {}
+        self.flags = flags or []
         self._id = _id or UUID(str(uuid.uuid4()))
 
         self.operation = operation

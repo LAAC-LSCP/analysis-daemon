@@ -1,7 +1,9 @@
 from enum import StrEnum
-from typing import NewType
+from typing import Any, Dict, List, NewType
 
 UUID = NewType("UUID", str)
+ScriptArgs = Dict[str, Any | None]
+ScriptFlags = List[str]
 
 
 class TaskStatus(StrEnum):
