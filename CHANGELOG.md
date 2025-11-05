@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.22.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.21.0...v1.22.0) (2025-11-05)
+
+
+### Features
+
+* add inputs/outputs to scripts ([8f0bbb1](https://github.com/LAAC-LSCP/analysis-daemon/commit/8f0bbb1de5b51b80f18f6d11861150a6ad31e988))
+
 ## [1.21.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.20.0...v1.21.0) (2025-11-03)
 
 
