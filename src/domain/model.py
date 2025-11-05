@@ -7,7 +7,8 @@ from typing import Dict, List, Optional
 from src.config.config import ConfigModel
 from src.core import response_types
 from src.core.exceptions import NoFileSystemWithDataset, NoScriptWithOperation
-from src.core.types import UUID, Operation, TaskStatus
+from src.core.operations.operation import operation_factory
+from src.core.types import UUID, OperationName, ScriptArgs, ScriptFlags, TaskStatus
 from src.domain.commands import Command, CompleteTask, RunTask
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
 
@@ -17,7 +18,9 @@ class Task:
     created_at: datetime
     dataset: str
     status: TaskStatus
-    operation: Operation
+    operation: OperationName
+    args: ScriptArgs
+    flags: ScriptFlags
     config_version: int
 
     # NOTE: _config is retrieved on fetch of existing tasks
@@ -34,14 +37,18 @@ class Task:
         owner_id: UUID,
         dataset: str,
         status: TaskStatus,
-        operation: Operation,
+        operation: OperationName,
         config_version: int,
+        args: Optional[ScriptArgs] = None,
+        flags: Optional[ScriptFlags] = None,
         created_at: Optional[datetime] = None,
         _config: Optional[ConfigModel] = None,
         _id: Optional[UUID] = None,
     ):
         self.created_at = created_at or datetime.now()
         self.status = status or TaskStatus.PENDING
+        self.args = args or {}
+        self.flags = flags or []
         self._id = _id or UUID(str(uuid.uuid4()))
 
         self.operation = operation
@@ -52,6 +59,7 @@ class Task:
         self.events = []
         self.commands = []
 
+        # TODO: should probably pass in required config?
         if _config is not None:
             self._add_config(_config, config_version, self.created_at)
 
@@ -63,11 +71,11 @@ class Task:
         self._config = Config(version=config_version, data=data, created_at=created_at)
 
     @property
-    def config(self) -> Optional[ConfigModel]:
+    def config(self) -> ConfigModel:
         if self._config is not None:
             return ConfigModel.model_validate(self._config.data)
 
-        return None
+        raise ValueError(f"config is None for task {self._id}")
 
     @property
     def completed(self) -> bool:
@@ -143,8 +151,12 @@ class Task:
         self.commands.append(
             RunTask(
                 task_id=self._id,
-                script_path=self.script_path,
-                dataset=self.dataset,
+                operation=operation_factory(
+                    self.operation,
+                    self.config,
+                    self.args,
+                    self.flags,
+                ),
             )
         )
 
@@ -196,6 +208,8 @@ class Task:
             owner_id=self.owner_id,
             model_name=self.operation,
             dataset_name=dataset_name,
+            args=self.args,
+            flags=self.flags,
             status=self.status,
             id=self._id,
         )

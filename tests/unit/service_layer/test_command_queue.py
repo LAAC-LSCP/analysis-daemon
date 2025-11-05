@@ -1,4 +1,4 @@
-from src.core.types import UUID, Operation
+from src.core.types import UUID, OperationName
 from src.domain.commands import CreateTask
 from src.service_layer.queue.command_queue import CommandQueue
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
@@ -19,7 +19,7 @@ def test_command_queue_priority():
         task_id=UUID("1"),
         owner_id=UUID("Lawrence"),
         dataset="loann_2025",
-        operation=Operation.VTC,
+        operation=OperationName.VTC,
     )
 
     assert queue._get_priority(command) == 1

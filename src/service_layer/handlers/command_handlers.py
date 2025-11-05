@@ -24,12 +24,15 @@ def get_handle_create_task(
 
         Perhaps there's a better way of doing this.
         """
+        operation = command.operation
         task = Task(
             _id=command.task_id,
             owner_id=command.owner_id,
             dataset=command.dataset,
             status=command.status,
-            operation=command.operation,
+            operation=operation.operation,
+            args=operation.args,
+            flags=operation.flags,
             config_version=latest_version,
             _config=latest_config,
         )
@@ -59,6 +62,7 @@ async def handle_run_task(
             return
 
         task.start_run()
+
         uow.tasks.save(task)
         uow.commit()
 
@@ -92,17 +96,30 @@ async def handle_complete_task(
         uow.commit()
 
 
-# TODO: move things to separate files
 async def _run_task(command: commands.RunTask) -> None:
-    # Execute the batch script through bash
+    operation = command.operation
+    cmd_parts = ["bash", str(operation.script_path)]
+
+    cmd_parts.extend(["--" + flag for flag in operation.flags])
+
+    for key, value in operation.args.items():
+        if value is not None:
+            cmd_parts.append(f"--{key}={str(value)}")
+        else:
+            cmd_parts.append(f"--{key}")
+
     proc = await asyncio.create_subprocess_exec(
-        "bash",
-        str(command.script_path),
+        *cmd_parts,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
 
-    _, stderr = await proc.communicate()
+    stdout, stderr = await proc.communicate()
+
+    if stdout:
+        logger.info(
+            f"Script output for task {command.task_id}: {stdout.decode().strip()}"
+        )
 
     if proc.returncode != 0:
         error_msg = (
@@ -111,7 +128,7 @@ async def _run_task(command: commands.RunTask) -> None:
         raise RuntimeError(f"Script execution failed: {error_msg}")
 
     logger.info(
-        f"Script {command.script_path} run successfully for task {command.task_id}"
+        f"Script {operation.script_path} run successfully for task {command.task_id}"
     )
 
 

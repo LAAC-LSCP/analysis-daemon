@@ -15,7 +15,7 @@ from click import Context
 from src.config.config import load_config
 from src.core.exceptions import InValidTaskStatus
 from src.core.response_types import PostPayload, Task
-from src.core.types import UUID, Operation, TaskStatus
+from src.core.types import UUID, OperationName, TaskStatus
 from src.service_layer.http_client import HTTPClient
 
 
@@ -140,7 +140,9 @@ def put(
     """Create a task on the remote server
     If any field is unspecified, it fills it with the from the already existing task
     """
-    operation_name: Optional[Operation] = Operation(operation) if operation else None
+    operation_name: Optional[OperationName] = (
+        OperationName(operation) if operation else None
+    )
     owner_id: Optional[UUID] = UUID(owner) if owner else None
     task_status: Optional[TaskStatus] = TaskStatus(status) if status else None
 
@@ -160,6 +162,8 @@ of 'put'?"
         owner_id=owner_id or existing_task.owner_id,
         model_name=operation_name or existing_task.model_name,
         dataset_name=dataset_name or existing_task.dataset_name,
+        args={} or existing_task.args,
+        flags=[] or existing_task.flags,
         status=task_status or existing_task.status,
         id=UUID(id),
     )

@@ -80,7 +80,7 @@ class HTTPClient:
             response.raise_for_status()
             data = response.json()
 
-            return [response_types.Task.from_dict(task) for task in data]
+            return [response_types.Task.from_str_dict(task) for task in data]
         except requests.RequestException as exc:
             raise RuntimeError(
                 f"Failed to fetch tasks from {self._remote_api_url}: {exc}"
@@ -101,7 +101,7 @@ class HTTPClient:
             response.raise_for_status()
             data = response.json()
 
-            return [response_types.Task.from_dict(task) for task in data]
+            return [response_types.Task.from_str_dict(task) for task in data]
         except requests.RequestException as exc:
             raise RuntimeError(
                 f"Failed to fetch tasks from {self._remote_api_url}: {exc}"
@@ -115,7 +115,7 @@ class HTTPClient:
             response.raise_for_status()
             data = response.json()
 
-            return response_types.Task.from_dict(data)
+            return response_types.Task.from_str_dict(data)
         except requests.RequestException as exc:
             raise RuntimeError(
                 f"Failed to fetch task with UUID {id} from \
@@ -151,7 +151,7 @@ class HTTPClient:
         except requests.RequestException as exc:
             raise RuntimeError(f"Failed to post task: {exc}") from exc
 
-        return response_types.Task.from_dict(data)
+        return response_types.Task.from_str_dict(data)
 
     @retry(
         reraise=True,
@@ -160,7 +160,7 @@ class HTTPClient:
     async def put_task(self, task: response_types.Task) -> None:
         uri: str = self._remote_api_url + f"/api/analytics/tasks/{task.id}"
 
-        payload: Mapping[str, str] = task.to_dict()
+        payload: Mapping[str, str] = task.to_str_dict()
 
         # While getting should block the scheduler's main loop, as scheduling depends
         # on retrieving tasks updates and retries should not
