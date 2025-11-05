@@ -8,7 +8,7 @@ from typing import List, Optional, Set
 
 from src.adapters.repository import AbstractRepository
 from src.config.config import ConfigModel
-from src.core.types import UUID, Operation, TaskStatus
+from src.core.types import UUID, OperationName, TaskStatus
 from src.domain.model import Task
 
 
@@ -17,7 +17,7 @@ class TaskArgs:
     owner_id: UUID
     dataset: str
     script_path: Path
-    operation: Operation
+    operation: OperationName
     created_at: datetime = field(default_factory=datetime.now)
     status: str = TaskStatus.PENDING
     config_version: int = 0

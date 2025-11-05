@@ -13,7 +13,7 @@ class TaskStatus(StrEnum):
     FAILED = "failed"
 
 
-class Operation(StrEnum):
+class OperationName(StrEnum):
     VTC = "vtc"
     ALICE = "alice"
     VCM = "vcm"

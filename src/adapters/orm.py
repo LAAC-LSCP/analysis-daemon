@@ -97,11 +97,11 @@ class OperationType(TypeDecorator):
 
     impl = StringType(length=256)
 
-    def process_bind_param(self, value: Optional[model.Operation], _) -> str:
+    def process_bind_param(self, value: Optional[model.OperationName], _) -> str:
         return value.value  # type: ignore
 
-    def process_result_value(self, value: Optional[str], _) -> model.Operation:
-        return model.Operation(value)  # type: ignore
+    def process_result_value(self, value: Optional[str], _) -> model.OperationName:
+        return model.OperationName(value)  # type: ignore
 
 
 tasks = Table(

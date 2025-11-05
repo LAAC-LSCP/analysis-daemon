@@ -5,6 +5,7 @@ from typing import Annotated, Optional, Set, Tuple
 import src.core.response_types as response_types
 from src.config.config import ConfigModel
 from src.core.decorators import catch_and_log_exception
+from src.core.operations.operation import Operation, operation_factory
 from src.core.types import TaskStatus
 from src.domain.commands import CreateTask, RunTask
 from src.domain.model import Task
@@ -38,6 +39,7 @@ class Service:
     _broker: MessageBroker
     _http_client: HTTPClient
     _config: ConfigModel
+    _latest_config: int
 
     _shutdown: bool
     _uow: PublishingUoW
@@ -52,6 +54,7 @@ class Service:
     ):
         self._http_client = http_client
         self._config = config[0]
+        self._latest_config = config[1]
         self._uow = uow
 
         event_handlers = event_handlers or get_event_handlers(http_client, config[0])
@@ -123,21 +126,28 @@ class Service:
 
         existing_tasks = self._uow.tasks.get_by_status(TaskStatus.PENDING)
 
-        return set(task.to_model_type_task() for task in remote_tasks) - set(
-            existing_tasks
-        )
+        return set(
+            task.to_model_type_task(self._latest_config, self._config)
+            for task in remote_tasks
+        ) - set(existing_tasks)
 
     def _get_create_task_command(self, task: Task) -> CreateTask:
         return CreateTask(
             task_id=task._id,
             owner_id=task.owner_id,
             dataset=task.dataset,
-            operation=task.operation,
+            operation=operation_factory(
+                task.operation, task.config, task.args, task.flags
+            ),
         )
 
     def _get_run_task_command(self, task: Task) -> RunTask:
         return RunTask(
             task_id=task._id,
-            dataset=task.dataset,
-            script_path=task.script_path,
+            operation=Operation(
+                operation=task.operation,
+                script_path=task.script_path,
+                args=task.args,
+                flags=task.flags,
+            ),
         )

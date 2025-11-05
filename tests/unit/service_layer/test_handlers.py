@@ -1,7 +1,8 @@
 import pytest
 
 from src.config.config import ConfigModel
-from src.core.types import UUID, Operation
+from src.core.operations.operation import operation_factory
+from src.core.types import UUID, OperationName
 from src.domain import commands
 from src.service_layer.handlers.command_handlers import get_handle_create_task
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
@@ -16,7 +17,7 @@ async def test_adding_returns_task_id(config_model: ConfigModel):
             task_id=UUID("abc"),
             owner_id=UUID("owner"),
             dataset="loann_2025",
-            operation=Operation.VTC,
+            operation=operation_factory(OperationName.VTC, config_model),
         ),
         uow,
     )
@@ -33,7 +34,7 @@ async def test_commit(config_model: ConfigModel):
             task_id=UUID("abc"),
             owner_id=UUID("owner"),
             dataset="loann_2025",
-            operation=Operation.VTC,
+            operation=operation_factory(OperationName.VTC, config_model),
         ),
         uow,
     )

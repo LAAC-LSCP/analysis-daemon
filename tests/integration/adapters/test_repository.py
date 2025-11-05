@@ -26,7 +26,7 @@ def test_repository_saves_task(session: Session, config_model: ConfigModel):
         dataset="loann_2025",
         created_at=dt,
         status=model.TaskStatus.PENDING,
-        operation=model.Operation.VTC,
+        operation=model.OperationName.VTC,
         config_version=0,
         _id=UUID("abc"),
     )
@@ -47,7 +47,7 @@ def test_repository_saves_task(session: Session, config_model: ConfigModel):
             "owner",
             model.TaskStatus.PENDING.value,
             str(dt),
-            model.Operation.VTC.value,
+            model.OperationName.VTC.value,
             0,
         )
     ]
@@ -67,7 +67,7 @@ def test_repository_fetches_config(session: Session, config_model: ConfigModel):
         dataset="loann_2025",
         created_at=dt,
         status=model.TaskStatus.PENDING,
-        operation=model.Operation.VTC,
+        operation=model.OperationName.VTC,
         config_version=0,
         _id=UUID("abc"),
     )
@@ -89,7 +89,7 @@ def test_repository_overwrite_task(session: Session):
         dataset="loann_2025",
         created_at=dt,
         status=model.TaskStatus.RUNNING,
-        operation=model.Operation.VTC,
+        operation=model.OperationName.VTC,
         config_version=0,
         _id=UUID("abc"),
     )
@@ -116,7 +116,7 @@ def test_repository_mark_task_completed(session: Session):
         created_at=dt,
         dataset="loann_2025",
         status=TaskStatus.PENDING,
-        operation=model.Operation.VTC,
+        operation=model.OperationName.VTC,
         config_version=0,
         _id=UUID("abc"),
     )
@@ -142,7 +142,7 @@ def test_repository_saves_multiple_tasks(session: Session):
         owner_id=UUID("owner"),
         dataset="loann_2025",
         status=TaskStatus.PENDING,
-        operation=model.Operation.VTC,
+        operation=model.OperationName.VTC,
         config_version=0,
         _id=UUID("abc"),
     )
@@ -150,7 +150,7 @@ def test_repository_saves_multiple_tasks(session: Session):
         owner_id=UUID("owner"),
         dataset="loann_2025",
         status=TaskStatus.PENDING,
-        operation=model.Operation.VTC,
+        operation=model.OperationName.VTC,
         _id=UUID("def"),
         config_version=0,
     )
@@ -171,7 +171,7 @@ def test_repository_get_task(session: Session):
         dataset="loann_2025",
         created_at=dt,
         status=model.TaskStatus.PENDING,
-        operation=model.Operation.VTC,
+        operation=model.OperationName.VTC,
         _id=UUID("abc"),
         config_version=0,
     )
@@ -254,7 +254,7 @@ def simple_task_factory() -> Callable[[UUID, UUID, Optional[TaskStatus]], model.
             dataset="loann_2025",
             created_at=datetime.now(),
             status=status,
-            operation=model.Operation.VTC,
+            operation=model.OperationName.VTC,
             config_version=0,
             _id=_id,
         )

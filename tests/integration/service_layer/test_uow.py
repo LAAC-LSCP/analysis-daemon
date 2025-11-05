@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from src.core.types import UUID, Operation, TaskStatus
+from src.core.types import UUID, OperationName, TaskStatus
 from src.domain.model import Task
 from src.service_layer.unit_of_work.sqlalchemy_uow import SessionFactory, SQLAlchemyUoW
 
@@ -18,7 +18,7 @@ def _add_task(
     session: Session,
     dataset: str,
     status: TaskStatus,
-    operation: Operation,
+    operation: OperationName,
     config_version: Optional[int] = None,
     task_id: Optional[UUID] = None,
     owner_id: Optional[UUID] = None,
@@ -64,7 +64,7 @@ def test_uow_can_get(session_factory: SessionFactory):
         session,
         dataset="loann_2025",
         task_id=UUID("task-id"),
-        operation=Operation.VTC,
+        operation=OperationName.VTC,
         status=TaskStatus.PENDING,
     )
     session.commit()
@@ -92,7 +92,7 @@ def test_uow_can_save(session_factory: SessionFactory):
             dataset="loann_2025",
             created_at=created_at,
             status=TaskStatus.RUNNING,
-            operation=Operation.VTC,
+            operation=OperationName.VTC,
             config_version=0,
             _id=UUID("abc"),
         )
@@ -108,7 +108,9 @@ def test_uow_can_save(session_factory: SessionFactory):
             TaskStatus.RUNNING.value,
             str(created_at),
             "loann_2025",
-            Operation.VTC.value,
+            OperationName.VTC.value,
+            "{}",
+            "[]",
             0,
         )
     ]
@@ -122,7 +124,7 @@ def test_uow_rolls_back_uncommitted_changes(session_factory: SessionFactory):
             owner_id=UUID("owner"),
             dataset="loann_2025",
             created_at=created_at,
-            operation=Operation.VTC,
+            operation=OperationName.VTC,
             status=TaskStatus.PENDING,
             config_version=0,
         )
@@ -140,7 +142,7 @@ def test_rolls_back_on_error(session_factory: SessionFactory):
             _add_task(
                 uow.session,
                 dataset="loann_2025",
-                operation=Operation.VTC,
+                operation=OperationName.VTC,
                 status=TaskStatus.PENDING,
             )
             raise CustomException()

@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any, Set
 
 import src.core.response_types as response_types
-from src.core.types import UUID, Operation, TaskStatus
+from src.core.types import UUID, OperationName, TaskStatus
 
 
 class FakeServerHandler(BaseHTTPRequestHandler):
@@ -21,17 +21,21 @@ class FakeServerHandler(BaseHTTPRequestHandler):
         response_types.Task(
             datetime=datetime(year=2021, month=1, day=1),
             owner_id=UUID("1001"),
-            model_name=Operation.VTC,
+            model_name=OperationName.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.PENDING,
+            args={},
+            flags=[],
             id=UUID("1"),
         ),
         response_types.Task(
             datetime=datetime(year=2022, month=1, day=1),
             owner_id=UUID("1002"),
-            model_name=Operation.VTC,
+            model_name=OperationName.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.RUNNING,
+            args={},
+            flags=[],
             id=UUID("2"),
         ),
     }
@@ -98,7 +102,7 @@ class FakeServerHandler(BaseHTTPRequestHandler):
 
         if task is not None:
             self._tasks.remove(task)
-        self._tasks.add(response_types.Task.from_dict({**{id: id}, **payload}))
+        self._tasks.add(response_types.Task.from_str_dict({**{id: id}, **payload}))
 
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", "application/json")
@@ -125,14 +129,17 @@ class FakeServerHandler(BaseHTTPRequestHandler):
 
     def _do_get_all_tasks(self):
         self._do_get(
-            [task.to_dict() for task in sorted(self._tasks, key=lambda task: task.id)]
+            [
+                task.to_str_dict()
+                for task in sorted(self._tasks, key=lambda task: task.id)
+            ]
         )
 
     def _do_get_tasks_by_status(self, status: str):
         tasks = [t for t in self._tasks if t.status == status]
 
         self._do_get(
-            [task.to_dict() for task in sorted(tasks, key=lambda task: task.id)]
+            [task.to_str_dict() for task in sorted(tasks, key=lambda task: task.id)]
         )
 
     def _do_get_task_by_id(self, id: UUID):
@@ -141,7 +148,7 @@ class FakeServerHandler(BaseHTTPRequestHandler):
         if task is None:
             self._do_get(None)
         else:
-            self._do_get(task.to_dict())
+            self._do_get(task.to_str_dict())
 
     def _do_get(self, response: Any) -> None:
         self.send_response(HTTPStatus.OK)

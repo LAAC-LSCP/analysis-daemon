@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from pathlib import Path
 
-from src.core.types import UUID, Operation, TaskStatus
+from src.core.operations.operation import Operation
+from src.core.types import UUID, TaskStatus
 
 
 class Command:
@@ -32,8 +32,7 @@ class CreateTask(Command):
 @dataclass
 class RunTask(Command):
     task_id: UUID
-    dataset: str
-    script_path: Path
+    operation: Operation
 
 
 @dataclass
