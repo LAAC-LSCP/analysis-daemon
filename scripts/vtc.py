@@ -1,9 +1,9 @@
-from pathlib import Path
 import shutil
 import subprocess
+from pathlib import Path
 from typing import Set, Tuple
-import click
 
+import click
 
 ECHOLALIA_DIR = Path.home() / "Library" / "Application Support" / "echolalia"
 ECHOLALIA_TEMP_DIR = ECHOLALIA_DIR / "temp"
