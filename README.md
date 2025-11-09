@@ -53,16 +53,38 @@ path = "/Users/me/Desktop/datasets/dataset_2"
 
 [[scripts]]
 name = "run_vtc"
-path = "/Users/me/Desktop/scripts/run_vtc.sh"
+path = "/Users/me/Desktop/scripts/run_vtc.py"
 model = "vtc"
 
 [[scripts]]
 name = "run_vcm"
-script = "/Users/me/Desktop/scripts/run_vcm.sh"
+script = "/Users/me/Desktop/scripts/run_vcm.py"
 model = "vcm"
 
 [[scripts]]
 name = "run_alice"
-script = "/Users/me/Desktop/scripts/run_alice.sh"
+script = "/Users/me/Desktop/scripts/run_alice.py"
 model = "alice"
 ```
+
+## Script Setup (READ CAREFULLY!)
+It is recommended you use the scripts from the scripts folder in the repo.
+
+While working on this system, we realised we couldn't run a per-file slurm job, for example running vtc on a per-file basis by launching a new job for each file. This was due to memory requirements. While the smaller models could use this pattern, W2V2 presented a problem because it was 1) very large and 2) designed to be run over countless tiny files—as a result, the cost of bootstrapping the model each time would have been too high.
+
+We have opted for a compromise that has a few anti-patterns and requires careful reading, if you want to add new scripts that is. The daemon, instead of asking SLURM for status updates, will continuously check a log file created by the running script. Running scripts must, therefore, take in a log directory. Scripts are assumed, by the daemon, to adhere to a strict interface that looks something like:
+
+```bash
+python3 vtc.py --task-id [task id] --bash-script [the .sh script used by the model] --input-folder [input_dir] --output-folder [output_dir] -i [file 1] -i [file 2] ...
+```
+
+Finally, for running any of the models, you must install the associated Conda environments. More info on getting the models to work at:
+
+https://github.com/MarvinLvn/voice-type-classifier/ for VTC
+https://github.com/orasanen/ALICE for ALICE
+https://github.com/LAAC-LSCP/vcm/ for VCM
+
+Each model has its own corresponding Conda environment.
+
+Note that since the Python wrapper scripts rely on some libraries as well (typically only `click` is missing) some dependencies may be missing. You just need to `pip install` them into your Conda environments, or change the conda env files to include them.
+
