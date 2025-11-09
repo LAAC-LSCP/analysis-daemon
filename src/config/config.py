@@ -4,7 +4,6 @@ from typing import List, Optional
 
 from pydantic import (
     BaseModel,
-    DirectoryPath,
     Field,
     HttpUrl,
     ValidationError,
@@ -31,11 +30,6 @@ class ScriptConfig(BaseModel):
         return self
 
 
-class FileSystemConfig(BaseModel):
-    dataset_name: str = Field(min_length=1)
-    path: DirectoryPath
-
-
 class JobsConfig(BaseModel):
     handler: str = Field(min_length=1)
     partition: Optional[str] = None
@@ -51,7 +45,6 @@ class ConfigModel(BaseModel):
     database: DatabaseConfig
     jobs: JobsConfig
     http: HTTPConfig
-    filesystems: List[FileSystemConfig]
     scripts: List[ScriptConfig]
     log_directory: Path = Field(
         default=Path("/tmp/logs"), description="Directory for log files"

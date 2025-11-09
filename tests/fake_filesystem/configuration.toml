@@ -12,10 +12,6 @@ client_secret = "MY_SECRET"
 handler = "slurm"
 partition = "echolalia"
 
-[[filesystems]]
-dataset_name = "loann_2025"
-path = "./datasets/loann_2025"
-
 [[scripts]]
 name = "run alice"
 path = "./scripts/run_alice.sh"

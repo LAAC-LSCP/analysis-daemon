@@ -70,9 +70,6 @@ def config_path(test_system_dir: Path) -> Generator[Path]:
 def _replace_relative_with_absolute_paths(
     config_as_toml: dict, config_file: Path
 ) -> dict:
-    config_as_toml["filesystems"] = [
-        _item_with_abs_path(fs, config_file) for fs in config_as_toml["filesystems"]
-    ]
     config_as_toml["scripts"] = [
         _item_with_abs_path(script, config_file) for script in config_as_toml["scripts"]
     ]

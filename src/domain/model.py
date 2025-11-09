@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 from src.config.config import ConfigModel
 from src.core import response_types
-from src.core.exceptions import NoFileSystemWithDataset, NoScriptWithOperation
+from src.core.exceptions import NoScriptWithOperation
 from src.core.types import UUID, Operation, TaskStatus
 from src.domain.commands import Command, CompleteTask, RunTask
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
@@ -104,25 +104,6 @@ class Task:
 
         return script_path
 
-    @property
-    def filesystem_path(self) -> Path:
-        if self.config is None:
-            raise ValueError("config is `None`")
-
-        filesystem_path: Path | None = next(
-            (
-                fs.path
-                for fs in self.config.filesystems
-                if fs.dataset_name == self.dataset
-            ),
-            None,
-        )
-
-        if filesystem_path is None:
-            raise NoFileSystemWithDataset(self.dataset)
-
-        return filesystem_path
-
     def mark_completed(self) -> None:
         self.status = TaskStatus.COMPLETED
 
@@ -177,25 +158,11 @@ class Task:
 
     # TODO: is "network" not a better word here?
     def to_response_type_task(self, config: ConfigModel) -> "response_types.Task":
-        dataset_name: str | None = next(
-            (
-                fs.dataset_name
-                for fs in config.filesystems
-                if fs.path == Path(self.filesystem_path)
-            ),
-            None,
-        )
-
-        if dataset_name is None:
-            raise ValueError(
-                f"No filesystem found with path {str(self.filesystem_path)}"
-            )
-
         return response_types.Task(
             datetime=self.created_at,
             owner_id=self.owner_id,
             model_name=self.operation,
-            dataset_name=dataset_name,
+            dataset_name=self.dataset,
             status=self.status,
             id=self._id,
         )
