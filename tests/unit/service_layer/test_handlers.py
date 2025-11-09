@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from src.config.config import ConfigModel
@@ -18,6 +20,8 @@ async def test_adding_returns_task_id(config_model: ConfigModel):
             dataset="loann_2025",
             operation=Operation.VTC,
             config=config_model,
+            input_folder=Path("."),
+            input_files=[],
         ),
         uow,
     )
@@ -36,6 +40,8 @@ async def test_commit(config_model: ConfigModel):
             dataset="loann_2025",
             operation=Operation.VTC,
             config=config_model,
+            input_folder=Path("."),
+            input_files=[],
         ),
         uow,
     )

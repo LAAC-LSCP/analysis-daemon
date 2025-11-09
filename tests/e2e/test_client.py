@@ -1,5 +1,6 @@
 import platform
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -19,6 +20,8 @@ def test_http_client_get_all_tasks(http_client: HTTPClient):
             model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.PENDING,
+            input_folder=Path("."),
+            inputs=[],
             id=UUID("1"),
         ),
         response_types.Task(
@@ -27,6 +30,8 @@ def test_http_client_get_all_tasks(http_client: HTTPClient):
             model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.RUNNING,
+            input_folder=Path("."),
+            inputs=[],
             id=UUID("2"),
         ),
     ]
@@ -41,6 +46,8 @@ def test_http_client_get_by_id(http_client: HTTPClient):
         model_name=Operation.VTC,
         dataset_name="loann_2025",
         status=TaskStatus.PENDING,
+        input_folder=Path("."),
+        inputs=[],
         id=UUID("1"),
     )
 
@@ -55,6 +62,8 @@ def test_http_client_get_by_status(http_client: HTTPClient):
             model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.RUNNING,
+            input_folder=Path("."),
+            inputs=[],
             id=UUID("2"),
         ),
     ]
@@ -69,6 +78,8 @@ async def test_http_client_put_task(http_client: HTTPClient):
             model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.RUNNING,
+            input_folder=Path("."),
+            inputs=[],
             id=UUID("3"),
         )
     )
@@ -78,9 +89,6 @@ async def test_http_client_put_task(http_client: HTTPClient):
     assert len([task for task in tasks if task.id == UUID("3")]) == 1
 
     http_client.delete_task(UUID("3"))
-
-
-# TODO: Test retries too
 
 
 @pytest.fixture(scope="module")

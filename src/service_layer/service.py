@@ -54,7 +54,7 @@ class Service:
         self._config = config
         self._uow = uow
 
-        event_handlers = event_handlers or get_event_handlers(http_client, config)
+        event_handlers = event_handlers or get_event_handlers(http_client)
         command_handlers = command_handlers or get_command_handlers()
 
         event_queue = EventQueue(handlers=event_handlers, uow=uow)
@@ -132,6 +132,8 @@ class Service:
             dataset=task.dataset,
             operation=task.operation,
             config=self._config,
+            input_folder=task.input_folder,
+            input_files=[f.file_path for f in task.input_files],
         )
 
     def _get_run_task_command(self, task: Task) -> RunTask:

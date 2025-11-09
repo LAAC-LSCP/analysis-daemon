@@ -156,14 +156,15 @@ class Task:
     def end_run(self) -> None:
         self.commands.append(CompleteTask(task_id=self._id))
 
-    # TODO: is "network" not a better word here?
-    def to_response_type_task(self, config: ConfigModel) -> "response_types.Task":
+    def to_response_type_task(self) -> "response_types.Task":
         return response_types.Task(
             datetime=self.created_at,
             owner_id=self.owner_id,
             model_name=self.operation,
             dataset_name=self.dataset,
             status=self.status,
+            inputs=[file.file_path for file in self.input_files],
+            input_folder=self.input_folder,
             id=self._id,
         )
 

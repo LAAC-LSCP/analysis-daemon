@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from src.config.config import ConfigModel
 from src.core.types import UUID, Operation
 from src.domain.commands import CreateTask
@@ -22,6 +24,8 @@ def test_command_queue_priority(config_model: ConfigModel):
         dataset="loann_2025",
         operation=Operation.VTC,
         config=config_model,
+        input_folder=Path("."),
+        input_files=[],
     )
 
     assert queue._get_priority(command) == 1

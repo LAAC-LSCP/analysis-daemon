@@ -75,6 +75,8 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("1"),
                 ),
                 Task(
@@ -83,6 +85,8 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
                     model_name=Operation.VCM,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("2"),
                 ),
             ]
@@ -106,7 +110,7 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
 async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
     """
     Simulates a different response coming in later
-    Where user with `owner_id==UUID(123)` decided to also calculate-aclew
+    Where user with `owner_id==UUID(123)` decided to also do VTC
 
     Checks that the tasks are properly loaded, not duplicated
     """
@@ -125,6 +129,8 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("1"),
                 )
             ],
@@ -135,6 +141,8 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("1"),
                 ),
                 Task(
@@ -143,6 +151,8 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_3.wav"), Path("/file_4.wav")],
                     id=UUID("2"),
                 ),
             ],
@@ -180,6 +190,8 @@ async def test_event_storm_create_task(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("1"),
                 )
             ]
@@ -188,7 +200,7 @@ async def test_event_storm_create_task(config_model: ConfigModel):
     handlers = FakeHandlers(
         uow,
         command_handlers=get_command_handlers(),
-        event_handlers=get_event_handlers(http_client, config_model),
+        event_handlers=get_event_handlers(http_client),
     )
 
     service = Service(
@@ -245,6 +257,8 @@ async def test_event_storm_create_task_with_error(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("1"),
                 )
             ]
@@ -254,7 +268,7 @@ async def test_event_storm_create_task_with_error(config_model: ConfigModel):
     handlers = FakeHandlers(
         uow,
         command_handlers=get_command_handlers(),
-        event_handlers=get_event_handlers(http_client, config_model),
+        event_handlers=get_event_handlers(http_client),
     )
     handlers.set_handlers_for_command(commands.RunTask, [handle_run_task])
 

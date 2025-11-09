@@ -7,7 +7,7 @@ or for testing purposes
 
 import asyncio
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 import click
 from click import Context
@@ -102,6 +102,13 @@ def post(ctx: Context):
     help="Task UUID",
 )
 @click.option(
+    "--input-folder",
+    "-f",
+    required=True,
+    type=click.Path(exists=True),
+    help="Input folder path",
+)
+@click.option(
     "--owner",
     "-o",
     required=False,
@@ -129,13 +136,22 @@ def post(ctx: Context):
     type=str,
     help="Dataset to run on",
 )
+@click.option(
+    "--input",
+    required=False,
+    multiple=True,
+    type=click.Path(exists=True),
+    help="Input file (can be used multiple times)",
+)
 def put(
     ctx: Context,
     id: str,
+    input_folder: str,
     owner: Optional[str] = None,
     status: Optional[str] = None,
     operation: Optional[str] = None,
     dataset_name: Optional[str] = None,
+    input: Tuple[str] = (),  # type: ignore
 ):
     """Create a task on the remote server
     If any field is unspecified, it fills it with the from the already existing task
@@ -161,6 +177,8 @@ of 'put'?"
         model_name=operation_name or existing_task.model_name,
         dataset_name=dataset_name or existing_task.dataset_name,
         status=task_status or existing_task.status,
+        input_folder=Path(input_folder),
+        inputs=[Path(i) for i in input],
         id=UUID(id),
     )
 
