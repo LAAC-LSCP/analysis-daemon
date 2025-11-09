@@ -5,6 +5,7 @@ from the Echolalia-owned endpoints
 
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, TypedDict
 
 from src.config.config import ConfigModel
@@ -87,12 +88,14 @@ class Task:
         )
 
     def to_model_type_task(self, config: ConfigModel) -> "model.Task":
+        # TODO: add input files when requests are changed
         return model.Task(
             owner_id=self.owner_id,
             dataset=self.dataset_name,
             created_at=self.datetime,
             status=self.status,
             operation=self.model_name,
+            input_folder=Path("/my_input_folder/"),
             _id=self.id,
             config=config,
         )

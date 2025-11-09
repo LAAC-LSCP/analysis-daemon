@@ -11,6 +11,17 @@ from src.domain.commands import Command, CompleteTask, RunTask
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
 
 
+class InputFile:
+    task_id: UUID
+    file_path: Path
+    _id: UUID
+
+    def __init__(self, task_id: UUID, file_path: Path, _id: Optional[UUID] = None):
+        self.task_id = task_id
+        self.file_path = file_path
+        self._id = _id or UUID(str(uuid.uuid4()))
+
+
 class Task:
     owner_id: UUID
     created_at: datetime
@@ -20,6 +31,8 @@ class Task:
     events: List[Event]
     commands: List[Command]
     config: ConfigModel | None
+    input_folder: Path
+    input_files: List[InputFile]
     _id: UUID
 
     def __init__(
@@ -28,6 +41,8 @@ class Task:
         dataset: str,
         status: TaskStatus,
         operation: Operation,
+        input_folder: Path,
+        input_files: Optional[List[Path]] = None,
         config: Optional[ConfigModel] = None,
         created_at: Optional[datetime] = None,
         _id: Optional[UUID] = None,
@@ -36,9 +51,17 @@ class Task:
         self.status = status or TaskStatus.PENDING
         self._id = _id or UUID(str(uuid.uuid4()))
         self.operation = operation
+        self.input_folder = input_folder
         # TODO: undo dependency injection when
         # config_version is added to the task table
         self.config = config
+
+        if input_files is not None:
+            self.input_files = [
+                InputFile(task_id=self._id, file_path=path) for path in input_files
+            ]
+        else:
+            self.input_files = []
 
         self.owner_id = owner_id
         self.dataset = dataset

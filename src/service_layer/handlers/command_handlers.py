@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from pathlib import Path
 
 from src.core.exceptions import TaskNotFound
 from src.domain import commands
@@ -21,6 +22,7 @@ async def handle_create_task(
         status=command.status,
         operation=command.operation,
         config=command.config,  # TODO: temporary until join
+        input_folder=Path("."),  # TODO: update this(!!)
     )
     with uow:
         uow.tasks.save(task)

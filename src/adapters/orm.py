@@ -10,12 +10,13 @@ from typing import Optional
 from sqlalchemy import (
     Column,
     DateTime,
+    ForeignKey,
     MetaData,
     String,
     Table,
     func,
 )
-from sqlalchemy.orm import registry
+from sqlalchemy.orm import registry, relationship
 from sqlalchemy.types import String as StringType
 from sqlalchemy.types import TypeDecorator
 
@@ -75,7 +76,17 @@ tasks = Table(
     Column("task_status", String, nullable=False),
     Column("created_at", DateTime, nullable=False, default=func.now()),
     Column("dataset", String, nullable=False),
-    Column("operation", OperationType),
+    Column("operation", OperationType, nullable=False),
+    Column("input_folder", PathType, nullable=False),
+)
+
+
+input_files = Table(
+    "input_files",
+    metadata,
+    Column("id", String, primary_key=True),
+    Column("task_id", String, ForeignKey("tasks.id"), nullable=False),
+    Column("file_path", PathType, nullable=False),
 )
 
 
@@ -88,5 +99,18 @@ def start_mappers():
         properties={
             "_id": tasks.c.id,
             "status": tasks.c.task_status,
+            "input_files": relationship(
+                model.InputFile,
+                backref="task",
+                cascade="all, delete-orphan",
+            ),
+        },
+    )
+
+    mapper_registry.map_imperatively(
+        model.InputFile,
+        input_files,
+        properties={
+            "_id": input_files.c.id,
         },
     )

@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -24,6 +25,11 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
         created_at=dt,
         status=TaskStatus.RUNNING,
         operation=Operation.VTC,
+        input_folder=Path("/my_input_folder/"),
+        input_files=[
+            Path("/my_input_folder/file_1.wav"),
+            Path("/my_input_folder/file_2.wav"),
+        ],
         _id=UUID("1"),
         config=config_model,
     )
