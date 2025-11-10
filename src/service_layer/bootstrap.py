@@ -4,6 +4,7 @@ from pathlib import Path
 
 from src.adapters.orm import start_mappers
 from src.config.config import ConfigModel, load_config
+from src.core.constants import ECHOLALIA_DIR, ECHOLALIA_TEMP_DIR
 from src.service_layer.http_client import HTTPClient
 from src.service_layer.service import Service
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
@@ -12,6 +13,12 @@ from src.service_layer.unit_of_work.sqlalchemy_uow import SQLAlchemyUoW
 
 def setup_logging(config: ConfigModel) -> logging.Logger:
     log_directory = config.log_directory
+    temp_folder = ECHOLALIA_TEMP_DIR
+    echolalia_folder = ECHOLALIA_DIR
+
+    log_directory.mkdir(parents=True, exist_ok=True)
+    temp_folder.mkdir(parents=True, exist_ok=True)
+    echolalia_folder.mkdir(parents=True, exist_ok=True)
 
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
