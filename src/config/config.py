@@ -33,6 +33,9 @@ class ScriptConfig(BaseModel):
 
 
 class JobsConfig(BaseModel):
+    use_slurm: bool = Field(
+        True, description="Whether to use slurm. Turn off for debugging"
+    )
     handler: str = Field(min_length=1, description="Name of handler")
     partition: Optional[str] = Field(None, description="Job partition")
 

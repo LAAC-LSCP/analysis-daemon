@@ -46,6 +46,7 @@ client_secret = "SECRET"
 [jobs]
 handler = "slurm"
 partition = "echolalia"
+use_slurm = true  # true by default
 
 [[scripts]]
 name = "run vtc"

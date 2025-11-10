@@ -15,6 +15,7 @@ client_secret = "MY_SECRET"
 [jobs]
 handler = "slurm"
 partition = "echolalia"
+use_slurm = false
 
 [[scripts]]
 name = "run alice"

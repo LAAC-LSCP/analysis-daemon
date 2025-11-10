@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from src.config.config import ConfigModel, ScriptConfig
+from src.core.constants import ECHOLALIA_TEMP_DIR
 from src.core.exceptions import NoScriptWithOperation, TaskNotFound
 from src.domain import commands
 from src.domain.model import Task
@@ -119,6 +120,25 @@ async def _run_task(command: commands.RunTask, config: ConfigModel) -> None:
 
     for input_file in command.input_files:
         cmd_args.extend(["-i", str(input_file)])
+
+    if config.jobs.use_slurm:
+        job_name = (
+            "echolalia" + "-" + str(command.operation) + "-" + str(command.task_id)
+        )
+        temp_folder = ECHOLALIA_TEMP_DIR
+
+        cmd_args = [
+            "sbatch",
+            f"--job-name={job_name}",
+            "--partition=gpu",
+            "--gres=gpu:1",
+            f"--out={str(temp_folder / job_name) + ".out"}"
+            f"--error={str(temp_folder / job_name) + ".err"}"
+            "--output=%x-%j.log",
+            "--error=",
+        ] + cmd_args[
+            1:
+        ]  # remove "bash" part
 
     proc = await asyncio.create_subprocess_exec(
         *cmd_args,
