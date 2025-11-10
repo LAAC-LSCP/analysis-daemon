@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.20.0...v1.21.0) (2025-11-10)
+
+
+### Features
+
+* use files in tasks ([ae00045](https://github.com/LAAC-LSCP/analysis-daemon/commit/ae00045f51998aae90f21b43d0ace400368b3333))
+
 ## [1.20.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.19.0...v1.20.0) (2025-11-03)
 
 
