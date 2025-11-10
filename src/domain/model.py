@@ -5,7 +5,6 @@ from typing import Dict, List, Optional
 
 from src.config.config import ConfigModel
 from src.core import response_types
-from src.core.exceptions import NoScriptWithOperation
 from src.core.types import UUID, Operation, TaskStatus
 from src.domain.commands import Command, CompleteTask, RunTask
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
@@ -85,25 +84,6 @@ class Task:
     def pending(self) -> bool:
         return self.status == TaskStatus.PENDING
 
-    @property
-    def script_path(self) -> Path:
-        if self.config is None:
-            raise ValueError("config is `None`")
-
-        script_path: Path | None = next(
-            (
-                script.path
-                for script in self.config.scripts
-                if str(self.operation) == script.model_name
-            ),
-            None,
-        )
-
-        if script_path is None:
-            raise NoScriptWithOperation(self.operation)
-
-        return script_path
-
     def mark_completed(self) -> None:
         self.status = TaskStatus.COMPLETED
 
@@ -113,7 +93,7 @@ class Task:
             )
         )
 
-    def queue_task(self) -> None:
+    def queue_task(self, config: ConfigModel) -> None:
         self.status = TaskStatus.PENDING
 
         self.events.append(
@@ -124,8 +104,11 @@ class Task:
         self.commands.append(
             RunTask(
                 task_id=self._id,
-                script_path=self.script_path,
+                input_folder=self.input_folder,
+                input_files=[file.file_path for file in self.input_files],
+                output_folder=config.output_folder,
                 dataset=self.dataset,
+                operation=self.operation,
             )
         )
 

@@ -71,17 +71,35 @@ def _replace_relative_with_absolute_paths(
     config_as_toml: dict, config_file: Path
 ) -> dict:
     config_as_toml["scripts"] = [
-        _item_with_abs_path(script, config_file) for script in config_as_toml["scripts"]
+        _script_item_w_abs_path(script, config_file)
+        for script in config_as_toml["scripts"]
     ]
     config_as_toml["log_directory"] = _str_as_abs_path(
         config_as_toml["log_directory"], config_file
+    )
+    config_as_toml["conda_executable"] = _str_as_abs_path(
+        config_as_toml["conda_executable"], config_file
+    )
+    config_as_toml["output_folder"] = _str_as_abs_path(
+        config_as_toml["output_folder"], config_file
+    )
+    config_as_toml["temp_folder"] = _str_as_abs_path(
+        config_as_toml["temp_folder"], config_file
+    )
+    config_as_toml["script_wrapper"] = _str_as_abs_path(
+        config_as_toml["script_wrapper"], config_file
     )
 
     return config_as_toml
 
 
-def _item_with_abs_path(item: dict, config_file: Path) -> dict:
-    item["path"] = str((config_file.parent / item["path"]).resolve())
+def _script_item_w_abs_path(item: dict, config_file: Path) -> dict:
+    item["python_script_path"] = str(
+        (config_file.parent / item["python_script_path"]).resolve()
+    )
+    item["bash_script_path"] = str(
+        (config_file.parent / item["bash_script_path"]).resolve()
+    )
 
     return item
 

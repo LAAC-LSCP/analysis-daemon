@@ -55,7 +55,7 @@ class Service:
         self._uow = uow
 
         event_handlers = event_handlers or get_event_handlers(http_client)
-        command_handlers = command_handlers or get_command_handlers()
+        command_handlers = command_handlers or get_command_handlers(config)
 
         event_queue = EventQueue(handlers=event_handlers, uow=uow)
         command_queue = CommandQueue(handlers=command_handlers, uow=uow)
@@ -76,7 +76,7 @@ class Service:
             running_tasks = self._uow.tasks.get_by_status(TaskStatus.RUNNING)
 
             for task in running_tasks:
-                self._broker.put(self._get_run_task_command(task))
+                self._broker.put(self._get_run_task_command(task, self._config))
 
     async def main_loop(self) -> None:
         await asyncio.gather(
@@ -136,9 +136,12 @@ class Service:
             input_files=[f.file_path for f in task.input_files],
         )
 
-    def _get_run_task_command(self, task: Task) -> RunTask:
+    def _get_run_task_command(self, task: Task, config: ConfigModel) -> RunTask:
         return RunTask(
             task_id=task._id,
             dataset=task.dataset,
-            script_path=task.script_path,
+            input_folder=task.input_folder,
+            input_files=[file.file_path for file in task.input_files],
+            output_folder=config.output_folder,
+            operation=task.operation,
         )

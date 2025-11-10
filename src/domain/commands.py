@@ -38,7 +38,10 @@ class CreateTask(Command):
 class RunTask(Command):
     task_id: UUID
     dataset: str
-    script_path: Path
+    operation: Operation
+    input_folder: Path
+    input_files: List[Path]
+    output_folder: Path
 
 
 @dataclass

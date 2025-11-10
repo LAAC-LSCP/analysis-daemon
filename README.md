@@ -30,6 +30,10 @@ You'll need to create a file like this on your own system. Note that file paths 
 
 ```
 log_directory = "/Users/me/Desktop/echolalia_log"
+conda_executable = "/Users/me/miniconda3/bin/activate"
+output_folder = "/Users/me/echolalia"
+temp_folder = "/Users/me/echolalia/.temp"
+script_wrapper = "/Users/me/Desktop/script_wrapper.sh
 
 [database]
 url = "sqlite:///database.db"
@@ -43,27 +47,25 @@ client_secret = "SECRET"
 handler = "slurm"
 partition = "echolalia"
 
-[[filesystems]]
-dataset_name = "dataset_1"
-path = "/Users/me/Desktop/datasets/dataset_1"
-
-[[filesystems]]
-dataset_name = "dataset_2"
-path = "/Users/me/Desktop/datasets/dataset_2"
-
 [[scripts]]
-name = "run_vtc"
+name = "run vtc"
 path = "/Users/me/Desktop/scripts/run_vtc.py"
+bash_script_path = "/Users/me/Desktop/scripts/apply_vtc.sh"
+env_name = "pyannote"
 model = "vtc"
 
 [[scripts]]
-name = "run_vcm"
+name = "run vcm"
 script = "/Users/me/Desktop/scripts/run_vcm.py"
+bash_script_path = "/Users/me/Desktop/scripts/apply_vcm.sh"
+env_name = "ALICE"
 model = "vcm"
 
 [[scripts]]
-name = "run_alice"
+name = "run alice"
 script = "/Users/me/Desktop/scripts/run_alice.py"
+bash_script_path = "/Users/me/Desktop/scripts/apply_alice.sh"
+env_name = "vcm"
 model = "alice"
 ```
 
@@ -88,3 +90,6 @@ Each model has its own corresponding Conda environment.
 
 Note that since the Python wrapper scripts rely on some libraries as well (typically only `click` is missing) some dependencies may be missing. You just need to `pip install` them into your Conda environments, or change the conda env files to include them.
 
+Another unfortunate pattern is the need for several nested scripts. The original bash scripts for the models are often clunky to work with. While we have created wrappers in bash itself, these are hard to test, and so we created Python wrappers for the bash script.
+
+But because the environment changes according to the model, we must also wrap the Python script in a bash scripts which prepares the environment, which we call the "script wrapper" (see config).

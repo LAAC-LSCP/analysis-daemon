@@ -14,13 +14,15 @@ from src.core.types import Operation
 
 
 class DatabaseConfig(BaseModel):
-    url: str = Field(min_length=1)
+    url: str = Field(min_length=1, description="Database URL")
 
 
 class ScriptConfig(BaseModel):
-    name: str = Field(min_length=1)
-    path: Path
-    model_name: str
+    name: str = Field(min_length=1, description="Name of script")
+    python_script_path: Path = Field(description="Path to the Python script")
+    bash_script_path: Path = Field(description="Path to the bash script for the model")
+    env_name: str = Field(description="Name of or path to the associated env file")
+    model_name: str = Field(description="Short name of the model")
 
     @model_validator(mode="after")
     def check_model_name_valid(self) -> "ScriptConfig":
@@ -31,14 +33,14 @@ class ScriptConfig(BaseModel):
 
 
 class JobsConfig(BaseModel):
-    handler: str = Field(min_length=1)
-    partition: Optional[str] = None
+    handler: str = Field(min_length=1, description="Name of handler")
+    partition: Optional[str] = Field(None, description="Job partition")
 
 
 class HTTPConfig(BaseModel):
-    base_url: HttpUrl
-    client_id: str
-    client_secret: str
+    base_url: HttpUrl = Field(description="Base URL of the site")
+    client_id: str = Field(description="Client ID")
+    client_secret: str = Field(description="Secret access key (do NOT share)")
 
 
 class ConfigModel(BaseModel):
@@ -48,6 +50,13 @@ class ConfigModel(BaseModel):
     scripts: List[ScriptConfig]
     log_directory: Path = Field(
         default=Path("/tmp/logs"), description="Directory for log files"
+    )
+    conda_executable: Path = Field(description="Path to the Conda startup executable")
+    output_folder: Path = Field(description="Folder with all outputs")
+    temp_folder: Path = Field(description="Folder with temporary data")
+    script_wrapper: Path = Field(
+        description="Bash file that wraps around scripts, passes in variables \
+            and activates environments"
     )
 
 

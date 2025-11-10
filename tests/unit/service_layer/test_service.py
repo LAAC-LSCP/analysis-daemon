@@ -25,7 +25,7 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
         created_at=dt,
         status=TaskStatus.RUNNING,
         operation=Operation.VTC,
-        input_folder=Path("/my_input_folder/"),
+        input_folder=Path("/my_input_folder"),
         input_files=[
             Path("/my_input_folder/file_1.wav"),
             Path("/my_input_folder/file_2.wav"),
@@ -55,7 +55,15 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
     assert queue.qsize() == 1
     item: commands.RunTask = queue.get().item
     assert item == commands.RunTask(
-        task_id=UUID("1"), dataset="loann_2025", script_path=item.script_path
+        task_id=UUID("1"),
+        dataset="loann_2025",
+        operation=Operation.VTC,
+        input_folder=Path("/my_input_folder"),
+        output_folder=config_model.output_folder,
+        input_files=[
+            Path("/my_input_folder/file_1.wav"),
+            Path("/my_input_folder/file_2.wav"),
+        ],
     )
 
 
@@ -199,7 +207,7 @@ async def test_event_storm_create_task(config_model: ConfigModel):
     )
     handlers = FakeHandlers(
         uow,
-        command_handlers=get_command_handlers(),
+        command_handlers=get_command_handlers(config_model),
         event_handlers=get_event_handlers(http_client),
     )
 
@@ -267,7 +275,7 @@ async def test_event_storm_create_task_with_error(config_model: ConfigModel):
 
     handlers = FakeHandlers(
         uow,
-        command_handlers=get_command_handlers(),
+        command_handlers=get_command_handlers(config_model),
         event_handlers=get_event_handlers(http_client),
     )
     handlers.set_handlers_for_command(commands.RunTask, [handle_run_task])
