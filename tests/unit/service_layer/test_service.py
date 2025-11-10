@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -24,6 +25,11 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
         created_at=dt,
         status=TaskStatus.RUNNING,
         operation=Operation.VTC,
+        input_folder=Path("/my_input_folder"),
+        input_files=[
+            Path("/my_input_folder/file_1.wav"),
+            Path("/my_input_folder/file_2.wav"),
+        ],
         _id=UUID("1"),
         config=config_model,
     )
@@ -49,7 +55,15 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
     assert queue.qsize() == 1
     item: commands.RunTask = queue.get().item
     assert item == commands.RunTask(
-        task_id=UUID("1"), dataset="loann_2025", script_path=item.script_path
+        task_id=UUID("1"),
+        dataset="loann_2025",
+        operation=Operation.VTC,
+        input_folder=Path("/my_input_folder"),
+        output_folder=config_model.output_folder,
+        input_files=[
+            Path("/my_input_folder/file_1.wav"),
+            Path("/my_input_folder/file_2.wav"),
+        ],
     )
 
 
@@ -69,6 +83,8 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("1"),
                 ),
                 Task(
@@ -77,6 +93,8 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
                     model_name=Operation.VCM,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("2"),
                 ),
             ]
@@ -100,7 +118,7 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
 async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
     """
     Simulates a different response coming in later
-    Where user with `owner_id==UUID(123)` decided to also calculate-aclew
+    Where user with `owner_id==UUID(123)` decided to also do VTC
 
     Checks that the tasks are properly loaded, not duplicated
     """
@@ -119,6 +137,8 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("1"),
                 )
             ],
@@ -129,6 +149,8 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("1"),
                 ),
                 Task(
@@ -137,6 +159,8 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_3.wav"), Path("/file_4.wav")],
                     id=UUID("2"),
                 ),
             ],
@@ -174,6 +198,8 @@ async def test_event_storm_create_task(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("1"),
                 )
             ]
@@ -181,8 +207,8 @@ async def test_event_storm_create_task(config_model: ConfigModel):
     )
     handlers = FakeHandlers(
         uow,
-        command_handlers=get_command_handlers(),
-        event_handlers=get_event_handlers(http_client, config_model),
+        command_handlers=get_command_handlers(config_model),
+        event_handlers=get_event_handlers(http_client),
     )
 
     service = Service(
@@ -239,6 +265,8 @@ async def test_event_storm_create_task_with_error(config_model: ConfigModel):
                     model_name=Operation.VTC,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
+                    input_folder=Path("/"),
+                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
                     id=UUID("1"),
                 )
             ]
@@ -247,8 +275,8 @@ async def test_event_storm_create_task_with_error(config_model: ConfigModel):
 
     handlers = FakeHandlers(
         uow,
-        command_handlers=get_command_handlers(),
-        event_handlers=get_event_handlers(http_client, config_model),
+        command_handlers=get_command_handlers(config_model),
+        event_handlers=get_event_handlers(http_client),
     )
     handlers.set_handlers_for_command(commands.RunTask, [handle_run_task])
 

@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from typing import Callable, Optional
 
 import pytest
@@ -20,6 +21,11 @@ def test_repository_saves_task(session: Session, config_model: ConfigModel):
         created_at=dt,
         status=model.TaskStatus.PENDING,
         operation=model.Operation.VTC,
+        input_folder=Path("/my_input_folder"),
+        input_files=[
+            Path("/my_input_folder/file_1.wav"),
+            Path("/my_input_folder/file_2.wav"),
+        ],
         _id=UUID("abc"),
         config=config_model,
     )
@@ -28,7 +34,10 @@ def test_repository_saves_task(session: Session, config_model: ConfigModel):
     session.commit()
 
     rows = session.execute(
-        text("SELECT id, owner_id, task_status, created_at, operation FROM" " tasks")
+        text(
+            "SELECT id, owner_id, task_status, created_at, operation, input_folder FROM"
+            " tasks"
+        )
     )
     assert list(rows) == [
         (
@@ -37,6 +46,7 @@ def test_repository_saves_task(session: Session, config_model: ConfigModel):
             model.TaskStatus.PENDING.value,
             str(dt),
             model.Operation.VTC.value,
+            "/my_input_folder",
         )
     ]
 
@@ -50,6 +60,7 @@ def test_repository_overwrite_task(session: Session, config_model: ConfigModel):
         created_at=dt,
         status=model.TaskStatus.RUNNING,
         operation=model.Operation.VTC,
+        input_folder=Path("/my_input_folder"),
         _id=UUID("abc"),
         config=config_model,
     )
@@ -77,6 +88,7 @@ def test_repository_mark_task_completed(session: Session, config_model: ConfigMo
         dataset="loann_2025",
         status=TaskStatus.PENDING,
         operation=model.Operation.VTC,
+        input_folder=Path("/my_input_folder"),
         _id=UUID("abc"),
         config=config_model,
     )
@@ -105,6 +117,7 @@ def test_repository_saves_multiple_tasks(session: Session, config_model: ConfigM
         operation=model.Operation.VTC,
         _id=UUID("abc"),
         config=config_model,
+        input_folder=Path("/my_input_folder"),
     )
     task_2 = model.Task(
         owner_id=UUID("owner"),
@@ -113,6 +126,7 @@ def test_repository_saves_multiple_tasks(session: Session, config_model: ConfigM
         operation=model.Operation.VTC,
         _id=UUID("def"),
         config=config_model,
+        input_folder=Path("/my_other_folder"),
     )
 
     repo.save(task_1)
@@ -134,6 +148,11 @@ def test_repository_get_task(session: Session, config_model: ConfigModel):
         operation=model.Operation.VTC,
         _id=UUID("abc"),
         config=config_model,
+        input_folder=Path("/my_input_folder"),
+        input_files=[
+            Path("/my_input_folder/file_1.wav"),
+            Path("/my_input_folder/file_2.wav"),
+        ],
     )
 
     repo.save(task)
@@ -142,6 +161,10 @@ def test_repository_get_task(session: Session, config_model: ConfigModel):
     saved_task = repo.get(task_id=UUID("abc"))
     assert saved_task is not None
     assert saved_task == task
+    assert (
+        saved_task.input_files[0].file_path,
+        saved_task.input_files[1].file_path,
+    ) == (Path("/my_input_folder/file_1.wav"), Path("/my_input_folder/file_2.wav"))
 
 
 def test_repository_get_by_owner(
@@ -215,6 +238,7 @@ def simple_task_factory() -> Callable[[UUID, UUID, Optional[TaskStatus]], model.
             created_at=datetime.now(),
             status=status,
             operation=model.Operation.VTC,
+            input_folder=Path("."),
             _id=_id,
         )
 

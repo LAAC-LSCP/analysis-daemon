@@ -15,3 +15,5 @@ class Operation(StrEnum):
     VTC = "vtc"
     ALICE = "alice"
     VCM = "vcm"
+    ACOUSTICS = "acoustics"
+    W2V2 = "w2v2"

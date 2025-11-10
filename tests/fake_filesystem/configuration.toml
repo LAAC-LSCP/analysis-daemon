@@ -1,4 +1,8 @@
 log_directory = "./log"
+conda_executable = "./activate"
+output_folder = "./outputs"
+temp_folder = "./temp"
+script_wrapper = "./script_wrapper.sh"
 
 [database]
 url = "sqlite:///database.db"
@@ -12,21 +16,23 @@ client_secret = "MY_SECRET"
 handler = "slurm"
 partition = "echolalia"
 
-[[filesystems]]
-dataset_name = "loann_2025"
-path = "./datasets/loann_2025"
-
 [[scripts]]
 name = "run alice"
-path = "./scripts/run_alice.sh"
+python_script_path = "./scripts/run_alice.sh"
 model_name = "alice"
+bash_script_path = "./apply_alice.sh"
+env_name = "ALICE"
 
 [[scripts]]
 name = "run vcm"
-path = "./scripts/run_vcm.sh"
+python_script_path = "./scripts/run_vcm.sh"
 model_name = "vcm"
+bash_script_path = "./apply_vcm.sh"
+env_name = "vcm"
 
 [[scripts]]
 name = "run vtc"
-path = "./scripts/run_vtc.sh"
+python_script_path = "./scripts/run_vtc.sh"
 model_name = "vtc"
+bash_script_path = "./apply_vtc.sh"
+env_name = "pyannote"

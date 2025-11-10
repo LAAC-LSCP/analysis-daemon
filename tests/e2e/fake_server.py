@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from pathlib import Path
 from typing import Any, Set
 
 import src.core.response_types as response_types
@@ -24,6 +25,8 @@ class FakeServerHandler(BaseHTTPRequestHandler):
             model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.PENDING,
+            input_folder=Path("/"),
+            inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
             id=UUID("1"),
         ),
         response_types.Task(
@@ -32,6 +35,8 @@ class FakeServerHandler(BaseHTTPRequestHandler):
             model_name=Operation.VTC,
             dataset_name="loann_2025",
             status=TaskStatus.RUNNING,
+            input_folder=Path("/"),
+            inputs=[Path("/file_3.wav"), Path("/file_4.wav")],
             id=UUID("2"),
         ),
     }

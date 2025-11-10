@@ -1,6 +1,5 @@
 import logging
 
-from src.config.config import ConfigModel
 from src.core import response_types
 from src.core.types import TaskStatus
 from src.domain import events
@@ -12,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_update_echolalia_handler(
-    task_status: TaskStatus, http_client: HTTPClient, config: ConfigModel
+    task_status: TaskStatus, http_client: HTTPClient
 ) -> EventHandler:
     async def handle_update_echolalia(event: events.Event, uow: PublishingUoW) -> None:
         response_task: response_types.Task
@@ -23,7 +22,7 @@ def get_update_echolalia_handler(
                 # TODO: we can skip all this stuff when we complete the below todo
                 raise ValueError(f"Task with ID {event.task_id} not found")
 
-            response_task = task.to_response_type_task(config)
+            response_task = task.to_response_type_task()
 
         response_task.status = task_status
 
@@ -54,19 +53,19 @@ async def handle_task_completed(
     logger.info(f"Task with ID {event.task_id} completed")
 
 
-def get_event_handlers(http_client: HTTPClient, config: ConfigModel) -> EventHandlers:
+def get_event_handlers(http_client: HTTPClient) -> EventHandlers:
     return {
         events.TaskCreated: [handle_task_created],
         events.TaskStarted: [
             handle_task_started,
-            get_update_echolalia_handler(TaskStatus.RUNNING, http_client, config),
+            get_update_echolalia_handler(TaskStatus.RUNNING, http_client),
         ],
         events.TaskFailed: [
             handle_task_failed,
-            get_update_echolalia_handler(TaskStatus.FAILED, http_client, config),
+            get_update_echolalia_handler(TaskStatus.FAILED, http_client),
         ],
         events.TaskCompleted: [
             handle_task_completed,
-            get_update_echolalia_handler(TaskStatus.COMPLETED, http_client, config),
+            get_update_echolalia_handler(TaskStatus.COMPLETED, http_client),
         ],
     }

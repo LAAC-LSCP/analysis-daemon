@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import List
 
 from src.config.config import ConfigModel
 from src.core.types import UUID, Operation, TaskStatus
@@ -16,6 +17,8 @@ class CreateTask(Command):
     dataset: str
     operation: Operation
     config: ConfigModel
+    input_folder: Path
+    input_files: List[Path]
 
     @property
     def status(self) -> TaskStatus:
@@ -35,7 +38,10 @@ class CreateTask(Command):
 class RunTask(Command):
     task_id: UUID
     dataset: str
-    script_path: Path
+    operation: Operation
+    input_folder: Path
+    input_files: List[Path]
+    output_folder: Path
 
 
 @dataclass

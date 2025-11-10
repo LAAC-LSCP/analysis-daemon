@@ -45,6 +45,7 @@ class FakeRepository(AbstractRepository):
                     created_at=t.created_at,
                     status=TaskStatus(t.status),
                     operation=t.operation,
+                    input_folder=Path("."),
                     _id=t._id,
                 )
                 for t in tasks

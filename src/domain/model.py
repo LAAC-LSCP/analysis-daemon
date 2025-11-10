@@ -5,10 +5,20 @@ from typing import Dict, List, Optional
 
 from src.config.config import ConfigModel
 from src.core import response_types
-from src.core.exceptions import NoFileSystemWithDataset, NoScriptWithOperation
 from src.core.types import UUID, Operation, TaskStatus
 from src.domain.commands import Command, CompleteTask, RunTask
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
+
+
+class InputFile:
+    task_id: UUID
+    file_path: Path
+    _id: UUID
+
+    def __init__(self, task_id: UUID, file_path: Path, _id: Optional[UUID] = None):
+        self.task_id = task_id
+        self.file_path = file_path
+        self._id = _id or UUID(str(uuid.uuid4()))
 
 
 class Task:
@@ -20,6 +30,8 @@ class Task:
     events: List[Event]
     commands: List[Command]
     config: ConfigModel | None
+    input_folder: Path
+    input_files: List[InputFile]
     _id: UUID
 
     def __init__(
@@ -28,6 +40,8 @@ class Task:
         dataset: str,
         status: TaskStatus,
         operation: Operation,
+        input_folder: Path,
+        input_files: Optional[List[Path]] = None,
         config: Optional[ConfigModel] = None,
         created_at: Optional[datetime] = None,
         _id: Optional[UUID] = None,
@@ -36,9 +50,17 @@ class Task:
         self.status = status or TaskStatus.PENDING
         self._id = _id or UUID(str(uuid.uuid4()))
         self.operation = operation
+        self.input_folder = input_folder
         # TODO: undo dependency injection when
         # config_version is added to the task table
         self.config = config
+
+        if input_files is not None:
+            self.input_files = [
+                InputFile(task_id=self._id, file_path=path) for path in input_files
+            ]
+        else:
+            self.input_files = []
 
         self.owner_id = owner_id
         self.dataset = dataset
@@ -62,44 +84,6 @@ class Task:
     def pending(self) -> bool:
         return self.status == TaskStatus.PENDING
 
-    @property
-    def script_path(self) -> Path:
-        if self.config is None:
-            raise ValueError("config is `None`")
-
-        script_path: Path | None = next(
-            (
-                script.path
-                for script in self.config.scripts
-                if str(self.operation) == script.model_name
-            ),
-            None,
-        )
-
-        if script_path is None:
-            raise NoScriptWithOperation(self.operation)
-
-        return script_path
-
-    @property
-    def filesystem_path(self) -> Path:
-        if self.config is None:
-            raise ValueError("config is `None`")
-
-        filesystem_path: Path | None = next(
-            (
-                fs.path
-                for fs in self.config.filesystems
-                if fs.dataset_name == self.dataset
-            ),
-            None,
-        )
-
-        if filesystem_path is None:
-            raise NoFileSystemWithDataset(self.dataset)
-
-        return filesystem_path
-
     def mark_completed(self) -> None:
         self.status = TaskStatus.COMPLETED
 
@@ -109,7 +93,7 @@ class Task:
             )
         )
 
-    def queue_task(self) -> None:
+    def queue_task(self, config: ConfigModel) -> None:
         self.status = TaskStatus.PENDING
 
         self.events.append(
@@ -120,8 +104,11 @@ class Task:
         self.commands.append(
             RunTask(
                 task_id=self._id,
-                script_path=self.script_path,
+                input_folder=self.input_folder,
+                input_files=[file.file_path for file in self.input_files],
+                output_folder=config.output_folder,
                 dataset=self.dataset,
+                operation=self.operation,
             )
         )
 
@@ -152,28 +139,15 @@ class Task:
     def end_run(self) -> None:
         self.commands.append(CompleteTask(task_id=self._id))
 
-    # TODO: is "network" not a better word here?
-    def to_response_type_task(self, config: ConfigModel) -> "response_types.Task":
-        dataset_name: str | None = next(
-            (
-                fs.dataset_name
-                for fs in config.filesystems
-                if fs.path == Path(self.filesystem_path)
-            ),
-            None,
-        )
-
-        if dataset_name is None:
-            raise ValueError(
-                f"No filesystem found with path {str(self.filesystem_path)}"
-            )
-
+    def to_response_type_task(self) -> "response_types.Task":
         return response_types.Task(
             datetime=self.created_at,
             owner_id=self.owner_id,
             model_name=self.operation,
-            dataset_name=dataset_name,
+            dataset_name=self.dataset,
             status=self.status,
+            inputs=[file.file_path for file in self.input_files],
+            input_folder=self.input_folder,
             id=self._id,
         )
 

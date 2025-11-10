@@ -30,6 +30,10 @@ You'll need to create a file like this on your own system. Note that file paths 
 
 ```
 log_directory = "/Users/me/Desktop/echolalia_log"
+conda_executable = "/Users/me/miniconda3/bin/activate"
+output_folder = "/Users/me/echolalia"
+temp_folder = "/Users/me/echolalia/.temp"
+script_wrapper = "/Users/me/Desktop/script_wrapper.sh
 
 [database]
 url = "sqlite:///database.db"
@@ -43,26 +47,49 @@ client_secret = "SECRET"
 handler = "slurm"
 partition = "echolalia"
 
-[[filesystems]]
-dataset_name = "dataset_1"
-path = "/Users/me/Desktop/datasets/dataset_1"
-
-[[filesystems]]
-dataset_name = "dataset_2"
-path = "/Users/me/Desktop/datasets/dataset_2"
-
 [[scripts]]
-name = "run_vtc"
-path = "/Users/me/Desktop/scripts/run_vtc.sh"
+name = "run vtc"
+path = "/Users/me/Desktop/scripts/run_vtc.py"
+bash_script_path = "/Users/me/Desktop/scripts/apply_vtc.sh"
+env_name = "pyannote"
 model = "vtc"
 
 [[scripts]]
-name = "run_vcm"
-script = "/Users/me/Desktop/scripts/run_vcm.sh"
+name = "run vcm"
+script = "/Users/me/Desktop/scripts/run_vcm.py"
+bash_script_path = "/Users/me/Desktop/scripts/apply_vcm.sh"
+env_name = "ALICE"
 model = "vcm"
 
 [[scripts]]
-name = "run_alice"
-script = "/Users/me/Desktop/scripts/run_alice.sh"
+name = "run alice"
+script = "/Users/me/Desktop/scripts/run_alice.py"
+bash_script_path = "/Users/me/Desktop/scripts/apply_alice.sh"
+env_name = "vcm"
 model = "alice"
 ```
+
+## Script Setup (READ CAREFULLY!)
+It is recommended you use the scripts from the scripts folder in the repo.
+
+While working on this system, we realised we couldn't run a per-file slurm job, for example running vtc on a per-file basis by launching a new job for each file. This was due to memory requirements. While the smaller models could use this pattern, W2V2 presented a problem because it was 1) very large and 2) designed to be run over countless tiny files—as a result, the cost of bootstrapping the model each time would have been too high.
+
+We have opted for a compromise that has a few anti-patterns and requires careful reading, if you want to add new scripts that is. The daemon, instead of asking SLURM for status updates, will continuously check a log file created by the running script. Running scripts must, therefore, take in a log directory. Scripts are assumed, by the daemon, to adhere to a strict interface that looks something like:
+
+```bash
+python3 vtc.py --task-id [task id] --bash-script [the .sh script used by the model] --input-folder [input_dir] --output-folder [output_dir] -i [file 1] -i [file 2] ...
+```
+
+Finally, for running any of the models, you must install the associated Conda environments. More info on getting the models to work at:
+
+https://github.com/MarvinLvn/voice-type-classifier/ for VTC
+https://github.com/orasanen/ALICE for ALICE
+https://github.com/LAAC-LSCP/vcm/ for VCM
+
+Each model has its own corresponding Conda environment.
+
+Note that since the Python wrapper scripts rely on some libraries as well (typically only `click` is missing) some dependencies may be missing. You just need to `pip install` them into your Conda environments, or change the conda env files to include them.
+
+Another unfortunate pattern is the need for several nested scripts. The original bash scripts for the models are often clunky to work with. While we have created wrappers in bash itself, these are hard to test, and so we created Python wrappers for the bash script.
+
+But because the environment changes according to the model, we must also wrap the Python script in a bash scripts which prepares the environment, which we call the "script wrapper" (see config).

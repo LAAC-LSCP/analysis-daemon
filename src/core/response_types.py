@@ -5,6 +5,7 @@ from the Echolalia-owned endpoints
 
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, TypedDict
 
 from src.config.config import ConfigModel
@@ -49,6 +50,8 @@ class Task:
     model_name: Operation
     dataset_name: str
     status: TaskStatus
+    inputs: List[Path]
+    input_folder: Path
     id: UUID
 
     def __eq__(self, other):
@@ -68,6 +71,8 @@ class Task:
                 if hasattr(self.model_name, "value")
                 else str(self.model_name)
             ),
+            "inputs": self.inputs,
+            "input_folder": self.input_folder,
             "dataset_name": self.dataset_name,
             "status": (
                 self.status.value if hasattr(self.status, "value") else str(self.status)
@@ -82,6 +87,8 @@ class Task:
             owner_id=UUID(data["owner_id"]),
             model_name=Operation(data["model_name"]),
             dataset_name=data["dataset_name"],
+            input_folder=data["input_folder"],
+            inputs=data["inputs"],
             status=TaskStatus(data["status"]),
             id=UUID(data["id"]),
         )
@@ -93,6 +100,8 @@ class Task:
             created_at=self.datetime,
             status=self.status,
             operation=self.model_name,
+            input_folder=self.input_folder,
+            input_files=self.inputs,
             _id=self.id,
             config=config,
         )
@@ -104,5 +113,7 @@ class Task:
             f"  Dataset: {self.dataset_name}\n"
             f"  Status: {self.status}\n"
             f"  Owner: {self.owner_id}\n"
+            f"  input_folder: {str(self.input_folder)}\n"
+            f"  inputs: {str(self.inputs)}\n"
             f"  Created: {self.datetime.strftime('%Y-%m-%d %H:%M:%S')}"
         )
