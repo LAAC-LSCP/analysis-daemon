@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.22.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.21.0...v1.22.0) (2025-11-12)
+
+
+### Features
+
+* check-task command ([a5399ea](https://github.com/LAAC-LSCP/analysis-daemon/commit/a5399ea766cc523208cfe425ac42485576647d01))
+
 ## [1.21.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.20.0...v1.21.0) (2025-11-10)
 
 
