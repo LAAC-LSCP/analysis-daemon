@@ -24,13 +24,6 @@ bash_script_path = "./apply_alice.sh"
 env_name = "ALICE"
 
 [[scripts]]
-name = "run vcm"
-python_script_path = "./scripts/run_vcm.sh"
-model_name = "vcm"
-bash_script_path = "./apply_vcm.sh"
-env_name = "vcm"
-
-[[scripts]]
 name = "run vtc"
 python_script_path = "./scripts/run_vtc.sh"
 model_name = "vtc"

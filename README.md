@@ -55,17 +55,10 @@ env_name = "pyannote"
 model = "vtc"
 
 [[scripts]]
-name = "run vcm"
-script = "/Users/me/Desktop/scripts/run_vcm.py"
-bash_script_path = "/Users/me/Desktop/scripts/apply_vcm.sh"
-env_name = "ALICE"
-model = "vcm"
-
-[[scripts]]
 name = "run alice"
 script = "/Users/me/Desktop/scripts/run_alice.py"
 bash_script_path = "/Users/me/Desktop/scripts/apply_alice.sh"
-env_name = "vcm"
+env_name = "alice"
 model = "alice"
 ```
 
@@ -92,7 +85,6 @@ Finally, for running any of the models, you must install the associated Conda en
 
 https://github.com/MarvinLvn/voice-type-classifier/ for VTC
 https://github.com/orasanen/ALICE for ALICE
-https://github.com/LAAC-LSCP/vcm/ for VCM
 
 Each model has its own corresponding Conda environment.
 

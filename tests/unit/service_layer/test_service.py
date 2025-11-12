@@ -91,7 +91,7 @@ async def test_service_puts_tasks_1_tick(config_model: ConfigModel):
                 Task(
                     dataset_name="loann_2025",
                     datetime=dt,
-                    model_name=Operation.VCM,
+                    model_name=Operation.ALICE,
                     owner_id=UUID("123"),
                     status=TaskStatus.PENDING,
                     input_folder=Path("/"),
