@@ -1,4 +1,4 @@
-from typing import Annotated, Any, List, Optional, Tuple, Type
+from typing import Any, List, Optional, Type, TypedDict
 
 import src.domain.commands as commands
 import src.domain.events as events
@@ -11,11 +11,12 @@ from src.service_layer.handlers.types import (
 )
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
 
-Call = Tuple[
-    Type[Message],
-    Annotated[str, "handler name"],
-    Annotated[int, "nth call (or exception)"],
-]
+
+class Call(TypedDict):
+    type: Type[Message]
+    handler_name: str
+    call_num: int
+    message: Message
 
 
 class FakeHandlers:
@@ -122,24 +123,18 @@ class FakeHandlers:
         self, cmd_cls: Type[commands.Command], command_handler: CommandHandler
     ) -> CommandHandler:
         async def _call_command(command: commands.Command, uow: PublishingUoW) -> None:
+            call = Call(
+                type=cmd_cls,
+                handler_name=str(command_handler.__name__),  # type: ignore
+                call_num=self._call_count,
+                message=command,
+            )
             try:
                 await command_handler(command, uow)
-                self._calls.append(
-                    (
-                        cmd_cls,
-                        str(command_handler.__name__),  # type: ignore
-                        self._call_count,
-                    )
-                )
+                self._calls.append(call)
                 self._call_count += 1
             except Exception as e:
-                self._exceptions.append(
-                    (
-                        cmd_cls,
-                        str(command_handler.__name__),  # type: ignore
-                        self._call_count,
-                    )
-                )
+                self._exceptions.append(call)
                 self._call_count += 1
 
                 raise e
@@ -150,24 +145,18 @@ class FakeHandlers:
         self, event_cls: Type[events.Event], event_handler: EventHandler
     ) -> EventHandler:
         async def _call_event(event: events.Event, uow: PublishingUoW) -> None:
+            call = Call(
+                type=event_cls,
+                handler_name=str(event_handler.__name__),  # type: ignore
+                call_num=self._call_count,
+                message=event,
+            )
             try:
                 await event_handler(event, uow)
-                self._calls.append(
-                    (
-                        event_cls,
-                        str(event_handler.__name__),  # type: ignore
-                        self._call_count,
-                    )
-                )
+                self._calls.append(call)
                 self._call_count += 1
             except Exception as e:
-                self._exceptions.append(
-                    (
-                        event_cls,
-                        str(event_handler.__name__),  # type: ignore
-                        self._call_count,
-                    )
-                )
+                self._exceptions.append(call)
                 self._call_count += 1
 
                 raise e

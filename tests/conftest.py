@@ -80,14 +80,11 @@ def _replace_relative_with_absolute_paths(
     config_as_toml["conda_executable"] = _str_as_abs_path(
         config_as_toml["conda_executable"], config_file
     )
-    config_as_toml["output_folder"] = _str_as_abs_path(
-        config_as_toml["output_folder"], config_file
-    )
-    config_as_toml["temp_folder"] = _str_as_abs_path(
-        config_as_toml["temp_folder"], config_file
-    )
     config_as_toml["script_wrapper"] = _str_as_abs_path(
         config_as_toml["script_wrapper"], config_file
+    )
+    config_as_toml["echolalia_folder"] = _str_as_abs_path(
+        config_as_toml["echolalia_folder"], config_file
     )
 
     return config_as_toml
