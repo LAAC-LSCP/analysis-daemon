@@ -1,7 +1,6 @@
 log_directory = "./log"
 conda_executable = "./activate"
-output_folder = "./outputs"
-temp_folder = "./temp"
+echolalia_folder = "./echolalia"
 script_wrapper = "./script_wrapper.sh"
 
 [database]
@@ -15,6 +14,7 @@ client_secret = "MY_SECRET"
 [jobs]
 handler = "slurm"
 partition = "echolalia"
+use_slurm = false
 
 [[scripts]]
 name = "run alice"

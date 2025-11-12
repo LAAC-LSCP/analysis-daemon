@@ -4,6 +4,10 @@ from pathlib import Path
 
 from src.adapters.orm import start_mappers
 from src.config.config import ConfigModel, load_config
+from src.core.filesystem import (
+    get_output_dir,
+    get_temp_dir,
+)
 from src.service_layer.http_client import HTTPClient
 from src.service_layer.service import Service
 from src.service_layer.unit_of_work.publishing_uow import PublishingUoW
@@ -12,6 +16,8 @@ from src.service_layer.unit_of_work.sqlalchemy_uow import SQLAlchemyUoW
 
 def setup_logging(config: ConfigModel) -> logging.Logger:
     log_directory = config.log_directory
+
+    log_directory.mkdir(parents=True, exist_ok=True)
 
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
@@ -69,6 +75,10 @@ def bootstrap(config_file: Path) -> Service:
         client_id=config.http.client_id,
         client_secret=config.http.client_secret,
     )
+
+    config.echolalia_folder.mkdir(parents=True, exist_ok=True)
+    get_temp_dir(config).mkdir(parents=True, exist_ok=True)
+    get_output_dir(config).mkdir(parents=True, exist_ok=True)
 
     logger = setup_logging(config)
 

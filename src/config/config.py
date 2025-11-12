@@ -33,6 +33,9 @@ class ScriptConfig(BaseModel):
 
 
 class JobsConfig(BaseModel):
+    use_slurm: bool = Field(
+        True, description="Whether to use slurm. Turn off for debugging"
+    )
     handler: str = Field(min_length=1, description="Name of handler")
     partition: Optional[str] = Field(None, description="Job partition")
 
@@ -52,8 +55,7 @@ class ConfigModel(BaseModel):
         default=Path("/tmp/logs"), description="Directory for log files"
     )
     conda_executable: Path = Field(description="Path to the Conda startup executable")
-    output_folder: Path = Field(description="Folder with all outputs")
-    temp_folder: Path = Field(description="Folder with temporary data")
+    echolalia_folder: Path = Field(description="Folder for all echolalia files")
     script_wrapper: Path = Field(
         description="Bash file that wraps around scripts, passes in variables \
             and activates environments"

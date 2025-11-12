@@ -1,8 +1,10 @@
 import asyncio
 import logging
+from pathlib import Path
 
 from src.config.config import ConfigModel, ScriptConfig
 from src.core.exceptions import NoScriptWithOperation, TaskNotFound
+from src.core.filesystem import get_log_file, get_temp_dir, log_file_info
 from src.domain import commands
 from src.domain.model import Task
 from src.service_layer.handlers.types import CommandHandler, CommandHandlers
@@ -36,6 +38,42 @@ def get_handle_create_task(config: ConfigModel) -> CommandHandler:
     return handle_create_task
 
 
+def get_handle_check_task(config: ConfigModel) -> CommandHandler:
+    async def handle_check_task(
+        command: commands.CheckTask, uow: PublishingUoW
+    ) -> None:
+        try:
+            log_file: Path = get_log_file(config, command.task_id, command.dataset)
+            succeeded_files, failed_files = log_file_info(log_file)
+
+            is_done = set(command.input_files) == succeeded_files.union(failed_files)
+        except Exception as e:
+            logger.error(
+                f"Problem checking output logs for task {command.task_id}: {e}"
+            )
+
+        with uow:
+            task = uow.tasks.get(command.task_id)
+
+            if not task:
+                raise TaskNotFound(command.task_id)
+
+            if not task.running:
+                return
+
+            if is_done:
+                task.end_run()
+            else:
+                task.queue_status_check(config)
+
+            uow.tasks.save(task)
+            uow.commit()
+
+        return
+
+    return handle_check_task
+
+
 def get_handle_run_task(config: ConfigModel) -> CommandHandler:
     async def handle_run_task(
         command: commands.RunTask,
@@ -50,18 +88,11 @@ def get_handle_run_task(config: ConfigModel) -> CommandHandler:
             if task.running:
                 return
 
-            task.start_run()
+            task.start_run(config)
             uow.tasks.save(task)
             uow.commit()
 
-        # TODO: this is kind of a blocking call for the task queue
-        # But that is fine, since we will be using a job scheduler
-        # which means this will be more or less instantaneous
-        # although when we have the job scheduler set up, we'll
-        # have to track when job completes in the task queue
         await _run_task(command, config)
-
-        task.end_run()
 
     return handle_run_task
 
@@ -120,6 +151,25 @@ async def _run_task(command: commands.RunTask, config: ConfigModel) -> None:
     for input_file in command.input_files:
         cmd_args.extend(["-i", str(input_file)])
 
+    if config.jobs.use_slurm:
+        job_name = (
+            "echolalia" + "-" + str(command.operation) + "-" + str(command.task_id)
+        )
+        temp_folder = get_temp_dir(config)
+
+        cmd_args = [
+            "sbatch",
+            f"--job-name={job_name}",
+            "--partition=gpu",
+            "--gres=gpu:1",
+            f"--out={str(temp_folder / job_name) + ".out"}"
+            f"--error={str(temp_folder / job_name) + ".err"}"
+            "--output=%x-%j.log",
+            "--error=",
+        ] + cmd_args[
+            1:
+        ]  # remove "bash" part
+
     proc = await asyncio.create_subprocess_exec(
         *cmd_args,
         stdout=asyncio.subprocess.PIPE,
@@ -144,5 +194,6 @@ def get_command_handlers(config: ConfigModel) -> CommandHandlers:
     return {
         commands.CompleteTask: [handle_complete_task],
         commands.RunTask: [get_handle_run_task(config)],
+        commands.CheckTask: [get_handle_check_task(config)],
         commands.CreateTask: [get_handle_create_task(config)],
     }
