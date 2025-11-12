@@ -1,7 +1,6 @@
 log_directory = "./log"
 conda_executable = "./activate"
-output_folder = "./outputs"
-temp_folder = "./temp"
+echolalia_folder = "./echolalia"
 script_wrapper = "./script_wrapper.sh"
 
 [database]

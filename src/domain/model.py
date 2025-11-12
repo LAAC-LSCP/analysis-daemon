@@ -5,8 +5,9 @@ from typing import Dict, List, Optional
 
 from src.config.config import ConfigModel
 from src.core import response_types
+from src.core.filesystem import get_output_dir
 from src.core.types import UUID, Operation, TaskStatus
-from src.domain.commands import Command, CompleteTask, RunTask
+from src.domain.commands import CheckTask, Command, CompleteTask, RunTask
 from src.domain.events import Event, TaskCompleted, TaskCreated, TaskFailed, TaskStarted
 
 
@@ -29,7 +30,6 @@ class Task:
     operation: Operation
     events: List[Event]
     commands: List[Command]
-    config: ConfigModel | None
     input_folder: Path
     input_files: List[InputFile]
     _id: UUID
@@ -51,9 +51,6 @@ class Task:
         self._id = _id or UUID(str(uuid.uuid4()))
         self.operation = operation
         self.input_folder = input_folder
-        # TODO: undo dependency injection when
-        # config_version is added to the task table
-        self.config = config
 
         if input_files is not None:
             self.input_files = [
@@ -106,7 +103,7 @@ class Task:
                 task_id=self._id,
                 input_folder=self.input_folder,
                 input_files=[file.file_path for file in self.input_files],
-                output_folder=config.output_folder,
+                output_folder=get_output_dir(config),
                 dataset=self.dataset,
                 operation=self.operation,
             )
@@ -122,7 +119,7 @@ class Task:
             )
         )
 
-    def start_run(self) -> None:
+    def start_run(self, config: ConfigModel) -> None:
         if self.status != TaskStatus.PENDING:
             raise ValueError(
                 f"Cannot start task in {self.status} state"
@@ -133,6 +130,19 @@ class Task:
         self.events.append(
             TaskStarted(
                 task_id=self._id,
+            )
+        )
+
+        self.queue_status_check(config)
+
+    def queue_status_check(self, config: ConfigModel) -> None:
+        self.commands.append(
+            CheckTask(
+                task_id=self._id,
+                dataset=self.dataset,
+                input_folder=self.input_folder,
+                input_files=[f.file_path for f in self.input_files],
+                output_folder=get_output_dir(config),
             )
         )
 

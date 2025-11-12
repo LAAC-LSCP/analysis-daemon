@@ -32,7 +32,6 @@ You'll need to create a file like this on your own system. Note that file paths 
 log_directory = "/Users/me/Desktop/echolalia_log"
 conda_executable = "/Users/me/miniconda3/bin/activate"
 output_folder = "/Users/me/echolalia"
-temp_folder = "/Users/me/echolalia/.temp"
 script_wrapper = "/Users/me/Desktop/script_wrapper.sh
 
 [database]
@@ -80,6 +79,14 @@ We have opted for a compromise that has a few anti-patterns and requires careful
 ```bash
 python3 vtc.py --task-id [task id] --bash-script [the .sh script used by the model] --input-folder [input_dir] --output-folder [output_dir] -i [file 1] -i [file 2] ...
 ```
+
+Scripts create output logs that follow a specific format based on file failure or success:
+```bash
+SUCCESS - [some descriptive string] - [absolute file path]
+ERROR - [some descriptive string] - [absolute file path] - [stack trace]
+```
+
+This output format must be adhered to for the service to work. It peroidically checks these outputs over the running tasks.
 
 Finally, for running any of the models, you must install the associated Conda environments. More info on getting the models to work at:
 

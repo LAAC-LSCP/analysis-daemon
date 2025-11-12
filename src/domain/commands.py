@@ -45,6 +45,15 @@ class RunTask(Command):
 
 
 @dataclass
+class CheckTask(Command):
+    task_id: UUID
+    dataset: str
+    input_folder: Path
+    input_files: List[Path]
+    output_folder: Path
+
+
+@dataclass
 class CompleteTask(Command):
     task_id: UUID
 

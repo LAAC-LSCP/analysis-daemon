@@ -75,12 +75,12 @@ def run_vtc(
         )
 
         if result.returncode == 0:
-            print(f"SUCCESS: Successfully processed {file}")
+            print(f"SUCCESS - Successfully processed - {file}")
 
             _move_file(working_dir, file, output_file)
 
         if result.returncode != 0:
-            print(f"ERROR: Error processing {file}: {result.stderr}")
+            print(f"ERROR - Error processing - {file} - {result.stderr}")
 
     return
 
