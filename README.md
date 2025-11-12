@@ -49,17 +49,17 @@ use_slurm = true  # true by default
 
 [[scripts]]
 name = "run vtc"
-path = "/Users/me/Desktop/scripts/run_vtc.py"
+python_script_path = "/Users/me/Desktop/scripts/run_vtc.py"
 bash_script_path = "/Users/me/Desktop/scripts/apply_vtc.sh"
 env_name = "pyannote"
-model = "vtc"
+model_name = "vtc"
 
 [[scripts]]
 name = "run alice"
-script = "/Users/me/Desktop/scripts/run_alice.py"
+python_script_path = "/Users/me/Desktop/scripts/run_alice.py"
 bash_script_path = "/Users/me/Desktop/scripts/apply_alice.sh"
 env_name = "alice"
-model = "alice"
+model_name = "alice"
 ```
 
 ## Script Setup (READ CAREFULLY!)
@@ -70,7 +70,7 @@ While working on this system, we realised we couldn't run a per-file slurm job, 
 We have opted for a compromise that has a few anti-patterns and requires careful reading, if you want to add new scripts that is. The daemon, instead of asking SLURM for status updates, will continuously check a log file created by the running script. Running scripts must, therefore, take in a log directory. Scripts are assumed, by the daemon, to adhere to a strict interface that looks something like:
 
 ```bash
-python3 vtc.py --task-id [task id] --bash-script [the .sh script used by the model] --input-folder [input_dir] --output-folder [output_dir] -i [file 1] -i [file 2] ...
+python3 vtc.py --task-id [task id] --bash-script [the .sh script used by the model] --input-folder [input_dir] --dataset [dataset name] --echolalia-folder [folder as in config] -i [file 1] -i [file 2] ...
 ```
 
 Scripts create output logs that follow a specific format based on file failure or success:

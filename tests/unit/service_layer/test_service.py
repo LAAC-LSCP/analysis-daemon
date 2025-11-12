@@ -4,7 +4,6 @@ from pathlib import Path
 import pytest
 
 from src.config.config import ConfigModel
-from src.core.filesystem import get_log_file, get_output_dir
 from src.core.response_types import Task
 from src.core.types import UUID, Operation, TaskStatus
 from src.domain import commands, events
@@ -60,7 +59,7 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
         dataset="loann_2025",
         operation=Operation.VTC,
         input_folder=Path("/my_input_folder"),
-        output_folder=get_output_dir(config_model),
+        echolalia_folder=config_model.echolalia_folder,
         input_files=[
             Path("/my_input_folder/file_1.wav"),
             Path("/my_input_folder/file_2.wav"),
@@ -186,8 +185,15 @@ async def test_service_create_tasks_2_ticks(config_model: ConfigModel):
 
 
 @pytest.mark.asyncio
-async def test_event_storm_create_task(config_model: ConfigModel):
+async def test_event_storm_create_task(config_model: ConfigModel, config_path: Path):
     """Test event storming of a creation task"""
+    filesystem = config_path.parent
+    example_inputs = (
+        filesystem / "datasets" / "loann_2025" / "recordings" / "example_inputs"
+    )
+    input_1 = example_inputs / "empty_wav.wav"
+    input_2 = example_inputs / "folder_1" / "folder_3" / "empty_wav_1_3_1.wav"
+
     dt = datetime.now()
     uow = PublishingUoW(FakeUoW())
     http_client = FakeHTTPClient(
@@ -197,11 +203,11 @@ async def test_event_storm_create_task(config_model: ConfigModel):
                     dataset_name="loann_2025",
                     datetime=dt,
                     model_name=Operation.VTC,
-                    owner_id=UUID("123"),
+                    owner_id=UUID("a87bac8b-21a1-4a46-b812-392be4e360e5"),
                     status=TaskStatus.PENDING,
-                    input_folder=Path("/"),
-                    inputs=[Path("/file_1.wav"), Path("/file_2.wav")],
-                    id=UUID("1"),
+                    input_folder=example_inputs,
+                    inputs=[input_1, input_2],
+                    id=UUID("2920bfb0-8a16-478d-8654-aa7a7e0a23be"),
                 )
             ]
         ]
@@ -249,35 +255,22 @@ async def test_event_storm_create_task(config_model: ConfigModel):
     assert handlers.calls[5]["type"] == commands.CheckTask
     assert handlers.calls[5]["handler_name"] == "handle_check_task"
 
-    log_file = get_log_file(config_model, UUID("1"), "loann_2025")
-    log_file.parent.mkdir(parents=True, exist_ok=True)
-
-    log_file.write_text(
-        "SUCCESS - successfully processed - /file_1.wav"
-        "\nERROR - error processing - /file_2.wav"
-    )
-
     await service._broker.command_queue._tick()
     assert len(handlers.calls) == 7
-    assert handlers.calls[6]["type"] == commands.CheckTask
-    assert handlers.calls[6]["handler_name"] == "handle_check_task"
-
-    await service._broker.command_queue._tick()
-    assert len(handlers.calls) == 8
-    assert handlers.calls[7]["type"] == commands.CompleteTask
-    assert handlers.calls[7]["handler_name"] == "handle_complete_task"
+    assert handlers.calls[6]["type"] == commands.CompleteTask
+    assert handlers.calls[6]["handler_name"] == "handle_complete_task"
 
     await service._broker.event_queue._tick()
-    assert len(handlers.calls) == 10
+    assert len(handlers.calls) == 9
+    assert handlers.calls[7]["type"] == events.TaskCompleted
+    assert handlers.calls[7]["handler_name"] == "handle_task_completed"
     assert handlers.calls[8]["type"] == events.TaskCompleted
-    assert handlers.calls[8]["handler_name"] == "handle_task_completed"
-    assert handlers.calls[9]["type"] == events.TaskCompleted
-    assert handlers.calls[9]["handler_name"] == "handle_update_echolalia"
+    assert handlers.calls[8]["handler_name"] == "handle_update_echolalia"
 
     # Nothing left over
     await service._broker.event_queue._tick()
     await service._broker.command_queue._tick()
-    assert len(handlers.calls) == 10
+    assert len(handlers.calls) == 9
 
 
 @pytest.mark.asyncio

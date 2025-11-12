@@ -41,7 +41,7 @@ class RunTask(Command):
     operation: Operation
     input_folder: Path
     input_files: List[Path]
-    output_folder: Path
+    echolalia_folder: Path
 
 
 @dataclass

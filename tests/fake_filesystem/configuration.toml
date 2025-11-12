@@ -1,7 +1,7 @@
 log_directory = "./log"
 conda_executable = "./activate"
 echolalia_folder = "./echolalia"
-script_wrapper = "./script_wrapper.sh"
+script_wrapper = ""
 
 [database]
 url = "sqlite:///database.db"
@@ -25,7 +25,7 @@ env_name = "ALICE"
 
 [[scripts]]
 name = "run vtc"
-python_script_path = "./scripts/run_vtc.sh"
+python_script_path = "" # NOTE: uses the real script (see conftest.py)
 model_name = "vtc"
-bash_script_path = "./apply_vtc.sh"
+bash_script_path = "./apply_vtc.sh" # uses a fake one
 env_name = "pyannote"
