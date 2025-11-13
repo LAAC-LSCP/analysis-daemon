@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.22.0...v1.23.0) (2025-11-13)
+
+
+### Features
+
+* finalise scripts ([0ae4a39](https://github.com/LAAC-LSCP/analysis-daemon/commit/0ae4a39b2ceed27d32997eae481b0c1fd91b72a7))
+
 ## [1.22.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.21.0...v1.22.0) (2025-11-12)
 
 
