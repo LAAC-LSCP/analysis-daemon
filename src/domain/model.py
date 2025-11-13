@@ -103,7 +103,7 @@ class Task:
                 task_id=self._id,
                 input_folder=self.input_folder,
                 input_files=[file.file_path for file in self.input_files],
-                output_folder=get_output_dir(config),
+                echolalia_folder=config.echolalia_folder,
                 dataset=self.dataset,
                 operation=self.operation,
             )

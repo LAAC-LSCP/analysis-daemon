@@ -11,6 +11,9 @@ from sqlalchemy.orm import Session, clear_mappers, sessionmaker
 from src.adapters.orm import metadata, start_mappers
 from src.config.config import ConfigModel, load_config
 
+cwd = Path(__file__).parent
+scripts = (cwd / ".." / "scripts").resolve()
+
 
 @pytest.fixture(scope="session")
 def test_system_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
@@ -61,6 +64,8 @@ def config_path(test_system_dir: Path) -> Generator[Path]:
         temp_config_file,
     )
 
+    temp_config_as_toml = _add_in_executables(temp_config_as_toml)
+
     with open(temp_config_file, "wb") as tf:
         tomli_w.dump(temp_config_as_toml, tf)
 
@@ -80,14 +85,37 @@ def _replace_relative_with_absolute_paths(
     config_as_toml["conda_executable"] = _str_as_abs_path(
         config_as_toml["conda_executable"], config_file
     )
-    config_as_toml["script_wrapper"] = _str_as_abs_path(
-        config_as_toml["script_wrapper"], config_file
-    )
     config_as_toml["echolalia_folder"] = _str_as_abs_path(
         config_as_toml["echolalia_folder"], config_file
     )
 
     return config_as_toml
+
+
+def _add_in_executables(config: dict) -> dict:
+    assert (scripts / "script_wrapper.sh").exists()
+    assert (scripts / "alice.py").exists()
+    assert (scripts / "vtc.py").exists()
+    assert (scripts / "helpers.py").exists()
+
+    config["script_wrapper"] = str(scripts / "script_wrapper.sh")
+
+    config["scripts"] = [
+        _script_with_python_files(script) for script in config["scripts"]
+    ]
+
+    return config
+
+
+def _script_with_python_files(item: dict) -> dict:
+    model_name = item["model_name"]
+
+    if model_name == "vtc":
+        item["python_script_path"] = str(scripts / "vtc.py")
+    elif model_name == "alice":
+        item["python_script_path"] = str(scripts / "alice.py")
+
+    return item
 
 
 def _script_item_w_abs_path(item: dict, config_file: Path) -> dict:

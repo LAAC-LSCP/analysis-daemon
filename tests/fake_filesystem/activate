@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Fake conda activation script for testing
+
+conda() {
+    if [ "$1" = "activate" ]; then
+        echo "Activating environment: $2"
+    fi
+}
+
+export -f conda

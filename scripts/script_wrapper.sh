@@ -11,7 +11,7 @@ PYTHON_SCRIPT=""
 BASH_SCRIPT=""
 DATASET=""
 INPUT_FOLDER=""
-OUTPUT_FOLDER=""
+ECHOLALIA_FOLDER=""
 CONDA_SRC=""
 ENV_NAME=""
 INPUT_FILES=()
@@ -41,8 +41,8 @@ while [[ $# -gt 0 ]]; do
       INPUT_FOLDER="$2"
       shift 2
       ;;
-    --output-folder)
-      OUTPUT_FOLDER="$2"
+    --echolalia-folder)
+      ECHOLALIA_FOLDER="$2"
       shift 2
       ;;
     --conda-src)
@@ -58,7 +58,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --help)
-      echo "Usage: $0 [--task-id task id] [--python-script path] [--bash-script path] [--dataset name] [--input-folder path] [--output-folder path] [--conda-src path] [--env-name name] [-i input file]"
+      echo "Usage: $0 [--task-id task id] [--python-script path] [--bash-script path] [--dataset name] [--input-folder path] [--echolalia-folder path] [--conda-src path] [--env-name name] [-i input file]"
       echo "Use -i multiple times for multiple input files"
       exit 0
       ;;
@@ -73,7 +73,7 @@ done
 source "$CONDA_SRC"
 conda activate "$ENV_NAME"
 
-cmd=(python3 "$PYTHON_SCRIPT" --task-id "$TASK_ID" --input-folder "$INPUT_FOLDER" --output-folder "$OUTPUT_FOLDER" --bash-script "$BASH_SCRIPT")
+cmd=(python3 "$PYTHON_SCRIPT" --task-id "$TASK_ID" --dataset "$DATASET" --input-folder "$INPUT_FOLDER" --echolalia-folder "$ECHOLALIA_FOLDER" --bash-script "$BASH_SCRIPT")
 
 for file in "${INPUT_FILES[@]}"; do
   cmd+=(-i "$file")

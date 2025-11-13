@@ -2,11 +2,24 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Set, Tuple
+from uuid import UUID
 
 import click
 
 ECHOLALIA_DIR = Path.home() / "Library" / "Application Support" / "echolalia"
 ECHOLALIA_TEMP_DIR = ECHOLALIA_DIR / "temp"
+
+
+def get_output_dir(echolalia_folder: Path) -> Path:
+    return echolalia_folder / "outputs"
+
+
+def get_task_output_dir(echolalia_folder: Path, task_id: UUID, dataset: str) -> Path:
+    return get_output_dir(echolalia_folder) / dataset / str(task_id)
+
+
+def get_log_file(echolalia_folder: Path, task_id: UUID, dataset: str) -> Path:
+    return get_task_output_dir(echolalia_folder, task_id, dataset) / "status.log"
 
 
 @click.command()
@@ -30,10 +43,16 @@ ECHOLALIA_TEMP_DIR = ECHOLALIA_DIR / "temp"
         input folder structure",
 )
 @click.option(
-    "--output-folder",
+    "--dataset",
+    required=True,
+    type=str,
+    help="Dataset name",
+)
+@click.option(
+    "--echolalia-folder",
     required=True,
     type=click.Path(exists=False),
-    help="Output folder",
+    help="Echolalia folder",
 )
 @click.option(
     "--input",
@@ -44,20 +63,21 @@ ECHOLALIA_TEMP_DIR = ECHOLALIA_DIR / "temp"
     help="Input file (can be used multiple times)",
 )
 def run_vtc(
-    task_id: str,
+    task_id: UUID,
     bash_script: str,
     input_folder: str,
-    output_folder: str,
+    dataset: str,
+    echolalia_folder: str,
     input: Tuple[str],
 ) -> None:
-    bash_script_file, input_dir, output_dir, inputs = _parse_args(
-        bash_script, input_folder, output_folder, input
+    bash_script_file, input_dir, echolalia_dir, inputs = _parse_args(
+        bash_script, input_folder, echolalia_folder, input
     )
 
-    if not output_dir.exists():
-        output_dir.mkdir(parents=True)
+    log_file = get_log_file(Path(echolalia_folder), task_id, dataset)
+    log_file.parent.mkdir(parents=True, exist_ok=True)
 
-    working_dir = ECHOLALIA_TEMP_DIR / str(task_id)
+    working_dir = get_task_output_dir(Path(echolalia_dir), task_id, dataset)
 
     if not working_dir.exists():
         working_dir.mkdir(parents=True)
@@ -65,7 +85,7 @@ def run_vtc(
     for file in inputs:
         rel_path = file.relative_to(input_dir)
 
-        output_file = (output_dir / rel_path).resolve()
+        output_file = (working_dir / rel_path).resolve()
 
         result = subprocess.run(
             [bash_script_file, str(file), "--device=gpu"],
@@ -74,24 +94,28 @@ def run_vtc(
             cwd=working_dir,
         )
 
+        status: str
         if result.returncode == 0:
-            print(f"SUCCESS - Successfully processed - {file}")
+            status = f"SUCCESS - Successfully processed - {file}"
 
             _move_file(working_dir, file, output_file)
+        else:
+            status = f"ERROR - Error processing - {file} - {result.stderr}"
 
-        if result.returncode != 0:
-            print(f"ERROR - Error processing - {file} - {result.stderr}")
+        print(status)
+        with open(log_file, "a") as f:
+            f.write(f"{status}\n")
 
     return
 
 
 def _parse_args(
-    bash_script: str, input_folder: str, output_folder: str, input: Tuple[str]
+    bash_script: str, input_folder: str, echolalia_folder: str, input: Tuple[str]
 ) -> Tuple[Path, Path, Path, Set[Path]]:
     return (
         Path(bash_script),
         Path(input_folder),
-        Path(output_folder),
+        Path(echolalia_folder),
         {Path(i) for i in input},
     )
 

@@ -5,7 +5,6 @@ from typing import Optional, Set
 import src.core.response_types as response_types
 from src.config.config import ConfigModel
 from src.core.decorators import catch_and_log_exception
-from src.core.filesystem import get_output_dir
 from src.core.types import TaskStatus
 from src.domain.commands import CreateTask, RunTask
 from src.domain.model import Task
@@ -143,6 +142,6 @@ class Service:
             dataset=task.dataset,
             input_folder=task.input_folder,
             input_files=[file.file_path for file in task.input_files],
-            output_folder=get_output_dir(config),
+            echolalia_folder=config.echolalia_folder,
             operation=task.operation,
         )
