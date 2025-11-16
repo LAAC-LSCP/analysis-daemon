@@ -73,13 +73,13 @@ We have opted for a compromise that has a few anti-patterns and requires careful
 python3 vtc.py --task-id [task id] --bash-script [the .sh script used by the model] --input-folder [input_dir] --dataset [dataset name] --echolalia-folder [folder as in config] -i [file 1] -i [file 2] ...
 ```
 
-Scripts create output logs that follow a specific format based on file failure or success:
+Scripts create status logs `status.log` that follow a specific format based on file failure or success:
 ```bash
 SUCCESS - [some descriptive string] - [absolute file path]
 ERROR - [some descriptive string] - [absolute file path] - [stack trace]
 ```
 
-This output format must be adhered to for the service to work. It peroidically checks these outputs over the running tasks.
+This output format must be adhered to for the service to work. It periodically checks these outputs over the running tasks.
 
 Finally, for running any of the models, you must install the associated Conda environments. More info on getting the models to work at:
 
@@ -93,3 +93,57 @@ Note that since the Python wrapper scripts rely on some libraries as well (typic
 Another unfortunate pattern is the need for several nested scripts. The original bash scripts for the models are often clunky to work with. While we have created wrappers in bash itself, these are hard to test, and so we created Python wrappers for the bash script.
 
 But because the environment changes according to the model, we must also wrap the Python script in a bash scripts which prepares the environment, which we call the "script wrapper" (see config).
+
+## Script Outputs
+Scripts are output in the echolalia folder. If the `output_folder` (see config) was set to `/echolalia`, then scripts push their outputs in `/echolalia/dataset_name/task_id/`.
+
+Above you find the script API. It includes an `input-folder` as well, and this is to allow us to faithfully reproduce the input folder's structure.
+
+For VTC:
+
+```python
+input_folder = "/input_folder"
+echolalia_folder = "/echolalia"
+dataset = "loann_2025"
+task_id = "601cb879-8f86-4153-8e1a-9a3a3f5c812e"
+input_1 = "/input_folder/recording_1.wav"
+input_2 = "/input_folder/recording_2.wav"
+input_3 = "/input_folder/folder_1/folder_2/recording_3.wav"
+
+# This means:
+outputs = [
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/recording_1.rttm",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/recording_2.rttm",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/folder_1/folder_2/recording_3.rttm",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/status.log"
+]
+```
+
+These outputs are meant to be thrown into the `/annotations/vtc/raw` folder in the ChildProject dataset, and then an importation is meant to be run (see ChildProject docs).
+
+For ALICE:
+
+```python
+input_folder = "/input_folder"
+echolalia_folder = "/echolalia"
+dataset = "loann_2025"
+task_id = "601cb879-8f86-4153-8e1a-9a3a3f5c812e"
+input_1 = "/input_folder/recording_1.wav"
+input_2 = "/input_folder/recording_2.wav"
+input_3 = "/input_folder/folder_1/folder_2/recording_3.wav"
+
+# This means:
+outputs = [
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/recording_1.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/recording_1_sum.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/recording_2.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/recording_2_sum.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/folder_1/folder_2/recording_3.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/folder_1/folder_2/recording_3_sum.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/status.log"
+]
+```
+
+These outputs are meant to be thrown into the `/annotations/alice/output/raw` folder in the ChildProject dataset, and then an importation is meant to be run (see ChildProject docs).
+
+The "sum" files must likewise be thrown into `/annotations/alice/output/extra`.
