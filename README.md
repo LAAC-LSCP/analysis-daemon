@@ -97,7 +97,9 @@ But because the environment changes according to the model, we must also wrap th
 ## Script Outputs
 Scripts are output in the echolalia folder. If the `output_folder` (see config) was set to `/echolalia`, then scripts push their outputs in `/echolalia/dataset_name/task_id/`.
 
-Above you find the script API. It includes an `input-folder` as well, and this is to allow us to faithfully reproduce the input folder's structure. For example, for VTC (which creates .rttm files):
+Above you find the script API. It includes an `input-folder` as well, and this is to allow us to faithfully reproduce the input folder's structure.
+
+For VTC:
 
 ```python
 input_folder = "/input_folder"
@@ -116,3 +118,32 @@ outputs = [
     "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/status.log"
 ]
 ```
+
+These outputs are meant to be thrown into the `/annotations/vtc/raw` folder in the ChildProject dataset, and then an importation is meant to be run (see ChildProject docs).
+
+For ALICE:
+
+```python
+input_folder = "/input_folder"
+echolalia_folder = "/echolalia"
+dataset = "loann_2025"
+task_id = "601cb879-8f86-4153-8e1a-9a3a3f5c812e"
+input_1 = "/input_folder/recording_1.wav"
+input_2 = "/input_folder/recording_2.wav"
+input_3 = "/input_folder/folder_1/folder_2/recording_3.wav"
+
+# This means:
+outputs = [
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/recording_1.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/recording_1_sum.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/recording_2.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/recording_2_sum.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/folder_1/folder_2/recording_3.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/folder_1/folder_2/recording_3_sum.txt",
+    "/echolalia/outputs/loann_2025/601cb879-8f86-4153-8e1a-9a3a3f5c812e/status.log"
+]
+```
+
+These outputs are meant to be thrown into the `/annotations/alice/output/raw` folder in the ChildProject dataset, and then an importation is meant to be run (see ChildProject docs).
+
+The "sum" files must likewise be thrown into `/annotations/alice/output/extra`.

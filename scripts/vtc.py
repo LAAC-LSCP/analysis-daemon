@@ -74,21 +74,22 @@ def run_vtc(
         bash_script, input_folder, echolalia_folder, input
     )
 
-    log_file = get_log_file(Path(echolalia_folder), task_id, dataset)
+    log_file = get_log_file(echolalia_dir, task_id, dataset)
     log_file.parent.mkdir(parents=True, exist_ok=True)
 
-    working_dir = get_task_output_dir(Path(echolalia_dir), task_id, dataset)
+    working_dir = get_task_output_dir(echolalia_dir, task_id, dataset)
+    output_dir = get_task_output_dir(echolalia_dir, task_id, dataset)
 
-    if not working_dir.exists():
-        working_dir.mkdir(parents=True)
+    if not output_dir.exists():
+        output_dir.mkdir(parents=True)
 
     for file in inputs:
         rel_path = file.relative_to(input_dir)
 
-        output_file = (working_dir / rel_path).resolve()
+        output_file = (output_dir / rel_path).resolve()
 
         result = subprocess.run(
-            [bash_script_file, str(file), "--device=gpu"],
+            [str(bash_script_file), str(file), "--device=gpu"],
             capture_output=True,
             text=True,
             cwd=working_dir,
@@ -102,7 +103,6 @@ def run_vtc(
         else:
             status = f"ERROR - Error processing - {file} - {result.stderr}"
 
-        print(status)
         with open(log_file, "a") as f:
             f.write(f"{status}\n")
 
