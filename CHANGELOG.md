@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.24.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.23.0...v1.24.0) (2025-11-16)
+
+
+### Features
+
+* add alice ([0f8eacd](https://github.com/LAAC-LSCP/analysis-daemon/commit/0f8eacddbd22ef16caf222854d1b5b2ba23eae5a))
+
 ## [1.23.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.22.0...v1.23.0) (2025-11-13)
 
 
