@@ -27,7 +27,6 @@ def test_repository_saves_task(session: Session, config_model: ConfigModel):
             Path("/my_input_folder/file_2.wav"),
         ],
         _id=UUID("abc"),
-        config=config_model,
     )
 
     repo.save(task)
@@ -62,7 +61,6 @@ def test_repository_overwrite_task(session: Session, config_model: ConfigModel):
         operation=model.Operation.VTC,
         input_folder=Path("/my_input_folder"),
         _id=UUID("abc"),
-        config=config_model,
     )
 
     repo.save(task)
@@ -90,7 +88,6 @@ def test_repository_mark_task_completed(session: Session, config_model: ConfigMo
         operation=model.Operation.VTC,
         input_folder=Path("/my_input_folder"),
         _id=UUID("abc"),
-        config=config_model,
     )
 
     repo.save(task)
@@ -116,7 +113,6 @@ def test_repository_saves_multiple_tasks(session: Session, config_model: ConfigM
         status=TaskStatus.PENDING,
         operation=model.Operation.VTC,
         _id=UUID("abc"),
-        config=config_model,
         input_folder=Path("/my_input_folder"),
     )
     task_2 = model.Task(
@@ -125,7 +121,6 @@ def test_repository_saves_multiple_tasks(session: Session, config_model: ConfigM
         status=TaskStatus.PENDING,
         operation=model.Operation.VTC,
         _id=UUID("def"),
-        config=config_model,
         input_folder=Path("/my_other_folder"),
     )
 
@@ -147,7 +142,6 @@ def test_repository_get_task(session: Session, config_model: ConfigModel):
         status=model.TaskStatus.PENDING,
         operation=model.Operation.VTC,
         _id=UUID("abc"),
-        config=config_model,
         input_folder=Path("/my_input_folder"),
         input_files=[
             Path("/my_input_folder/file_1.wav"),

@@ -8,7 +8,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, TypedDict
 
-from src.config.config import ConfigModel
 from src.core.types import UUID, Operation, TaskStatus
 from src.domain import model
 
@@ -93,7 +92,7 @@ class Task:
             id=UUID(data["id"]),
         )
 
-    def to_model_type_task(self, config: ConfigModel) -> "model.Task":
+    def to_model_type_task(self) -> "model.Task":
         return model.Task(
             owner_id=self.owner_id,
             dataset=self.dataset_name,
@@ -103,7 +102,6 @@ class Task:
             input_folder=self.input_folder,
             input_files=self.inputs,
             _id=self.id,
-            config=config,
         )
 
     def __str__(self) -> str:

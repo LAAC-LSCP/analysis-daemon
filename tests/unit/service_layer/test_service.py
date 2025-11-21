@@ -32,7 +32,6 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
             Path("/my_input_folder/file_2.wav"),
         ],
         _id=UUID("1"),
-        config=config_model,
     )
 
     uow = PublishingUoW(FakeUoW())

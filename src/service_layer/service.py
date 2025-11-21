@@ -121,9 +121,9 @@ class Service:
 
         existing_tasks = self._uow.tasks.get_by_status(TaskStatus.PENDING)
 
-        return set(
-            task.to_model_type_task(config=self._config) for task in remote_tasks
-        ) - set(existing_tasks)
+        return set(task.to_model_type_task() for task in remote_tasks) - set(
+            existing_tasks
+        )
 
     def _get_create_task_command(self, task: Task) -> CreateTask:
         return CreateTask(

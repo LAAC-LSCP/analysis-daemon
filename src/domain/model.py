@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from src.config.config import ConfigModel
 from src.core import response_types
@@ -42,7 +42,6 @@ class Task:
         operation: Operation,
         input_folder: Path,
         input_files: Optional[List[Path]] = None,
-        config: Optional[ConfigModel] = None,
         created_at: Optional[datetime] = None,
         _id: Optional[UUID] = None,
     ):
