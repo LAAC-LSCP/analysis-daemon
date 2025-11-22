@@ -32,6 +32,19 @@ class InputFile:
         hash_bytes = hashlib.sha256(hash_input.encode()).digest()[:16]
         return UUID(str(uuid.UUID(bytes=hash_bytes)))
 
+    def __eq__(self, other):
+        if not isinstance(other, InputFile):
+            return False
+
+        return (
+            self._id == other._id
+            and self.task_id == other.task_id
+            and self.file_path == other.file_path
+        )
+
+    def __hash__(self):
+        return hash((self._id, self.task_id, self.file_path))
+
 
 class Task:
     owner_id: UUID
