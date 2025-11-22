@@ -1,6 +1,6 @@
 [project]
 name = "analysis-daemon"
-version = "1.24.0"
+version = "1.24.1"
 description = "A Python-based daemon that periodically checks and schedules tasks from Echolalia"
 authors = [
     {name = "Lawrence Borst",email = "laurens.s.borst@gmail.com"},

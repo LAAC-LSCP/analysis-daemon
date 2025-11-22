@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.24.1](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.24.0...v1.24.1) (2025-11-22)
+
+
+### Bug Fixes
+
+* **files:** make file ids deterministic ([941b446](https://github.com/LAAC-LSCP/analysis-daemon/commit/941b446d7e664c36557a31007f1d486789426682))
+
 ## [1.24.0](https://github.com/LAAC-LSCP/analysis-daemon/compare/v1.23.0...v1.24.0) (2025-11-16)
 
 
