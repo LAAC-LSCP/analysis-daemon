@@ -1,3 +1,4 @@
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
@@ -31,7 +32,6 @@ def test_service_resumes_running_tasks(config_model: ConfigModel):
             Path("/my_input_folder/file_2.wav"),
         ],
         _id=UUID("1"),
-        config=config_model,
     )
 
     uow = PublishingUoW(FakeUoW())
@@ -271,6 +271,181 @@ async def test_event_storm_create_task(config_model: ConfigModel, config_path: P
     await service._broker.event_queue._tick()
     await service._broker.command_queue._tick()
     assert len(handlers.calls) == 9
+
+
+@pytest.mark.asyncio
+async def test_event_storm_two_tasks(config_model: ConfigModel, config_path: Path):
+    """Test event storming of a creation task"""
+    filesystem = config_path.parent
+    example_inputs = (
+        filesystem / "datasets" / "loann_2025" / "recordings" / "example_inputs"
+    )
+    input_1 = example_inputs / "empty_wav.wav"
+    input_2 = example_inputs / "folder_1" / "folder_3" / "empty_wav_1_3_1.wav"
+    input_3 = example_inputs / "folder_1" / "folder_3" / "empty_wav_1_3_2.wav"
+
+    dt = datetime.now()
+    uow = PublishingUoW(FakeUoW())
+    http_client = FakeHTTPClient(
+        results=[
+            [
+                Task(
+                    dataset_name="loann_2025",
+                    datetime=dt,
+                    model_name=Operation.VTC,
+                    owner_id=UUID("a87bac8b-21a1-4a46-b812-392be4e360e5"),
+                    status=TaskStatus.PENDING,
+                    input_folder=example_inputs,
+                    inputs=[input_1, input_2],
+                    id=UUID("2920bfb0-8a16-478d-8654-aa7a7e0a23be"),
+                ),
+                Task(
+                    dataset_name="loann_2025",
+                    datetime=dt,
+                    model_name=Operation.VTC,
+                    owner_id=UUID("e24afcc6-edec-47a1-95ee-bad989acf406"),
+                    status=TaskStatus.PENDING,
+                    input_folder=example_inputs,
+                    inputs=[input_3],
+                    id=UUID("cae99af0-1e73-4446-9904-733399b8e1a1"),
+                ),
+            ]
+        ]
+    )
+    handlers = FakeHandlers(
+        uow,
+        command_handlers=get_command_handlers(config_model),
+        event_handlers=get_event_handlers(http_client),
+    )
+
+    service = Service(
+        uow=uow,
+        http_client=http_client,
+        config=config_model,
+        event_handlers=handlers.event_handlers,
+        command_handlers=handlers.command_handlers,
+    )
+
+    service._tick()
+
+    await service._broker.command_queue._tick()
+
+    assert len(handlers.calls) == 2
+    counts_1 = Counter(
+        [
+            handlers.calls[0]["type"],
+            handlers.calls[1]["type"],
+            handlers.calls[0]["message"].task_id,
+            handlers.calls[1]["message"].task_id,
+        ]
+    )
+    assert counts_1[UUID("2920bfb0-8a16-478d-8654-aa7a7e0a23be")] == 1
+    assert counts_1[UUID("cae99af0-1e73-4446-9904-733399b8e1a1")] == 1
+    assert counts_1[commands.CreateTask] == 2
+
+    await service._broker.event_queue._tick()
+
+    assert len(handlers.calls) == 4
+
+    counts_2 = Counter(
+        [
+            handlers.calls[2]["type"],
+            handlers.calls[3]["type"],
+            handlers.calls[2]["message"].task_id,
+            handlers.calls[3]["message"].task_id,
+        ]
+    )
+    assert counts_2[UUID("2920bfb0-8a16-478d-8654-aa7a7e0a23be")] == 1
+    assert counts_2[UUID("cae99af0-1e73-4446-9904-733399b8e1a1")] == 1
+    assert counts_2[events.TaskCreated] == 2
+
+    await service._broker.command_queue._tick()
+
+    assert len(handlers.calls) == 6
+
+    counts_3 = Counter(
+        [
+            handlers.calls[4]["type"],
+            handlers.calls[5]["type"],
+            handlers.calls[4]["message"].task_id,
+            handlers.calls[5]["message"].task_id,
+        ]
+    )
+    assert counts_3[UUID("2920bfb0-8a16-478d-8654-aa7a7e0a23be")] == 1
+    assert counts_3[UUID("cae99af0-1e73-4446-9904-733399b8e1a1")] == 1
+    assert counts_3[commands.RunTask] == 2
+
+    await service._broker.event_queue._tick()
+
+    assert len(handlers.calls) == 10
+    counts_4 = Counter(
+        [
+            handlers.calls[6]["handler_name"],
+            handlers.calls[7]["handler_name"],
+            handlers.calls[8]["handler_name"],
+            handlers.calls[9]["handler_name"],
+            handlers.calls[6]["message"].task_id,
+            handlers.calls[7]["message"].task_id,
+            handlers.calls[8]["message"].task_id,
+            handlers.calls[9]["message"].task_id,
+        ]
+    )
+    assert counts_4["handle_update_echolalia"] == 2
+    assert counts_4["handle_task_started"] == 2
+    assert counts_4[UUID("2920bfb0-8a16-478d-8654-aa7a7e0a23be")] == 2
+    assert counts_4[UUID("cae99af0-1e73-4446-9904-733399b8e1a1")] == 2
+
+    await service._broker.command_queue._tick()
+    assert len(handlers.calls) == 12
+    counts_5 = Counter(
+        [
+            handlers.calls[10]["handler_name"],
+            handlers.calls[11]["handler_name"],
+            handlers.calls[10]["message"].task_id,
+            handlers.calls[11]["message"].task_id,
+        ]
+    )
+    assert counts_5["handle_check_task"] == 2
+    assert counts_5["2920bfb0-8a16-478d-8654-aa7a7e0a23be"] == 1
+    assert counts_5["cae99af0-1e73-4446-9904-733399b8e1a1"] == 1
+
+    await service._broker.command_queue._tick()
+    assert len(handlers.calls) == 14
+    counts_6 = Counter(
+        [
+            handlers.calls[12]["handler_name"],
+            handlers.calls[13]["handler_name"],
+            handlers.calls[12]["message"].task_id,
+            handlers.calls[13]["message"].task_id,
+        ]
+    )
+    assert counts_6["handle_complete_task"] == 2
+    assert counts_6[UUID("2920bfb0-8a16-478d-8654-aa7a7e0a23be")] == 1
+    assert counts_6[UUID("cae99af0-1e73-4446-9904-733399b8e1a1")] == 1
+
+    await service._broker.event_queue._tick()
+    assert len(handlers.calls) == 18
+    counts_7 = Counter(
+        [
+            handlers.calls[14]["handler_name"],
+            handlers.calls[15]["handler_name"],
+            handlers.calls[16]["handler_name"],
+            handlers.calls[17]["handler_name"],
+            handlers.calls[14]["message"].task_id,
+            handlers.calls[15]["message"].task_id,
+            handlers.calls[16]["message"].task_id,
+            handlers.calls[17]["message"].task_id,
+        ]
+    )
+    assert counts_7["handle_update_echolalia"] == 2
+    assert counts_7["handle_task_completed"] == 2
+    assert counts_7[UUID("2920bfb0-8a16-478d-8654-aa7a7e0a23be")] == 2
+    assert counts_7[UUID("cae99af0-1e73-4446-9904-733399b8e1a1")] == 2
+
+    # Nothing left over
+    await service._broker.event_queue._tick()
+    await service._broker.command_queue._tick()
+    assert len(handlers.calls) == 18
 
 
 @pytest.mark.asyncio

@@ -99,6 +99,10 @@ def test_uow_can_get(session_factory: SessionFactory):
             Path("/my_input_folder/file_1.wav"),
             Path("/my_input_folder/file_2.wav"),
         )
+        assert (task.input_files[0]._id, task.input_files[1]._id) == (
+            task.input_files[0]._get_id(),
+            task.input_files[1]._get_id(),
+        )
 
         task_id = task._id
 
@@ -116,7 +120,6 @@ def test_uow_can_save(session_factory: SessionFactory):
             status=TaskStatus.RUNNING,
             operation=Operation.VTC,
             _id=UUID("abc"),
-            config=None,
             input_folder=Path("/my_input_folder/"),
             input_files=[
                 Path("/my_input_folder/file_1.wav"),

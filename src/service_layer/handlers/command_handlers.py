@@ -24,7 +24,6 @@ def get_handle_create_task(config: ConfigModel) -> CommandHandler:
             dataset=command.dataset,
             status=command.status,
             operation=command.operation,
-            config=command.config,  # TODO: temporary until join
             input_folder=command.input_folder,
             input_files=command.input_files,
         )

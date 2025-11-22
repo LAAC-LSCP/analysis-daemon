@@ -1,7 +1,8 @@
+import hashlib
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from src.config.config import ConfigModel
 from src.core import response_types
@@ -16,10 +17,33 @@ class InputFile:
     file_path: Path
     _id: UUID
 
-    def __init__(self, task_id: UUID, file_path: Path, _id: Optional[UUID] = None):
+    def __init__(self, task_id: UUID, file_path: Path):
         self.task_id = task_id
         self.file_path = file_path
-        self._id = _id or UUID(str(uuid.uuid4()))
+
+        self._id = self._get_id()
+
+    def _get_id(self) -> UUID:
+        # Need this to be deterministic to avoid conversion
+        # to and from response_type tasks having the side
+        # effect of creating new ids (i.e., new rows
+        # for the same thing)
+        hash_input = f"{self.task_id}:{str(self.file_path)}"
+        hash_bytes = hashlib.sha256(hash_input.encode()).digest()[:16]
+        return UUID(str(uuid.UUID(bytes=hash_bytes)))
+
+    def __eq__(self, other):
+        if not isinstance(other, InputFile):
+            return False
+
+        return (
+            self._id == other._id
+            and self.task_id == other.task_id
+            and self.file_path == other.file_path
+        )
+
+    def __hash__(self):
+        return hash((self._id, self.task_id, self.file_path))
 
 
 class Task:
@@ -42,7 +66,6 @@ class Task:
         operation: Operation,
         input_folder: Path,
         input_files: Optional[List[Path]] = None,
-        config: Optional[ConfigModel] = None,
         created_at: Optional[datetime] = None,
         _id: Optional[UUID] = None,
     ):
@@ -120,11 +143,6 @@ class Task:
         )
 
     def start_run(self, config: ConfigModel) -> None:
-        if self.status != TaskStatus.PENDING:
-            raise ValueError(
-                f"Cannot start task in {self.status} state"
-            )  # TODO: bit strong to raise an exception. Could raise event later
-
         self.status = TaskStatus.RUNNING
 
         self.events.append(
@@ -169,14 +187,3 @@ class Task:
 
     def __hash__(self):
         return hash(self._id)
-
-
-class Config:
-    version: int
-    data: Dict
-    created_at: datetime
-
-    def __init__(self, version: int, data: Dict, created_at: Optional[datetime] = None):
-        self.version = version
-        self.data = data
-        self.created_at = created_at or datetime.now()
