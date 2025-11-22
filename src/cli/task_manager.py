@@ -5,7 +5,6 @@ Useful to place a human in the loop, if something goes wrong
 or for testing purposes
 """
 
-import asyncio
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -13,10 +12,9 @@ import click
 from click import Context
 
 from src.config.config import load_config
-from src.core.exceptions import InValidTaskStatus
-from src.core.response_types import PostPayload, Task
 from src.core.types import UUID, Operation, TaskStatus
-from src.service_layer.http_client import HTTPClient
+from src.service_layer.bootstrap import get_http_client
+from src.service_layer.task_manager.task_manager import TaskManager
 
 
 @click.group()
@@ -47,27 +45,11 @@ def task_manager(ctx: Context):
 @click.pass_context
 def get(ctx: Context, id: Optional[str], status: Optional[str]):
     """Prints tasks received from the Echolalia server"""
-    http_client = _get_http_client(ctx.obj["config"])
-
-    if id is not None:
-        task = http_client.get_task_by_id(UUID(id))
-
-        print(task)
-
-        return
-
-    if status is not None:
-        if status not in TaskStatus:
-            raise InValidTaskStatus(status)
-
-        tasks = http_client.get_all_tasks_with_status(TaskStatus(status))
-
-        for task in tasks:
-            print(task)
-
-        return
-
-    tasks = http_client.get_all_tasks()
+    http_client = get_http_client(load_config(ctx.obj["config"]))
+    task_manager = TaskManager(http_client)
+    tasks = task_manager.get(
+        id=UUID(id) if id else None, status=TaskStatus(status) if status else None
+    )
 
     for task in tasks:
         print(task)
@@ -75,19 +57,27 @@ def get(ctx: Context, id: Optional[str], status: Optional[str]):
 
 @click.command()
 @click.pass_context
-def post(ctx: Context):
-    """Put a task on the remote server"""
-    config = ctx.obj["config"]
-    http_client = _get_http_client(config)
-
-    payload: PostPayload = {
-        "analytics_uid_label": "",
-        "uid_dataset": "",
-        "kc_sub": "",
-        "estimated_duration": 0,
-    }
-
-    task = http_client.post_task(payload)
+@click.option(
+    "--analytics-uuid-label",
+    "-a",
+    required=True,
+    type=str,
+    help="Analytics label UUID",
+)
+@click.option(
+    "--dataset-uuid",
+    "-d",
+    required=True,
+    type=str,
+    help="Dataset uuid",
+)
+def post(ctx: Context, analytics_uuid_label: str, dataset_uuid: str):
+    """Put a task on the remote server and prints it"""
+    http_client = get_http_client(load_config(ctx.obj["config"]))
+    task_manager = TaskManager(http_client)
+    task = task_manager.post(
+        analytics_uuid_label=UUID(analytics_uuid_label), dataset_uuid=UUID(dataset_uuid)
+    )
 
     print(task)
 
@@ -156,49 +146,19 @@ def put(
     """Create a task on the remote server
     If any field is unspecified, it fills it with the from the already existing task
     """
-    operation_name: Optional[Operation] = Operation(operation) if operation else None
-    owner_id: Optional[UUID] = UUID(owner) if owner else None
-    task_status: Optional[TaskStatus] = TaskStatus(status) if status else None
-
-    config = ctx.obj["config"]
-    http_client = _get_http_client(config)
-
-    existing_task = http_client.get_task_by_id(UUID(id))
-
-    if not existing_task:
-        raise ValueError(
-            f"Task with UUID {id} does not exist. Did you mean to 'post' instead \
-of 'put'?"
-        )
-
-    task = Task(
-        datetime=existing_task.datetime,
-        owner_id=owner_id or existing_task.owner_id,
-        model_name=operation_name or existing_task.model_name,
-        dataset_name=dataset_name or existing_task.dataset_name,
-        status=task_status or existing_task.status,
-        input_folder=Path(input_folder),
-        inputs=[Path(i) for i in input],
+    http_client = get_http_client(load_config(ctx.obj["config"]))
+    task_manager = TaskManager(http_client)
+    task = task_manager.put(
         id=UUID(id),
+        input_folder=Path(input_folder),
+        owner_id=UUID(owner) if owner else None,
+        task_status=TaskStatus(status) if status else None,
+        operation=Operation(operation) if operation else None,
+        dataset_name=dataset_name,
+        inputs=[Path(i) for i in input],
     )
-
-    asyncio.run(_post_async(http_client, task))
 
     print(task)
-
-
-async def _post_async(http_client: HTTPClient, task: Task):
-    await http_client.put_task(task)
-
-
-def _get_http_client(config: Path) -> HTTPClient:
-    config_model = load_config(config)
-
-    return HTTPClient(
-        remote_api_url=str(config_model.http.base_url),
-        client_id=config_model.http.client_id,
-        client_secret=config_model.http.client_secret,
-    )
 
 
 task_manager.add_command(get)
