@@ -1,3 +1,4 @@
+import hashlib
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -16,10 +17,20 @@ class InputFile:
     file_path: Path
     _id: UUID
 
-    def __init__(self, task_id: UUID, file_path: Path, _id: Optional[UUID] = None):
+    def __init__(self, task_id: UUID, file_path: Path):
         self.task_id = task_id
         self.file_path = file_path
-        self._id = _id or UUID(str(uuid.uuid4()))
+
+        self._id = self._get_id()
+
+    def _get_id(self) -> UUID:
+        # Need this to be deterministic to avoid conversion
+        # to and from response_type tasks having the side
+        # effect of creating new ids (i.e., new rows
+        # for the same thing)
+        hash_input = f"{self.task_id}:{str(self.file_path)}"
+        hash_bytes = hashlib.sha256(hash_input.encode()).digest()[:16]
+        return UUID(str(uuid.UUID(bytes=hash_bytes)))
 
 
 class Task:
@@ -119,11 +130,6 @@ class Task:
         )
 
     def start_run(self, config: ConfigModel) -> None:
-        if self.status != TaskStatus.PENDING:
-            raise ValueError(
-                f"Cannot start task in {self.status} state"
-            )  # TODO: bit strong to raise an exception. Could raise event later
-
         self.status = TaskStatus.RUNNING
 
         self.events.append(
