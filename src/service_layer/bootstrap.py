@@ -70,11 +70,7 @@ def bootstrap(config_file: Path) -> Service:
         )
     )
 
-    http_client = HTTPClient(
-        remote_api_url=str(config.http.base_url),
-        client_id=config.http.client_id,
-        client_secret=config.http.client_secret,
-    )
+    http_client = get_http_client(config)
 
     config.echolalia_folder.mkdir(parents=True, exist_ok=True)
     get_temp_dir(config).mkdir(parents=True, exist_ok=True)
@@ -91,3 +87,11 @@ def bootstrap(config_file: Path) -> Service:
     logger.info("Bootstrap phase complete")
 
     return service
+
+
+def get_http_client(config_model: ConfigModel) -> HTTPClient:
+    return HTTPClient(
+        remote_api_url=str(config_model.http.base_url),
+        client_id=config_model.http.client_id,
+        client_secret=config_model.http.client_secret,
+    )

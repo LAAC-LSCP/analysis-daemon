@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from typing import Mapping, Optional, Tuple
 
 import httpx
@@ -107,7 +108,7 @@ class HTTPClient:
                 f"Failed to fetch tasks from {self._remote_api_url}: {exc}"
             ) from exc
 
-    def get_task_by_id(self, id: UUID) -> response_types.Task:
+    def get_task_by_id(self, id: UUID) -> Optional[response_types.Task]:
         uri: str = self._remote_api_url + f"/api/analytics/tasks/{id}"
 
         try:
@@ -117,6 +118,9 @@ class HTTPClient:
 
             return response_types.Task.from_dict(data)
         except requests.RequestException as exc:
+            if exc.response and exc.response.status_code == HTTPStatus.NOT_FOUND:
+                return None
+
             raise RuntimeError(
                 f"Failed to fetch task with UUID {id} from \
                 {self._remote_api_url}: {exc}"
@@ -137,7 +141,6 @@ class HTTPClient:
                     {exc}"
             ) from exc
 
-    # TODO: negotiate with Echolalia team to use dataset name instead of id
     def post_task(self, payload: response_types.PostPayload) -> response_types.Task:
         uri: str = self._remote_api_url + "/api/analytics/tasks"
         data: dict
