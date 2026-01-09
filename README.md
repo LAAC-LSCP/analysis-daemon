@@ -1,3 +1,5 @@
+# NOTE: This repo is deprecated. Please refer to https://github.com/laac-LSCP/analysis-service instead
+
 # Daemon for Echolalia
 A Python-based daemon that periodically checks and schedules tasks from Echolalia
 
